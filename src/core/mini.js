@@ -15,6 +15,8 @@ export function barra(scene, inp, { vel = 1.2, ideal = 0.8, ancho = 0.16, texto 
     const aguja = scene.add.rectangle(bx, y, 2, 12, 0xffffff).setDepth(prof + 2).setScrollFactor(0);
     objs.push(aguja);
     let v = 0, sube = 1;
+    // lo que se está jugando, para las pruebas automáticas (herramientas/bots.js)
+    scene.__mini = { tipo: 'barra', ideal, ancho, v: () => v };
     const f = (_, dt) => {
       v += (sube * vel * dt) / 1000;
       if (v > 1) { v = 1; sube = -1; } if (v < 0) { v = 0; sube = 1; }
@@ -48,6 +50,7 @@ export function atrapar(scene, inp, { veces = 3, vel = 1, zona = 0.14, texto = '
     const bola = scene.add.circle(cx, y, 4, color).setDepth(prof + 1).setScrollFactor(0);
     objs.push(cuenta, bola);
     let t = 0, n = 0, espera = 0.3;
+    scene.__mini = { tipo: 'atrapar', zona, p: () => (espera > 0 ? 0 : t * t) };
     const fin = (ok) => { scene.events.off('update', f); scene.time.delayedCall(200, () => objs.forEach((o) => o.destroy())); res(ok); };
     const f = (_, dt) => {
       if (espera > 0) { espera -= dt / 1000; inp.tomarA(); return; }
@@ -79,6 +82,7 @@ export function machacar(scene, inp, { golpes = 14, segundos = 3, texto = '¡MAC
     const lleno = scene.add.rectangle(cx - 60, y - 3, 0, 6, 0xf2c230).setOrigin(0).setDepth(prof + 1).setScrollFactor(0);
     objs.push(lleno);
     let n = 0, t = segundos;
+    scene.__mini = { tipo: 'machacar' };
     const f = (_, dt) => {
       t -= dt / 1000;
       if (inp.tomarA()) { n++; tono(400 + n * 30, 0.03, 'cuadrada', 0.05); }

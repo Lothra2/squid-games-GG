@@ -8,7 +8,8 @@ const [url, out, pasosTxt] = process.argv.slice(2);
 fs.mkdirSync(out, { recursive: true });
 const pasos = JSON.parse(pasosTxt || '[]');
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--autoplay-policy=no-user-gesture-required', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] }).catch(async () => chromium.launch());
-const p = await b.newPage({ viewport: { width: 960, height: 540 } });
+const movil = process.env.MOVIL === '1';
+const p = await b.newPage(movil ? { viewport: { width: 844, height: 390 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 } : { viewport: { width: 960, height: 540 } });
 const errores = [];
 p.on('pageerror', (e) => errores.push('pageerror: ' + e.message + '\n' + (e.stack || '').split('\n').slice(0, 4).join('\n')));
 p.on('response', (r) => { if (r.status() >= 400) errores.push('HTTP ' + r.status() + ' ' + r.url()); });
@@ -17,9 +18,11 @@ await p.goto(url);
 for (const [t, a, c] of pasos) {
   if (t === 'w') await p.waitForTimeout(a);
   if (t === 'k') await p.keyboard.press(a);
+  if (t === 'tap') await p.touchscreen.tap(a, c);
   if (t === 'hold') { await p.keyboard.down(a); await p.waitForTimeout(c); await p.keyboard.up(a); }
   if (t === 'down') await p.keyboard.down(a);
   if (t === 'up') await p.keyboard.up(a);
+  if (t === 'file') console.log('file:', await p.evaluate(fs.readFileSync(a, 'utf8')));
   if (t === 's') await p.screenshot({ path: `${out}/${a}.png` });
   if (t === 'js') { const r = await p.evaluate('(() => { const v = ' + a + '; try { return JSON.stringify(v); } catch { return String(v); } })()'); if (r !== undefined) console.log('js:', r); }
 }

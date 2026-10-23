@@ -73,6 +73,7 @@ export class Canicas extends Juego {
       this.ronda++;
       if (this.ronda % 3 === 0) await this.alHoyo();
       else await this.parImpar(this.ronda % 2 === 1);
+      if (this.terminado) return;
       this.marcar();
       if (this.cerrando || this.terminado) return;
       if (this.suyas <= 0) { this.cerrando = true; this.finalGganbu(); return; }

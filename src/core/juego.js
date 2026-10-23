@@ -128,8 +128,20 @@ export class Juego extends Phaser.Scene {
   /** suma un eliminado al pozo de esta ronda */
   contarEliminado(n = 1) {
     this.eliminadosRonda += n;
+    this.anunciar();
     // en pantalla se ve subir ya; al pozo de verdad entra al ganar
     if (this.hud && this.hud.pozo) this.hud.pozo.setText(wones(Math.min(45_600_000_000, E.pozo + this.eliminadosRonda * 100_000_000)));
+  }
+
+  /** "Jugador 123, eliminado." abajo a la izquierda, uno debajo del otro */
+  anunciar() {
+    const num = String(2 + Math.floor(Math.random() * 454)).padStart(3, '0');
+    const t = sangre() ? `Jugador ${num}, eliminado.` : `Jugador ${num}, ¡a dormir!`;
+    this.avisos = (this.avisos || []).filter((a) => a.active);
+    this.avisos.forEach((a) => (a.y -= 10));
+    const b = this.add.bitmapText(6, this.scale.height - 14, 'fuente_ui', t).setScrollFactor(0).setDepth(8900).setTint(sangre() ? 0xff8f8f : 0xffc8e0);
+    this.avisos.push(b);
+    this.tweens.add({ targets: b, alpha: 0, delay: 1800, duration: 600, onComplete: () => b.destroy() });
   }
 
   musica(n) { musica(n); }

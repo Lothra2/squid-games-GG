@@ -74,6 +74,9 @@ export class Entrada {
       return b;
     };
     this.botonA = boton(W - 34, H - 40, 'control_a', '_tA');
+    const pausa = s.add.image(76, 8, 'control_pausa', 0).setScale(0.3).setScrollFactor(0).setDepth(8890).setAlpha(0.6).setInteractive();
+    pausa.on('pointerdown', () => { this.pausaPulso = true; });
+    this.controles.push(pausa);
     if (botonB) this.botonB = boton(W - 76, H - 22, 'control_b', '_tB');
   }
 

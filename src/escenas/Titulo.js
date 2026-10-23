@@ -8,7 +8,7 @@ import { musica, despertar, tono, volumen, iniciarAudio } from '../core/sonido.j
 import { nuevaPartida, irAPaso, JUEGOS, SECUENCIA, PRIMER_JUEGO } from '../core/flujo.js';
 import { Actor } from '../core/actor.js';
 
-export function logo(scene, x, y, escala = 1) {
+export function logo(scene, x, y, escala = 1, figuras = true) {
   const objs = [];
   const prof = 50;
   objs.push(scene.add.bitmapText(x, y - 22 * escala, 'fuente_ui', 'EL JUEGO DEL').setOrigin(0.5).setScale(escala * 2).setDepth(prof).setTint(0xffffff));
@@ -16,7 +16,7 @@ export function logo(scene, x, y, escala = 1) {
   objs.push(c);
   const gg = scene.add.bitmapText(x, y + 36 * escala, 'fuente_titulo_plata', 'FAMILIA GG').setOrigin(0.5).setScale(escala).setDepth(prof);
   objs.push(gg);
-  ['circulo', 'triangulo', 'cuadrado'].forEach((s, i) => {
+  if (figuras) ['circulo', 'triangulo', 'cuadrado'].forEach((s, i) => {
     const im = scene.add.image(x + (i - 1) * 22 * escala, y + 56 * escala, s).setTint(0xff3d7f).setDepth(prof).setScale(escala);
     objs.push(im);
     scene.tweens.add({ targets: im, alpha: 0.35, duration: 700, yoyo: true, repeat: -1, delay: i * 230 });
@@ -33,7 +33,7 @@ export class Titulo extends Phaser.Scene {
     this.cameras.main.fadeIn(600);
     this.add.image(W / 2, H / 2, 'titulo');
     this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.25);
-    logo(this, W / 2, 70);
+    logo(this, W / 2, 70, 1, false);
     this.inp = new Entrada(this, { tactil: false });
     this.pie = this.add.bitmapText(W / 2, H - 30, 'fuente_ui', 'TOCA O APRIETA ESPACIO').setOrigin(0.5);
     this.tweens.add({ targets: this.pie, alpha: 0.2, duration: 600, yoyo: true, repeat: -1 });
@@ -46,6 +46,7 @@ export class Titulo extends Phaser.Scene {
       this.esperando = false;
       iniciarAudio(this);
       despertar();
+      if (this.inp.esTactil && !this.scale.isFullscreen) { try { this.scale.startFullscreen(); } catch { /* el navegador no deja */ } }
       tono(880, 0.1, 'campana', 0.15);
       musica('flauta');
       this.pie.destroy();

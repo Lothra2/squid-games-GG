@@ -113,7 +113,7 @@ export class Pentatlon extends Juego {
   async ddakji(a) {
     const W = this.scale.width;
     const rojo = this.add.image(a.x + 30, a.y - 4, 'ddakji_rojo').setScale(0.5).setDepth(a.y + 1);
-    const r = await barra(this, this.inp, { vel: dif(1.1, 1.5, 1.9), ideal: 0.85, ancho: dif(0.22, 0.16, 0.11), texto: 'A: TIRA EL SOBRE' });
+    const r = await barra(this, this.inp, { vel: dif(1.1, 1.5, 1.9), ideal: 0.85, ancho: dif(0.24, 0.18, 0.13), texto: 'A: TIRA EL SOBRE' });
     await a.hacer('cap_pitch', 'right');
     sfx(this, 'chapa', 0.7);
     const ok = r.ok || Math.random() < 0.15;
@@ -124,8 +124,8 @@ export class Pentatlon extends Juego {
   }
 
   async piedra(a) {
-    const b1 = await barra(this, this.inp, { vel: dif(0.9, 1.2, 1.5), ideal: 0.5, ancho: dif(0.24, 0.18, 0.13), texto: 'A: APUNTA' });
-    const b2 = await barra(this, this.inp, { vel: dif(1.1, 1.4, 1.8), ideal: 0.75, ancho: dif(0.24, 0.18, 0.13), texto: 'A: FUERZA' });
+    const b1 = await barra(this, this.inp, { vel: dif(0.9, 1.2, 1.5), ideal: 0.5, ancho: dif(0.26, 0.2, 0.15), texto: 'A: APUNTA' });
+    const b2 = await barra(this, this.inp, { vel: dif(1.1, 1.4, 1.7), ideal: 0.75, ancho: dif(0.26, 0.2, 0.15), texto: 'A: FUERZA' });
     await a.hacer('tejo_throw', 'up');
     const piedra = this.add.circle(a.x, a.y - 20, 3, 0x9aa3ae).setDepth(3000);
     const ok = b1.ok && b2.ok;
@@ -139,13 +139,13 @@ export class Pentatlon extends Juego {
 
   async gonggi(a) {
     a.anim('throw', 'up');
-    return atrapar(this, this.inp, { veces: 3, vel: dif(0.9, 1.15, 1.4), zona: dif(0.2, 0.15, 0.11), texto: 'A: ATRAPA LAS PIEDRITAS', color: 0x5aa0ff });
+    return atrapar(this, this.inp, { veces: 3, vel: dif(0.9, 1.15, 1.4), zona: dif(0.26, 0.2, 0.15), texto: 'A: ATRAPA LAS PIEDRITAS', color: 0x5aa0ff });
   }
 
   async trompo(a) {
     const enrollado = await machacar(this, this.inp, { golpes: dif(12, 16, 20), segundos: 3, texto: '¡MACHACA A! ENROLLA LA CUERDA' });
     if (!enrollado) return false;
-    const r = await barra(this, this.inp, { vel: dif(1, 1.4, 1.8), ideal: 0.7, ancho: dif(0.24, 0.17, 0.12), texto: 'A: ¡LANZA!' });
+    const r = await barra(this, this.inp, { vel: dif(1, 1.4, 1.7), ideal: 0.7, ancho: dif(0.26, 0.2, 0.15), texto: 'A: ¡LANZA!' });
     await a.hacer('throw', 'right');
     // el trompo gira
     const t = this.add.graphics().setDepth(3000);
@@ -164,7 +164,7 @@ export class Pentatlon extends Juego {
 
   async jegi(a) {
     a.anim('shuttle_juggle', 'right');
-    const ok = await atrapar(this, this.inp, { veces: dif(3, 4, 5), vel: dif(0.85, 1.05, 1.25), zona: dif(0.2, 0.15, 0.11), texto: 'A: ¡PATEA EL JEGI!', color: 0xe0457b });
+    const ok = await atrapar(this, this.inp, { veces: dif(3, 4, 5), vel: dif(0.85, 1.05, 1.25), zona: dif(0.26, 0.2, 0.15), texto: 'A: ¡PATEA EL JEGI!', color: 0xe0457b });
     a.anim('idle');
     return ok;
   }

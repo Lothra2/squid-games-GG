@@ -15,7 +15,6 @@ const PISO = 130, CENTRO = 240;
 
 export class TiraAfloja extends Juego {
   constructor() { super('TiraAfloja'); }
-  opcionesEntrada() { return { palanca: false }; }
 
   armar() {
     const W = this.scale.width, H = this.scale.height;

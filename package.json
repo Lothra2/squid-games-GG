@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && python3 herramientas/empaquetar.py",
     "preview": "vite preview",
     "kit": "cd ../pixel_forja && npx tsx scripts/kit-a-medida.ts ../squid-games-GG/public/assets/kit --config ../squid-games-GG/forja/kit.config.json"
   },

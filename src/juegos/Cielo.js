@@ -11,7 +11,7 @@ import { eliminar, sacudir, chorro } from '../core/efectos.js';
 import { cartel, esperar } from '../core/dialogo.js';
 import { jugadoresNPC } from '../core/kit.js';
 
-const PILARES = [{ x: 110, y: 190, rx: 74, ry: 32 }, { x: 245, y: 138, rx: 66, ry: 28 }, { x: 382, y: 192, rx: 74, ry: 32 }];
+const PILARES = [{ x: 118, y: 188, rx: 82, ry: 34 }, { x: 240, y: 136, rx: 74, ry: 30 }, { x: 362, y: 188, rx: 82, ry: 34 }];
 const PUENTES = [[PILARES[0], PILARES[1]], [PILARES[1], PILARES[2]]];
 
 const enElipse = (e, x, y, k = 1) => ((x - e.x) / (e.rx * k)) ** 2 + ((y - e.y) / (e.ry * k)) ** 2 <= 1;
@@ -21,7 +21,7 @@ function enPuente(x, y) {
     const t = ((x - a.x) * dx + (y - a.y) * dy) / L2;
     if (t < 0 || t > 1) continue;
     const px = a.x + dx * t, py = a.y + dy * t;
-    if (Math.hypot(x - px, y - py) < 7) return true;
+    if (Math.hypot(x - px, y - py) < 10) return true;
   }
   return false;
 }
@@ -34,24 +34,30 @@ export class Cielo extends Juego {
     const W = this.scale.width, H = this.scale.height;
     this.add.image(W / 2, H / 2, 'cielo').setDepth(-100);
     const g = this.add.graphics().setDepth(-50);
-    // los pilares: la columna que baja a las nubes y la tapa de piedra
-    for (const p of PILARES) {
+    // primero las columnas (la del medio va más atrás), después los puentes y encima las tapas de piedra
+    const orden = [PILARES[1], PILARES[0], PILARES[2]];
+    for (const p of orden) {
       g.fillStyle(0x3a4258); g.fillRect(p.x - p.rx * 0.8, p.y, p.rx * 1.6, H - p.y);
       g.fillStyle(0x2a3044); g.fillRect(p.x + p.rx * 0.3, p.y, p.rx * 0.5, H - p.y);
+      g.fillStyle(0x4a5470); for (let y = p.y + 14; y < H; y += 14) g.fillRect(p.x - p.rx * 0.8, y, p.rx * 1.6, 1);
+    }
+    for (const [a, b] of PUENTES) {
+      const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L;
+      g.fillStyle(0x4a3828); g.fillPoints([{ x: a.x + nx * 11, y: a.y + ny * 11 + 3 }, { x: b.x + nx * 11, y: b.y + ny * 11 + 3 }, { x: b.x - nx * 11, y: b.y - ny * 11 + 3 }, { x: a.x - nx * 11, y: a.y - ny * 11 + 3 }], true);
+      g.fillStyle(0x9a7650); g.fillPoints([{ x: a.x + nx * 10, y: a.y + ny * 10 }, { x: b.x + nx * 10, y: b.y + ny * 10 }, { x: b.x - nx * 10, y: b.y - ny * 10 }, { x: a.x - nx * 10, y: a.y - ny * 10 }], true);
+      g.lineStyle(1, 0x6a5038); for (let t = 0.1; t < 1; t += 0.08) g.lineBetween(a.x + dx * t + nx * 10, a.y + dy * t + ny * 10, a.x + dx * t - nx * 10, a.y + dy * t - ny * 10);
+    }
+    for (const p of orden) {
       g.fillStyle(0x59627c); g.fillEllipse(p.x, p.y + 5, p.rx * 2, p.ry * 2);
       g.fillStyle(0x8b93ab); g.fillEllipse(p.x, p.y, p.rx * 2, p.ry * 2);
       g.lineStyle(1, 0xc8cee0, 0.7); g.strokeEllipse(p.x, p.y, p.rx * 2 - 6, p.ry * 2 - 4);
     }
-    for (const [a, b] of PUENTES) {
-      g.lineStyle(12, 0x5a4636); g.lineBetween(a.x, a.y, b.x, b.y);
-      g.lineStyle(8, 0x8a6a4a); g.lineBetween(a.x, a.y, b.x, b.y);
-    }
     // nubes que pasan por delante
-    this.nubes = [0, 1, 2].map((i) => this.add.ellipse(Math.random() * W, 240 + i * 12, 120, 18, 0xdfe6ff, 0.35).setDepth(5000));
-    this.crearJugador(110, 192, 'right');
-    this.crearFamilia([[90, 182, 'right'], [86, 200, 'right'], [126, 206, 'right']]);
+    this.nubes = [0, 1, 2].map((i) => this.add.ellipse(Math.random() * W, 246 + i * 10, 160, 16, 0xffffff, 0.16).setDepth(5000));
+    this.crearJugador(130, 190, 'right');
+    this.crearFamilia([[92, 180, 'right'], [86, 198, 'right'], [112, 208, 'right']]);
     const ids = jugadoresNPC();
-    const lugares = [[245, 138], [225, 130], [265, 146], [382, 192], [360, 182], [400, 202], [382, 210]];
+    const lugares = [[240, 136], [218, 128], [262, 144], [362, 188], [340, 178], [384, 198], [362, 208]];
     this.rivales = lugares.slice(0, dif(4, 5, 7)).map(([x, y], i) => {
       const a = new Actor(this, ids[(i * 3 + 1) % ids.length], x, y, { dir: 'left' });
       return a;
@@ -93,7 +99,7 @@ export class Cielo extends Juego {
       if (f.aturdido > 0 || f.dash > 0) return;
       const r = this.masCerca(f, this.rivales);
       if (r && Math.hypot(r.x - f.x, r.y - f.y) < 32 && f.cd <= 0) this.embestir(f, r.x - f.x, r.y - f.y);
-      else { const h = [[90, 182], [86, 200], [126, 206]][i]; f.vx = (h[0] - f.x) * 2; f.vy = (h[1] - f.y) * 2; }
+      else { const h = [[92, 180], [86, 198], [112, 208]][i]; f.vx = (h[0] - f.x) * 2; f.vy = (h[1] - f.y) * 2; }
     });
     // los rivales: van por el más cercano de la familia y embisten
     for (const r of vivos) {
@@ -104,7 +110,7 @@ export class Cielo extends Juego {
       const v = dif(32, 40, 48);
       r.vx = (dx / d) * v; r.vy = (dy / d) * v * 0.7;
       // no se tiran solos: frenan en el borde
-      if (!pisa(r.x + r.vx * 0.3, r.y + r.vy * 0.3)) { r.vx = 0; r.vy = 0; }
+      if (!pisa(r.x + r.vx * 0.3, r.y + r.vy * 0.3)) { if (pisa(r.x + r.vx * 0.3, r.y)) r.vy = 0; else if (pisa(r.x, r.y + r.vy * 0.3)) r.vx = 0; else { r.vx = 0; r.vy = 0; } }
       if (d < 30 && r.cd <= 0) this.embestir(r, dx, dy);
     }
     // física: moverse, chocar, caer
@@ -112,11 +118,20 @@ export class Cielo extends Juego {
       if (!a.vivo) continue;
       a.cd -= dt; a.aturdido -= dt;
       if (a.dash > 0) a.dash -= dt;
+      const ox = a.x, oy = a.y;
       a.x += a.vx * dt; a.y += a.vy * dt;
+      if (!pisa(a.x, a.y) && a.aturdido <= 0 && pisa(ox, oy)) {
+        // por su propio pie nadie se cae: se desliza por el borde (primero en x, si no en y)
+        if (pisa(ox + a.vx * dt, oy)) { a.y = oy; a.vy = 0; }
+        else if (pisa(ox, oy + a.vy * dt)) { a.x = ox; a.vx = 0; }
+        else { a.x = ox; a.y = oy; a.vx = 0; a.vy = 0; a.dash = 0; }
+        if (a === this.jugador && !a.tambalea && a.vx === 0 && a.vy === 0) { a.tambalea = true; a.anim('edge_teeter', null, true); this.time.delayedCall(400, () => (a.tambalea = false)); }
+      }
       if (a.dash <= 0 && a.aturdido <= 0) { if (Math.hypot(a.vx, a.vy) > 5) { a.mirar(a.vx, a.vy); a.anim('walk'); } else a.anim('idle'); }
       if (a.aturdido > 0 || a.dash > 0) { a.vx *= 0.9; a.vy *= 0.9; }
       // la familia no se cae (se agarran entre ellos); el jugador y los rivales sí
       if (this.familia.includes(a)) { if (!pisa(a.x, a.y)) { a.x -= a.vx * dt * 2; a.y -= a.vy * dt * 2; a.vx = 0; a.vy = 0; } continue; }
+      // solo un empujón (aturdido) tumba
       if (!pisa(a.x, a.y)) this.caida(a);
     }
     // los choques de las embestidas
@@ -128,7 +143,7 @@ export class Cielo extends Juego {
         if (amigos) continue;
         if (Math.hypot(b.x - a.x, b.y - a.y) < 14) {
           const d = Math.hypot(a.vx, a.vy) || 1;
-          const k = this.familia.includes(b) ? 0.4 : 1;
+          const k = this.familia.includes(b) ? 0.4 : a === this.jugador ? 1.4 : 1;
           b.vx = (a.vx / d) * 150 * k; b.vy = (a.vy / d) * 110 * k;
           b.aturdido = 0.45; b.golpeadoPor = a;
           this.time.delayedCall(400, () => (b.golpeadoPor = null));
