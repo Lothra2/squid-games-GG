@@ -1,0 +1,167 @@
+{
+ "format": "pixelforja.ficha",
+ "version": 3,
+ "name": "Reclutador",
+ "body": {
+  "skeleton": "human",
+  "proportions": {
+   "preset": "chibi",
+   "height": 1.04,
+   "build": 0.85,
+   "legs": 1.08,
+   "arms": 1,
+   "head": 1,
+   "shoulders": 0.95,
+   "hips": 0.95
+  }
+ },
+ "palette": {
+  "skin": [
+   "#663f2f",
+   "#c89377",
+   "#e6b994",
+   "#fad6af"
+  ],
+  "hair": [
+   "#180300",
+   "#3e1b0a",
+   "#5a3a22",
+   "#6d5238"
+  ],
+  "eyes": "#2a1c14",
+  "top": [
+   "#62615f",
+   "#b0aeab",
+   "#f4f2ee",
+   "#f7f6f3"
+  ],
+  "bottom": [
+   "#18191e",
+   "#2b2d35",
+   "#3c3f4a",
+   "#767980"
+  ],
+  "socks": [
+   "#010204",
+   "#0c0d14",
+   "#25262e",
+   "#44454d"
+  ],
+  "shoes": [
+   "#0a0a0d",
+   "#131117",
+   "#1a1820",
+   "#5f5d63"
+  ],
+  "accessory": [
+   "#6e4602",
+   "#de9d02",
+   "#f2c94c",
+   "#fee894"
+  ]
+ },
+ "outfit": {
+  "sleeves": "long",
+  "bottom": "pants",
+  "socks": "low",
+  "shoes": "botas",
+  "collar": "polo",
+  "pattern": "liso",
+  "print": null,
+  "emblem": null,
+  "chestText": null,
+  "armband": null,
+  "neck": null,
+  "cape": null,
+  "armor": null,
+  "jacket": "#3c3f4a",
+  "jacketCut": "casual",
+  "jacketClosed": false,
+  "jacketSleeves": "long"
+ },
+ "face": {
+  "eyes": "round",
+  "mouth": "line",
+  "blush": false,
+  "brows": true,
+  "glasses": null,
+  "base": {
+   "eyes": "angry",
+   "mouth": "smirk"
+  }
+ },
+ "heads": {},
+ "avatar": {
+  "version": 1,
+  "look": "stardew",
+  "skin": "#e6b994",
+  "face": {
+   "dome": 1.12,
+   "forehead": 0.58,
+   "eyeNose": 0.6,
+   "noseMouth": 0.3,
+   "mouthChin": 0.52,
+   "cheek": 0.97,
+   "jaw": 0.84,
+   "chin": 2.6,
+   "eyeX": 0.42,
+   "ears": 0.18,
+   "mouth": 0.3
+  },
+  "hair": {
+   "style": "corto",
+   "color": "#5a3a22",
+   "params": {
+    "top": 0.22,
+    "side": 0.08,
+    "back": 0.1,
+    "recede": 0,
+    "length": 1,
+    "fringe": 0,
+    "part": 0,
+    "sweep": 0.3,
+    "curl": 0,
+    "tail": "none"
+   }
+  },
+  "eyes": {
+   "style": "brillo",
+   "color": "#2a1c14"
+  },
+  "brows": {
+   "style": "normal"
+  },
+  "nose": "normal",
+  "beard": {
+   "style": "ninguna",
+   "color": "#5a3a22",
+   "gray": 0
+  },
+  "glasses": {
+   "style": "ninguno",
+   "color": "#1e1e24"
+  },
+  "kit": "lpc",
+  "lpc": {
+   "head": "male_gaunt",
+   "hair": "swept_back",
+   "brows": "thick",
+   "nose": null,
+   "beard": null,
+   "mustache": null,
+   "glasses": null,
+   "hat": null,
+   "hatColor": null
+  },
+  "body": {
+   "age": "adulto",
+   "build": "delgado",
+   "shape": "recto"
+  }
+ },
+ "headMode": "avatar",
+ "physics": {
+  "hairLag": 1
+ },
+ "movementProfile": "premium"
+}

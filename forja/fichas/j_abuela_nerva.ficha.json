@@ -1,0 +1,165 @@
+{
+ "format": "pixelforja.ficha",
+ "version": 3,
+ "name": "Jugador 060",
+ "body": {
+  "skeleton": "human",
+  "proportions": {
+   "preset": "chibi",
+   "height": 0.96,
+   "build": 1.05,
+   "legs": 1,
+   "arms": 1,
+   "head": 1,
+   "shoulders": 0.8929999999999999,
+   "hips": 1.14
+  }
+ },
+ "palette": {
+  "skin": [
+   "#551f10",
+   "#9b5437",
+   "#b97a4e",
+   "#cb9768"
+  ],
+  "hair": [
+   "#4d4a44",
+   "#a5a199",
+   "#c8c4bc",
+   "#e2ded7"
+  ],
+  "eyes": "#2a1c14",
+  "top": [
+   "#61605d",
+   "#aeada7",
+   "#f2f0e8",
+   "#f6f4ef"
+  ],
+  "bottom": [
+   "#07322d",
+   "#0d5b51",
+   "#127e70",
+   "#59a59b"
+  ],
+  "socks": [
+   "#61605d",
+   "#aeada7",
+   "#f2f0e8",
+   "#f6f4ef"
+  ],
+  "shoes": [
+   "#626260",
+   "#b0b0ad",
+   "#f4f4f0",
+   "#f7f7f4"
+  ],
+  "accessory": [
+   "#6e4602",
+   "#de9d02",
+   "#f2c94c",
+   "#fee894"
+  ]
+ },
+ "outfit": {
+  "sleeves": "long",
+  "bottom": "pants",
+  "socks": "low",
+  "shoes": "tenis",
+  "collar": "v",
+  "pattern": "liso",
+  "print": null,
+  "emblem": null,
+  "chestText": null,
+  "armband": null,
+  "neck": null,
+  "cape": null,
+  "armor": null,
+  "jacket": "#127e70",
+  "jacketCut": "casual",
+  "jacketClosed": false,
+  "jacketSleeves": "long",
+  "numberColor": "#f6f4ee",
+  "number": "060"
+ },
+ "face": {
+  "eyes": "round",
+  "mouth": "line",
+  "blush": false,
+  "brows": true,
+  "glasses": null
+ },
+ "heads": {},
+ "avatar": {
+  "version": 1,
+  "look": "stardew",
+  "skin": "#b97a4e",
+  "face": {
+   "dome": 1.12,
+   "forehead": 0.58,
+   "eyeNose": 0.6,
+   "noseMouth": 0.3,
+   "mouthChin": 0.52,
+   "cheek": 0.97,
+   "jaw": 0.84,
+   "chin": 2.6,
+   "eyeX": 0.42,
+   "ears": 0.18,
+   "mouth": 0.3
+  },
+  "hair": {
+   "style": "corto",
+   "color": "#c8c4bc",
+   "params": {
+    "top": 0.22,
+    "side": 0.08,
+    "back": 0.1,
+    "recede": 0,
+    "length": 1,
+    "fringe": 0,
+    "part": 0,
+    "sweep": 0.3,
+    "curl": 0,
+    "tail": "none"
+   }
+  },
+  "eyes": {
+   "style": "brillo",
+   "color": "#3a2418"
+  },
+  "brows": {
+   "style": "normal"
+  },
+  "nose": "normal",
+  "beard": {
+   "style": "ninguna",
+   "color": "#c8c4bc",
+   "gray": 0
+  },
+  "glasses": {
+   "style": "ninguno",
+   "color": "#1e1e24"
+  },
+  "kit": "lpc",
+  "lpc": {
+   "head": "female_elderly",
+   "hair": "bob",
+   "brows": "thin",
+   "nose": null,
+   "beard": null,
+   "mustache": null,
+   "glasses": null,
+   "hat": null,
+   "hatColor": null
+  },
+  "body": {
+   "age": "mayor",
+   "build": "medio",
+   "shape": "curvas"
+  }
+ },
+ "headMode": "avatar",
+ "physics": {
+  "hairLag": 1
+ },
+ "movementProfile": "premium"
+}

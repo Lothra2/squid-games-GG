@@ -1,0 +1,137 @@
+{
+  "$schema": "../../pixel_forja/docs/kit-a-medida.schema.json",
+  "juego": "El Juego del Calamar GG",
+  "resolucion": [
+    480,
+    270
+  ],
+  "celda": 48,
+  "filas": [
+    "right",
+    "down",
+    "up"
+  ],
+  "datos_por_cuadro": [
+    "cajas",
+    "manos",
+    "cabeza",
+    "pies"
+  ],
+  "fichas": "fichas/",
+  "packs": {
+    "base": [
+      "idle",
+      "walk",
+      "run",
+      "jump",
+      "hit",
+      "die",
+      "knockout",
+      "fall_getup",
+      "celebrate",
+      "sad",
+      "laugh",
+      "point",
+      "clap",
+      "dance",
+      "crawl",
+      "dizzy",
+      "stagger",
+      "win",
+      "lose",
+      "bow"
+    ],
+    "juegos": [
+      "eat",
+      "throw",
+      "tejo_throw",
+      "cap_pitch",
+      "shuttle_juggle",
+      "grab_hold",
+      "judo_grip",
+      "balance_walk",
+      "balance_wobble",
+      "balance_fall",
+      "fall_off",
+      "edge_teeter",
+      "dodge_jump",
+      "jab",
+      "punch",
+      "dash",
+      "duck_run",
+      "kick",
+      "attack",
+      "lift"
+    ]
+  },
+  "retratos": true,
+  "cabecitas": false,
+  "animales": [
+    "thor"
+  ],
+  "fx": [
+    "polvo",
+    "golpe",
+    "reaccion"
+  ],
+  "audio": {
+    "formato": "comprimido",
+    "sfx": [
+      "pistola",
+      "silbato",
+      "pitazo_largo",
+      "golpe",
+      "golpe_1",
+      "golpe_pesado",
+      "caer_plano",
+      "publico_grito",
+      "publico_ooh",
+      "click",
+      "elegir",
+      "error",
+      "moneda",
+      "subir_nivel",
+      "trueno",
+      "romper",
+      "ko",
+      "mareo",
+      "lanzar",
+      "chapa",
+      "toque_cau",
+      "paso_tierra_0",
+      "paso_tierra_1",
+      "chapuzon",
+      "ladrido",
+      "esquiva"
+    ],
+    "musica": [
+      "derrota"
+    ],
+    "ambientes": [
+      "mar",
+      "noche",
+      "viento"
+    ],
+    "voces": [
+      "rick",
+      "steph",
+      "sophie",
+      "alana",
+      "locutor"
+    ]
+  },
+  "ui": {
+    "fuentes": {
+      "idiomas": [
+        "es"
+      ]
+    },
+    "interfaz": [
+      "dialogo",
+      "barras",
+      "marcos",
+      "controles",
+      "numeros"
+    ]
+  }
+}
