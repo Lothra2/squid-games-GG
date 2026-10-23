@@ -58,7 +58,7 @@ export class Titulo extends Phaser.Scene {
     const ops = [];
     if (hayPartida() && E.paso > 0 && E.paso < SECUENCIA.length) ops.push(['Continuar', 'continuar']);
     ops.push(['Nuevo juego', 'nuevo']);
-    if (E.maxPaso >= PRIMER_JUEGO) ops.push(['Juegos (práctica)', 'practica']);
+    ops.push(['Juegos (práctica)', 'practica']);
     ops.push(['Opciones', 'opciones']);
     const r = await elegir(this, this.inp, ops.map((o) => o[0]), { y: 192, ancho: 180 });
     const k = ops[r][1];
@@ -69,6 +69,15 @@ export class Titulo extends Phaser.Scene {
   }
 
   async nuevo() {
+    await this.elegirQuien();
+    const d = await elegir(this, this.inp, ['Fácil', 'Normal', 'Difícil'], { titulo: 'DIFICULTAD', y: 214, ancho: 150 });
+    E.dificultad = d;
+    guardar();
+    nuevaPartida(this);
+  }
+
+  /** la pantalla de ¿quién juega?: de eso depende la sangre */
+  async elegirQuien() {
     const W = this.scale.width, H = this.scale.height;
     const capa = this.add.container(0, 0).setDepth(100);
     capa.add(this.add.rectangle(W / 2, H / 2, W, H, 0x0b0a10, 1));
@@ -105,17 +114,16 @@ export class Titulo extends Phaser.Scene {
     E.perfil = FAMILIA[sel];
     E.sangreManual = null;
     tono(990, 0.08, 'campana', 0.12);
-    const d = await elegir(this, this.inp, ['Fácil', 'Normal', 'Difícil'], { titulo: 'DIFICULTAD', y: 214, ancho: 150 });
-    E.dificultad = d;
-    E.maxPaso = Math.max(E.maxPaso, 0);
     guardar();
-    nuevaPartida(this);
+    return capa;
   }
 
   async practica() {
-    const lista = JUEGOS.map((j, i) => ({ j, paso: SECUENCIA.findIndex((s) => s.k === j.k) })).filter((x) => x.paso <= E.maxPaso);
+    // en práctica están todos: la historia sí va en orden
+    const lista = JUEGOS.map((j) => ({ j }));
     const r = await elegir(this, this.inp, [...lista.map((x, i) => `${i + 1}. ${x.j.titulo}`), 'Volver'], { titulo: 'PRÁCTICA', ancho: 260 });
     if (r >= lista.length) { this.menu(); return; }
+    await this.elegirQuien();
     this.cameras.main.fadeOut(300);
     this.time.delayedCall(320, () => this.scene.start(lista[r].j.k, { practica: true }));
   }
