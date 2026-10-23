@@ -47,6 +47,9 @@ export class LuzRoja extends Juego {
     this.crearFamilia([[130, 180], [120, 232], [160, 252]]);
     this.familia.forEach((f, i) => { f.vel = 52 + i * 4; f.listo = false; });
     this.cameras.main.startFollow(this.jugador.sprite, true, 0.12, 0.12, -80, 0);
+    // el barrido de los ojos de la muñeca (luz roja): una franja roja que recorre la pantalla
+    this.barrido = this.add.rectangle(0, 205, 26, 130, 0xff1a3d, 0).setScrollFactor(0).setDepth(7000);
+    this.velo = this.add.rectangle(this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height, 0xff1a3d, 0).setScrollFactor(0).setDepth(6999);
     // la ventanita de la muñeca: se ve siempre, aunque esté lejos
     this.ventana = this.add.rectangle(W - 26, 52, 40, 60, 0x0b0a10, 0.75).setStrokeStyle(2, 0x23b39c).setScrollFactor(0).setDepth(8700);
     this.mini = this.add.image(W - 26, 80, 'muneca_espalda').setOrigin(0.5, 1).setScale(0.42).setScrollFactor(0).setDepth(8701);
@@ -113,6 +116,7 @@ export class LuzRoja extends Juego {
     this.muneca.setTexture('muneca_espalda');
     this.mini.setTexture('muneca_espalda');
     this.ventana.setStrokeStyle(2, 0x23b39c);
+    if (this.velo) { this.velo.setFillStyle(0xff1a3d, 0); this.tweens.killTweensOf(this.barrido); this.barrido.setFillStyle(0xff1a3d, 0); }
     cancionMuneca(dur);
     this.hud.setExtra('LUZ VERDE', 0x23b39c);
   }
@@ -125,6 +129,9 @@ export class LuzRoja extends Juego {
     this.tweens.add({ targets: this.muneca, scaleX: 0.1, duration: 90, yoyo: true, onYoyo: () => this.muneca.setTexture('muneca_frente') });
     this.tweens.add({ targets: this.mini, scaleX: 0.04, duration: 90, yoyo: true, onYoyo: () => this.mini.setTexture('muneca_frente') });
     this.ventana.setStrokeStyle(2, 0xff3355);
+    this.velo.setFillStyle(0xff1a3d, 0.1);
+    this.barrido.setFillStyle(0xff1a3d, 0.22).setX(this.scale.width + 20);
+    this.tweens.add({ targets: this.barrido, x: -20, duration: 900, ease: 'Sine.easeInOut', yoyo: true });
     tono(140, 0.25, 'metal', 0.12);
     this.hud.setExtra('LUZ ROJA', 0xff3355);
     // los torpes del grupo se mueven tarde
@@ -200,10 +207,20 @@ export class LuzRoja extends Juego {
       this.hud.setExtra('¡TE MOVISTE!', 0xff3355);
       fxSobre(this, a, 'exclamacion');
       sacudir(this, 150, 0.01);
+      this.fogonazo(a);
       this.perder('ELIMINADO', { modo: 'disparo' });
       return;
     }
     this.contarEliminado();
+    this.fogonazo(a);
     eliminar(this, a);
+  }
+
+  /** el destello del rifle desde el guardia más cercano hacia el eliminado */
+  fogonazo(a) {
+    const g = this.guardias.reduce((m, x) => (Math.abs(x.x - a.x) < Math.abs(m.x - a.x) ? x : m), this.guardias[0]);
+    const linea = this.add.line(0, 0, g.x, g.y - 24, a.x, a.y - 24, 0xfff2a0, 0.8).setOrigin(0).setDepth(7001);
+    const flash = this.add.circle(g.x, g.y - 24, 4, 0xfff2a0).setDepth(7002);
+    this.tweens.add({ targets: [linea, flash], alpha: 0, duration: 160, onComplete: () => { linea.destroy(); flash.destroy(); } });
   }
 }

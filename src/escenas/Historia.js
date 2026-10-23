@@ -28,7 +28,8 @@ class Historia extends Phaser.Scene {
     this.yaTermino = false;
     this.puedeSaltar = true;
     // B salta la escena entera (para quien ya la vio)
-    this.ayuda = this.add.bitmapText(this.scale.width - 4, 2, 'fuente_ui', 'B: saltar').setOrigin(1, 0).setDepth(9999).setTint(0x8a8a9a).setScrollFactor(0);
+    this.ayuda = this.add.bitmapText(this.scale.width - 4, 2, 'fuente_ui', this.inp.esTactil ? 'SALTAR >>' : 'B: saltar').setOrigin(1, 0).setDepth(9999).setTint(0x8a8a9a).setScrollFactor(0);
+    this.ayuda.setInteractive(new Phaser.Geom.Rectangle(-10, -6, this.ayuda.width + 20, 22), Phaser.Geom.Rectangle.Contains).on('pointerdown', () => { if (!this.saltar && this.puedeSaltar !== false) { this.saltar = true; this.terminar(); } });
     this.cameras.main.fadeIn(500);
     this.correr();
   }
@@ -423,6 +424,15 @@ export class Llegada extends Historia {
       ['front_man', 'neutral', 'Que comiencen los juegos.'],
     ]);
     await this.fundido(500);
+    if (!this.saltar) {
+      this.fondo('titulo');
+      this.capa.push(this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.3));
+      logo(this, W / 2, 80).forEach((o) => this.capa.push(o));
+      destello(this, 0xff3d7f, 400, 0.6);
+      sfx(this, 'pitazo_largo', 0.5);
+      await this.pausa(2600);
+      await this.fundido(500);
+    }
     this.fondo('escaleras');
     await this.pausa(1800);
     this.terminar();
@@ -506,7 +516,8 @@ export class Noche extends Historia {
     this.add.rectangle(W / 2, 135, W, 270, 0x081028, 0.45).setDepth(-60);
     const fam = ['rick', 'steph', 'sophie', 'alana'].map((id, i) => this.actor(id, 170 + i * 32, 240 - (i % 2) * 4, i < 2 ? 'right' : 'left'));
     const vivos = Math.max(2, 456 - Math.round(E.pozo / 100_000_000));
-    const t = this.texto(`NOCHE ${n} · Quedan ${vivos} jugadores · ${wones()}`, 104, 0xf2c230);
+    const t = this.texto(`NOCHE ${n} · Quedan ${vivos} jugadores`, 96, 0xf2c230);
+    this.chanchito(n);
     if (n === 3 || n === 10) { const ab = this.actor(n === 3 ? 'j_abuelo' : 'front_man', 330, 236, 'left'); }
     await this.pausa(600);
     await this.decir(NOCHES[n] || []);
@@ -523,6 +534,27 @@ export class Noche extends Historia {
       await this.pausa(2200);
     }
     this.terminar();
+  }
+
+  /** el pozo sube desde lo que había antes de este juego: billetes cayendo en el chanchito de oro */
+  chanchito(n) {
+    const W = this.scale.width;
+    const ganado = Math.round(E.pozo / 100_000_000) - (E.pozoVisto || 0);
+    const desde = Math.max(0, E.pozo - Math.max(0, ganado) * 100_000_000);
+    E.pozoVisto = Math.round(E.pozo / 100_000_000);
+    guardar();
+    const t = this.texto(wones(desde), 112, 0xffffff, 1);
+    if (ganado <= 0) return;
+    const o = { v: desde };
+    this.tweens.add({ targets: o, v: E.pozo, duration: 1800, ease: 'Sine.easeOut', onUpdate: () => t.setText(wones(o.v)) });
+    for (let i = 0; i < Math.min(30, ganado); i++) {
+      this.time.delayedCall(i * 60, () => {
+        const b = this.add.rectangle(W / 2 - 40 + Math.random() * 80, -6, 6, 3, Math.random() < 0.5 ? 0x9ed08a : 0x5aa66a).setDepth(400);
+        this.capa.push(b);
+        this.tweens.add({ targets: b, y: 40 + Math.random() * 10, angle: Math.random() * 360, duration: 700, ease: 'Quad.easeIn', onComplete: () => b.destroy() });
+      });
+    }
+    this.time.delayedCall(300, () => tono(1568, 0.08, 'campana', 0.08));
   }
 
   async votar(n) {

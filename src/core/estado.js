@@ -22,6 +22,8 @@ export const E = {
   vidas: 3,
   paso: 0,
   pozo: 0,
+  /** lo que el chanchito ya mostró subir (en eliminados), para la animación de la noche */
+  pozoVisto: 0,
   maxPaso: 0,
   /** null: decide el perfil. true o false: lo eligieron a mano en el menú */
   sangreManual: null,

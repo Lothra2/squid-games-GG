@@ -67,6 +67,7 @@ export function perderVida(scene, practica = false) {
 export function reiniciarDesdeJuego1(scene) {
   E.vidas = 3;
   E.pozo = 0;
+  E.pozoVisto = 0;
   ir(scene, PRIMER_JUEGO);
 }
 
@@ -77,6 +78,7 @@ export function irAPaso(scene, paso) {
 export function nuevaPartida(scene) {
   E.vidas = 3;
   E.pozo = 0;
+  E.pozoVisto = 0;
   ir(scene, 0);
 }
 
