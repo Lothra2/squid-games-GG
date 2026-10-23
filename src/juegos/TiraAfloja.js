@@ -50,6 +50,7 @@ export class TiraAfloja extends Juego {
     this.trucoHecho = false;
     this.truco = null;
     this.tropiezo = 0;
+    this.yaJalo = false;
     // el anillo de ritmo
     const y = 222;
     this.add.rectangle(W / 2, y, 160, 44, 0x000000, 0.5).setDepth(800);

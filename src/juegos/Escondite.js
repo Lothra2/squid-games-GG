@@ -107,12 +107,13 @@ export class Escondite extends Juego {
     for (let y = 0; y < this.TH; y++) for (let x = 0; x < this.TW; x++) {
       const px = x * T, py = y * T;
       if (this.mapa[y][x] === 0) {
-        g.fillStyle((x + y) % 2 ? 0x8c7fb0 : 0x9a8cc0); g.fillRect(px, py, T, T);
+        g.fillStyle((x + y) % 2 ? 0x3a3052 : 0x443a5e); g.fillRect(px, py, T, T);
       } else {
         const c = tonos[Math.floor(x / 6 + y / 5) % tonos.length];
-        g.fillStyle(Phaser.Display.Color.IntegerToColor(c).darken(35).color); g.fillRect(px, py, T, T);
-        g.fillStyle(c); g.fillRect(px, py - 8, T, T);
-        g.fillStyle(0xffffff, 0.25); g.fillRect(px, py - 8, T, 2);
+        g.fillStyle(Phaser.Display.Color.IntegerToColor(c).darken(30).color); g.fillRect(px, py, T, T);
+        g.fillStyle(c); g.fillRect(px, py - 8, T, T - 2);
+        g.fillStyle(0xffffff, 0.35); g.fillRect(px, py - 8, T, 1);
+        g.fillStyle(0x000000, 0.25); g.fillRect(px, py + T - 2, T, 2);
       }
     }
     // las paredes tapan un poco a quien camina detrás (vista desde arriba con altura)
@@ -121,17 +122,19 @@ export class Escondite extends Juego {
 
   dibujarPuerta(p) {
     const px = p.x * T, py = p.y * T;
-    p.img = this.add.rectangle(px + T / 2, py + T / 2 - 4, T - 4, T, 0x6a4a8a).setStrokeStyle(2, 0x2a1a3a).setDepth(py);
-    p.sim = this.add.image(px + T / 2, py + T / 2 - 4, p.fig).setTint(COLOR_FIG[p.fig]).setScale(0.6).setDepth(py + 1);
+    p.img = this.add.rectangle(px + T / 2, py + T / 2 - 4, T - 2, T + 2, 0x1c1430).setStrokeStyle(2, COLOR_FIG[p.fig]).setDepth(py);
+    p.sim = this.add.image(px + T / 2, py + T / 2 - 4, p.fig).setTint(COLOR_FIG[p.fig]).setScale(0.7).setDepth(py + 1);
   }
 
   armario(x, y) {
+    // el armario: un mueble de madera clara con dos puertas y rendijas, más alto que una puerta
     const g = this.add.graphics().setDepth(y * T + 2);
-    const px = x * T + 2, py = y * T - 6;
-    g.fillStyle(0x5a3a22); g.fillRect(px, py, T - 4, T + 2);
-    g.fillStyle(0x8a5a32); g.fillRect(px + 1, py + 1, T - 6, T);
-    g.fillStyle(0x3a2412); g.fillRect(px + (T - 4) / 2 - 0.5, py + 2, 1, T - 2);
-    g.fillStyle(0xf2c230); g.fillRect(px + (T - 4) / 2 - 3, py + T / 2, 2, 2); g.fillRect(px + (T - 4) / 2 + 2, py + T / 2, 2, 2);
+    const px = x * T + 3, py = y * T - 12;
+    g.fillStyle(0x3a2412); g.fillRect(px - 1, py - 1, T - 4, T + 10);
+    g.fillStyle(0xd8a868); g.fillRect(px, py, T - 6, T + 8);
+    g.fillStyle(0xb8884a); g.fillRect(px + (T - 6) / 2, py, 1, T + 8);
+    for (let k = 0; k < 4; k++) { g.fillStyle(0x6a4422); g.fillRect(px + 2, py + 3 + k * 3, 4, 1); g.fillRect(px + T - 12, py + 3 + k * 3, 4, 1); }
+    g.fillStyle(0x3a2412); g.fillRect(px + (T - 6) / 2 - 3, py + 15, 2, 2); g.fillRect(px + (T - 6) / 2 + 2, py + 15, 2, 2);
     return g;
   }
 

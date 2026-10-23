@@ -92,7 +92,7 @@ export class Cuerda extends Juego {
 
   gravedad(a, dt) {
     if (a.alto <= 0 && a.vz <= 0) { a.alto = 0; return; }
-    a.vz -= 520 * dt;
+    a.vz -= 560 * dt;
     a.alto = Math.max(0, a.alto + a.vz * dt);
     if (a.alto === 0) { a.vz = 0; if (a.vivo) a.anim('idle', 'right'); }
   }
@@ -115,10 +115,10 @@ export class Cuerda extends Juego {
     // el jugador
     const j = this.jugador;
     if (j.vivo) {
-      const vx = this.inp.x * 46;
+      const vx = this.inp.x * 52;
       j.x = Phaser.Math.Clamp(j.x + vx * dt, X_INI, X_FIN + 20);
       if (j.alto <= 0) { if (Math.abs(vx) > 2) { j.mirar(vx, 0); j.anim('walk'); } else j.anim('idle', 'right'); }
-      if (this.inp.tomarA()) { if (this.saltar(j, 160)) sfx(this, 'paso_tierra_1', 0.3); }
+      if (this.inp.tomarA()) { if (this.saltar(j, 140)) sfx(this, 'paso_tierra_1', 0.3); }
       this.gravedad(j, dt);
       // el hueco
       if (j.alto <= 0 && j.x > HUECO[0] + 3 && j.x < HUECO[1] - 3) { this.caer(j, 'CAÍSTE EN EL HUECO'); return; }
@@ -132,8 +132,8 @@ export class Cuerda extends Juego {
       if (f.alto <= 0 && Math.abs(tx - f.x) > 2) { f.x += Math.sign(tx - f.x) * 44 * dt; f.anim('walk', 'right'); }
       // saltan un poquito antes de que baje la cuerda (y siempre sobre el hueco)
       const llega = Math.PI - this.fase;
-      if (llega > 0 && llega < w * 0.18) this.saltar(f, 160);
-      if (f.x > HUECO[0] - 6 && f.x < HUECO[1] + 2) this.saltar(f, 170);
+      if (llega > 0 && llega < w * 0.16) this.saltar(f, 140);
+      if (f.x > HUECO[0] - 6 && f.x < HUECO[1] + 2) this.saltar(f, 145);
       this.gravedad(f, dt);
     });
 
@@ -142,8 +142,8 @@ export class Cuerda extends Juego {
       if (!g.vivo) return;
       if (g.alto <= 0) { g.x += g.vel * dt; g.anim('walk', 'right'); }
       const llega = Math.PI - this.fase;
-      if (llega > 0 && llega < w * 0.18 && !(g.torpe && Math.random() < 0.02)) this.saltar(g, 160);
-      if (g.x > HUECO[0] - 8 && g.x < HUECO[0]) this.saltar(g, g.torpe && Math.random() < 0.3 ? 80 : 175);
+      if (llega > 0 && llega < w * 0.16 && !(g.torpe && Math.random() < 0.02)) this.saltar(g, 140);
+      if (g.x > HUECO[0] - 8 && g.x < HUECO[0]) this.saltar(g, g.torpe && Math.random() < 0.3 ? 70 : 145);
       this.gravedad(g, dt);
       if (g.alto <= 0 && g.x > HUECO[0] + 3 && g.x < HUECO[1] - 3) { this.contarEliminado(); eliminar(this, g, { modo: 'caida', dy: 150 }); return; }
       if (paso && g.alto < 4 && g.x < X_FIN) { this.contarEliminado(); sacudir(this, 100, 0.006); eliminar(this, g, { modo: 'caida', dy: 150 }); return; }

@@ -159,5 +159,63 @@
  "physics": {
   "hairLag": 1
  },
- "movementProfile": "premium"
+ "movementProfile": "premium",
+ "wardrobe": {
+  "variants": {
+   "calle": {
+    "label": "Calle",
+    "outfit": {
+     "jacket": null,
+     "collar": "redondo",
+     "pattern": "liso",
+     "jacketCut": "casual",
+     "jacketClosed": false,
+     "jacketSleeves": "long",
+     "armband": null,
+     "neck": null,
+     "cape": null,
+     "armor": null,
+     "emblem": null,
+     "sleeves": "short",
+     "bottom": "skirt",
+     "socks": "none",
+     "shoes": "tenis",
+     "print": null,
+     "chestText": "GG",
+     "chestTextColor": "#f2c230",
+     "number": "15",
+     "numberColor": "#f2c230"
+    },
+    "colors": {
+     "top": [
+      "#054330",
+      "#058d5d",
+      "#3bb35a",
+      "#7ac86a"
+     ],
+     "bottom": [
+      "#073455",
+      "#1371a4",
+      "#2f96bd",
+      "#52b0cc"
+     ],
+     "socks": [
+      "#6f6f6f",
+      "#c4c4c4",
+      "#f2f2f2",
+      "#f8f8f8"
+     ],
+     "shoes": [
+      "#6f6f6f",
+      "#c4c4c4",
+      "#f2f2f2",
+      "#f8f8f8"
+     ]
+    }
+   }
+  },
+  "packs": {
+   "calle": "calle"
+  }
+ }
 }

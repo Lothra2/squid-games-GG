@@ -26,6 +26,7 @@ export class Canicas extends Juego {
     // la familia mira desde la tienda
     this.crearFamilia([[300, 150, 'down'], [326, 154, 'down'], [352, 150, 'down']]);
     this.mias = 10; this.suyas = 10;
+    this.cerrando = false;
     this.tiempo = dif(300, 240, 180);
     this.ronda = 0;
     // los marcadores

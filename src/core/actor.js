@@ -4,15 +4,19 @@ import Phaser from 'phaser';
 import { M, tieneAnim, datosAnim } from './kit.js';
 
 export class Actor {
-  constructor(scene, id, x, y, { dir = 'down', izquierda = false, numero = null, escala = 1 } = {}) {
+  constructor(scene, id, x, y, { dir = 'down', izquierda = false, numero = null, escala = 1, ropa = null } = {}) {
     this.scene = scene;
+    // la izquierda es la fila de la derecha espejada
+    if (dir === 'left') { dir = 'right'; izquierda = true; }
     this.id = id;
     this.animal = !!M.animales[id];
     const a = M.atletas[id] || M.animales[id];
     const piv = a.pivote || [24, 46];
     const celda = a.celda || 48;
     this.sombra = scene.add.image(x, y, 'sombra').setAlpha(0.32).setScale(escala);
-    const tex = this.animal ? `${id}_animal` : `${id}_base`;
+    // ropa 'calle': la de siempre (fuera de la isla), si el personaje la tiene
+    this.ropa = ropa && a.packs && a.packs[ropa] ? ropa : null;
+    const tex = this.animal ? `${id}_animal` : this.ropa ? `${id}_${this.ropa}` : `${id}_base`;
     this.sprite = scene.add.sprite(x, y, tex, `idle_${dir}_0`).setOrigin(piv[0] / celda, piv[1] / celda).setScale(escala);
     this.dir = dir;
     this.izq = izquierda;
@@ -55,20 +59,21 @@ export class Actor {
       if (dir === 'left') { this.dir = 'right'; this.izq = true; }
       else { this.dir = dir; if (dir === 'right') this.izq = false; }
     }
-    if (!tieneAnim(this.id, nombre)) nombre = this.animal ? 'idle' : (nombre === 'run' ? 'walk' : 'idle');
+    if (this.ropa) nombre = tieneAnim(this.id, 'calle_' + nombre) ? 'calle_' + nombre : 'calle_idle';
+    else if (!tieneAnim(this.id, nombre)) nombre = this.animal ? 'idle' : (nombre === 'run' ? 'walk' : 'idle');
     const key = `${this.id}|${nombre}|${this.dir}`;
     this.sprite.setFlipX(this.dir === 'right' && this.izq);
     if (!forzar && this.actual === key && this.sprite.anims.isPlaying) return this;
     if (!forzar && this.actual === key && !datosAnim(this.id, nombre)?.loop) return this;
     this.actual = key;
-    this.nombreAnim = nombre;
+    this.nombreAnim = nombre.replace(/^calle_/, '');
     this.sprite.play(key);
     return this;
   }
 
   /** cuánto dura una animación en segundos */
   duracion(nombre) {
-    const d = datosAnim(this.id, nombre);
+    const d = datosAnim(this.id, this.ropa && tieneAnim(this.id, 'calle_' + nombre) ? 'calle_' + nombre : nombre);
     return d ? d.cuadros / d.fps : 0.5;
   }
 

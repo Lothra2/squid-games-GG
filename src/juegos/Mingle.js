@@ -37,6 +37,7 @@ export class Mingle extends Juego {
     this.puertas = PUERTAS.map(([x, y], i) => ({ x, y, ocupada: false, i, marca: this.add.circle(x, y - 14, 4, 0x23b39c).setDepth(10).setVisible(false) }));
     this.numero = this.add.bitmapText(W / 2, 120, 'fuente_titulo', '').setOrigin(0.5).setScale(3).setDepth(8000).setTint(0xf2c230);
     this.angulo = 0;
+    this.avisoP = false; this.avisoN = false;
   }
 
   reglas() {
@@ -89,7 +90,7 @@ export class Mingle extends Juego {
 
   paso(dt) {
     this.tFase -= dt;
-    this.hud.setTiempo(this.fase === 'busca' ? this.tFase : 0);
+    if (this.fase === 'busca') this.hud.setTiempo(this.tFase); else this.hud.reloj.setText('');
     if (this.fase === 'gira') this.pasoGira(dt);
     else if (this.fase === 'busca') this.pasoBusca(dt);
     this.pintarLazos();

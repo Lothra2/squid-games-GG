@@ -23,7 +23,10 @@ class Historia extends Phaser.Scene {
     this.inp = new Entrada(this, { palanca: false, botonB: false });
     this.inp.ocultarTactil(false);
     this.capa = [];
+    // la misma escena se usa varias veces (las noches): todo vuelve a cero
     this.saltar = false;
+    this.yaTermino = false;
+    this.puedeSaltar = true;
     // B salta la escena entera (para quien ya la vio)
     this.ayuda = this.add.bitmapText(this.scale.width - 4, 2, 'fuente_ui', 'B: saltar').setOrigin(1, 0).setDepth(9999).setTint(0x8a8a9a).setScrollFactor(0);
     this.cameras.main.fadeIn(500);
@@ -44,7 +47,7 @@ class Historia extends Phaser.Scene {
     this.capa.push(a);
     return a;
   }
-  async decir(lineas, opts) { if (!this.saltar) await hablar(this, this.inp, lineas, opts); }
+  async decir(lineas, opts = { arriba: true }) { if (!this.saltar) await hablar(this, this.inp, lineas, opts); }
   async pausa(ms) { if (!this.saltar) await esperar(this, ms); }
   async fundido(ms = 500) {
     if (this.saltar) return;
@@ -96,11 +99,11 @@ export class Intro extends Historia {
     await this.pausa(200);
     this.fondo('metro');
     const t = this.texto('Ho Chi Minh City. Una noche cualquiera.', 40, 0xd8d0c0);
-    const yo = this.actor(P(), 150, 222, 'right');
+    const yo = this.actor(P(), 150, 190, 'right', { ropa: 'calle' });
     await this.pausa(1400);
     t.destroy();
-    const rec = this.actor('reclutador', W + 20, 222, 'left');
-    await this.caminar(rec, 250, 222, 1800);
+    const rec = this.actor('reclutador', W + 20, 190, 'left');
+    await this.caminar(rec, 250, 190, 1800);
     rec.anim('idle', 'left');
     yo.anim('idle', 'right');
     await this.decir([
@@ -149,12 +152,12 @@ export class Ddakji extends Historia {
     const W = this.scale.width, H = this.scale.height;
     this.fondo('metro');
     this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.35).setDepth(-50);
-    const yo = this.actor(P(), 120, 230, 'right');
-    const rec = this.actor('reclutador', 360, 230, 'left');
+    const yo = this.actor(P(), 120, 196, 'right', { ropa: 'calle' });
+    const rec = this.actor('reclutador', 360, 196, 'left');
     this.yo = yo; this.rec = rec;
     // el piso de cerca: el sobre rojo
-    this.add.ellipse(W / 2, 150, 150, 50, 0x30343c).setDepth(10);
-    this.rojo = this.add.image(W / 2, 148, 'ddakji_rojo').setScale(1.4, 0.7).setDepth(11);
+    this.add.ellipse(W / 2, 120, 150, 50, 0x30343c).setDepth(10);
+    this.rojo = this.add.image(W / 2, 118, 'ddakji_rojo').setScale(1.4, 0.7).setDepth(11);
     this.dif = [0.22, 0.15, 0.1][E.dificultad];
     this.intentos = 0;
     await this.decir([[null, null, 'Primero apunta a la orilla del sobre rojo. Después mide la fuerza. Las dos con A en el momento justo.']]);
@@ -179,8 +182,8 @@ export class Ddakji extends Historia {
   /** un tiro: primero el punto (mira que gira por la orilla), después la fuerza (barra que sube y baja) */
   async tiro() {
     const W = this.scale.width;
-    const mira = this.add.image(W / 2, 148, 'circulo').setTint(0xffe066).setDepth(20);
-    const ayuda = this.add.bitmapText(W / 2, 96, 'fuente_ui', 'A: APUNTAR A LA ORILLA').setOrigin(0.5).setDepth(30);
+    const mira = this.add.image(W / 2, 118, 'circulo').setTint(0xffe066).setDepth(20);
+    const ayuda = this.add.bitmapText(W / 2, 84, 'fuente_ui', 'A: APUNTAR A LA ORILLA').setOrigin(0.5).setDepth(30);
     let ang = 0, r = 0;
     const vel = [2.2, 3.1, 4][E.dificultad];
     // la mira va y viene del centro a la orilla: lo mejor es la orilla (r cerca de 1)
@@ -190,7 +193,7 @@ export class Ddakji extends Historia {
         t += dt / 1000;
         r = 0.5 + 0.5 * Math.sin(t * vel);
         ang += dt / 1000 * 1.3;
-        mira.setPosition(W / 2 + Math.cos(ang) * 30 * r, 148 + Math.sin(ang) * 15 * r);
+        mira.setPosition(W / 2 + Math.cos(ang) * 30 * r, 118 + Math.sin(ang) * 15 * r);
         if (this.inp.tomarA()) { this.events.off('update', f); ok(); }
       };
       this.events.on('update', f);
@@ -198,7 +201,7 @@ export class Ddakji extends Historia {
     tono(990, 0.05);
     ayuda.setText('A: LA FUERZA');
     // la barra de fuerza
-    const bx = W / 2 - 60, by = 70;
+    const bx = W / 2 - 60, by = 54;
     const marco = this.add.nineslice(W / 2, by, 'barra_marco', undefined, 124, 10, 4, 4, 0, 0).setDepth(30);
     const zona = this.add.rectangle(bx + 120 * (0.85 - this.dif / 2), by - 3, 120 * this.dif, 6, 0x23b39c).setOrigin(0, 0).setDepth(31);
     const aguja = this.add.rectangle(bx, by, 2, 12, 0xffffff).setDepth(32);
@@ -227,9 +230,9 @@ export class Ddakji extends Historia {
     const prob = (enZona ? 0.55 : 0.08) + (orilla ? 0.42 : 0.05) + Math.min(0.2, this.intentos * 0.04);
     const volteo = Math.random() < prob;
     if (volteo) {
-      this.tweens.add({ targets: this.rojo, scaleY: 0, y: 130, duration: 140, yoyo: false, onComplete: () => {
+      this.tweens.add({ targets: this.rojo, scaleY: 0, y: 100, duration: 140, yoyo: false, onComplete: () => {
         this.rojo.setTexture('ddakji_rojo_atras');
-        this.tweens.add({ targets: this.rojo, scaleY: 0.7, y: 148, duration: 160 });
+        this.tweens.add({ targets: this.rojo, scaleY: 0.7, y: 118, duration: 160 });
       } });
       this.tweens.add({ targets: azul, alpha: 0, duration: 400, delay: 200 });
       await esperar(this, 500);
@@ -237,7 +240,7 @@ export class Ddakji extends Historia {
       azul.destroy();
       return true;
     }
-    this.tweens.add({ targets: this.rojo, y: 144, duration: 80, yoyo: true });
+    this.tweens.add({ targets: this.rojo, y: 114, duration: 80, yoyo: true });
     await esperar(this, 300);
     await cartel(this, 'NO SE VOLTEÓ', enZona ? 'apunta más a la orilla' : orilla ? 'la fuerza no era la justa' : 'apunta a la orilla y mide la fuerza', { ms: 1200, color: 0xff8fb5 });
     azul.destroy();
@@ -263,7 +266,7 @@ export class Ddakji extends Historia {
       await esperar(this, 600);
       await this.decir([[yo.id, 'dolor', ['¡Ay! ¡Qué mano tan pesada!', '¡Coño! Otra vez. Esta sí va.', '¡Ya va! Una más y te volteo el sobre.'][this.intentos % 3]]]);
     }
-    await this.caminar(rec, 360, 230, 300);
+    await this.caminar(rec, 360, 196, 300);
     rec.anim('idle', 'left');
     yo.anim('idle', 'right');
   }
@@ -302,8 +305,8 @@ export class Llegada extends Historia {
     // la casa: la familia y Thor
     musica('noche');
     this.fondo('casa');
-    const r = this.actor('rick', 170, 232, 'right'), s = this.actor('steph', 205, 236, 'left');
-    const so = this.actor('sophie', 250, 238, 'left'), a = this.actor('alana', 280, 240, 'left');
+    const r = this.actor('rick', 170, 232, 'right', { ropa: 'calle' }), s = this.actor('steph', 205, 236, 'left', { ropa: 'calle' });
+    const so = this.actor('sophie', 250, 238, 'left', { ropa: 'calle' }), a = this.actor('alana', 280, 240, 'left', { ropa: 'calle' });
     const thor = this.actor('thor', 340, 236, 'left');
     thor.anim('wag', 'left');
     await this.decir([
@@ -503,7 +506,7 @@ export class Noche extends Historia {
     this.add.rectangle(W / 2, 135, W, 270, 0x081028, 0.45).setDepth(-60);
     const fam = ['rick', 'steph', 'sophie', 'alana'].map((id, i) => this.actor(id, 170 + i * 32, 240 - (i % 2) * 4, i < 2 ? 'right' : 'left'));
     const vivos = Math.max(2, 456 - Math.round(E.pozo / 100_000_000));
-    const t = this.texto(`NOCHE ${n} · Quedan ${vivos} jugadores · ${wones()}`, 26, 0xf2c230);
+    const t = this.texto(`NOCHE ${n} · Quedan ${vivos} jugadores · ${wones()}`, 104, 0xf2c230);
     if (n === 3 || n === 10) { const ab = this.actor(n === 3 ? 'j_abuelo' : 'front_man', 330, 236, 'left'); }
     await this.pausa(600);
     await this.decir(NOCHES[n] || []);
@@ -579,7 +582,7 @@ export class GameOver extends Historia {
       ['front_man', 'neutral', 'Se acabaron tus tres vidas, jugador ' + NUMEROS[E.perfil] + '.'],
       ['front_man', 'neutral', 'Pero esta isla es generosa. Vuelves al primer juego. Con el chanchito vacío.'],
       [E.perfil, 'enojo', '¡Esta vez sí vamos a ganar!'],
-    ]);
+    ], { arriba: false });
     this.terminado = true;
     reiniciarDesdeJuego1(this);
   }
@@ -598,7 +601,7 @@ export class Final extends Historia {
     this.fondo('votacion');
     const fam = ['rick', 'steph', 'sophie', 'alana'].map((id, i) => this.actor(id, 190 + i * 30, 236, 'up'));
     fam.forEach((f) => f.anim('celebrate'));
-    const t = this.texto(wones(), 40, 0xf2c230, 2);
+    const t = this.texto(wones(), 104, 0xf2c230, 2);
     // la lluvia de billetes
     for (let i = 0; i < 6; i++) this.time.delayedCall(i * 300, () => chorro(this, W / 2, 60, 20, [0x9ed08a, 0x5aa66a, 0xf2c230], 120, { g: 120, vida: 2200 }));
     fanfarria();
@@ -621,7 +624,7 @@ export class Final extends Historia {
     await this.fundido(800);
     this.fondo('casa');
     const thor = this.actor('thor', 470, 238, 'left');
-    const fam2 = ['rick', 'steph', 'sophie', 'alana'].map((id, i) => this.actor(id, 120 + i * 28, 238, 'right'));
+    const fam2 = ['rick', 'steph', 'sophie', 'alana'].map((id, i) => this.actor(id, 120 + i * 28, 238, 'right', { ropa: 'calle' }));
     await this.caminar(thor, 260, 238, 1200, 'run');
     thor.anim('jump', 'left');
     sfx(this, 'ladrido', 0.7);

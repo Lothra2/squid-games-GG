@@ -23,11 +23,14 @@ def ramp(hex):
     mix = lambda t, to: '#' + ''.join(f'{round(v + (to - v) * t):02x}' for v in c)
     return [mix(0.6, 0), mix(0.28, 0), hex, mix(0.3, 255)]
 
-def save(id, f):
+def save(id, f, calle=None):
     for k, v in f.get('palette', {}).items():
         if k != 'eyes' and isinstance(v, str):
             f['palette'][k] = ramp(v)
     f.pop('wardrobe', None)
+    # la ropa de calle (la de siempre) para las escenas fuera de la isla: el pack "calle" del kit
+    if calle:
+        f['wardrobe'] = {'variants': {'calle': calle}, 'packs': {'calle': 'calle'}}
     json.dump(f, open(os.path.join(out, id + '.ficha.json'), 'w'), ensure_ascii=False, indent=1)
 
 VERDE = '#127e70'
@@ -53,7 +56,13 @@ def chandal(f, numero):
 # la familia: Rick 456, Steph 067, Sophie 018 (nació en 2018), Alana 222 (la bebé de la temporada 3)
 FAMILIA = {'rick': '456', 'steph': '067', 'sophie': '018', 'alana': '222'}
 for id, num in FAMILIA.items():
-    save(id, chandal(load(id), num))
+    f = load(id)
+    # lo que el chándal pone y la ropa de calle no trae, se apaga (si no, la chaqueta verde se quedaría puesta)
+    base = {'jacket': None, 'collar': 'redondo', 'pattern': 'liso', 'jacketCut': 'casual', 'jacketClosed': False,
+            'jacketSleeves': 'long', 'armband': None, 'neck': None, 'cape': None, 'armor': None, 'emblem': None}
+    calle = {'label': 'Calle', 'outfit': {**base, **copy.deepcopy(f['outfit'])},
+             'colors': {k: f['palette'][k] for k in ('top', 'bottom', 'socks', 'shoes')}}
+    save(id, chandal(f, num), calle)
 
 # los otros jugadores
 random.seed(456)

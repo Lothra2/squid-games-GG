@@ -58,10 +58,10 @@ export class Galleta extends Juego {
     this.add.image(W / 2, H / 2, 'galleta').setDepth(-100);
     this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.35).setDepth(-90);
     // la gente sentada alrededor (chiquita, de fondo)
-    this.gente = this.crearGente(10, (i) => [i < 5 ? 30 + i * 12 : W - 30 - (i - 5) * 12, 120 + (i % 5) * 26, i < 5 ? 'right' : 'left']);
+    this.gente = this.crearGente(10, (i) => [20 + (i % 2) * 32, 92 + Math.floor(i / 2) * 36 + (i % 2) * 14, 'right']);
     this.gente.forEach((g) => { g.anim('idle'); g.sprite.setScale(0.8); });
     // la familia, a la derecha
-    this.crearFamilia([[330, 236, 'left'], [360, 248, 'left'], [392, 236, 'left']]);
+    this.crearFamilia([[300, 222, 'left'], [330, 228, 'left'], [360, 222, 'left']]);
     this.familia.forEach((f) => f.anim('eat'));
     // la lata y la galleta
     this.lata = this.add.circle(CX, CY, 92, 0x9aa3ae).setStrokeStyle(3, 0x4a5058).setDepth(10);
@@ -138,7 +138,11 @@ export class Galleta extends Juego {
     }
     // el dibujo de la figura estampada
     const g = this.add.graphics().setDepth(11.5);
-    g.lineStyle(2, 0x8a5a1c, 0.9);
+    g.lineStyle(3, 0xa0681e, 0.9);
+    g.beginPath(); g.moveTo(this.camino[0][0], this.camino[0][1]);
+    this.camino.forEach(([x, y]) => g.lineTo(x, y));
+    g.strokePath();
+    g.lineStyle(1, 0x5a3208, 1);
     g.beginPath(); g.moveTo(this.camino[0][0], this.camino[0][1]);
     this.camino.forEach(([x, y]) => g.lineTo(x, y));
     g.strokePath();

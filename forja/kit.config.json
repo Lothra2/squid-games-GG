@@ -62,6 +62,20 @@
       "kick",
       "attack",
       "lift"
+    ],
+    "calle": [
+      "idle",
+      "walk",
+      "run",
+      "celebrate",
+      "laugh",
+      "hit",
+      "cap_pitch",
+      "sad",
+      "point",
+      "jump",
+      "dance",
+      "jab"
     ]
   },
   "retratos": true,

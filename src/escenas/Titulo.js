@@ -70,7 +70,7 @@ export class Titulo extends Phaser.Scene {
   async nuevo() {
     const W = this.scale.width, H = this.scale.height;
     const capa = this.add.container(0, 0).setDepth(100);
-    capa.add(this.add.rectangle(W / 2, H / 2, W, H, 0x0b0a10, 0.92));
+    capa.add(this.add.rectangle(W / 2, H / 2, W, H, 0x0b0a10, 1));
     capa.add(this.add.bitmapText(W / 2, 14, 'fuente_titulo', '¿QUIÉN JUEGA?').setOrigin(0.5, 0).setTint(0x23b39c));
     const actores = [];
     FAMILIA.forEach((id, i) => {
@@ -79,7 +79,7 @@ export class Titulo extends Phaser.Scene {
       const ret = this.add.image(x, 96, 'ret_' + id, 'g_feliz');
       capa.add([marco, ret]);
       capa.add(this.add.bitmapText(x, 158, 'fuente_ui', nombre(id).toUpperCase()).setOrigin(0.5));
-      capa.add(this.add.bitmapText(x, 170, 'fuente_ui', 'Nº ' + NUMEROS[id]).setOrigin(0.5).setTint(0x23b39c));
+      capa.add(this.add.bitmapText(x, 170, 'fuente_ui', '#' + NUMEROS[id]).setOrigin(0.5).setTint(0x23b39c));
       if (NINAS.includes(id)) capa.add(this.add.bitmapText(x, 182, 'fuente_ui', 'sin sangre').setOrigin(0.5).setTint(0xff8fb5));
       ret.setInteractive().on('pointerdown', () => { sel = i; pintar(); listo = true; });
       actores.push({ marco, ret });

@@ -46,9 +46,11 @@ export function armarAnimaciones(scene) {
   const A = scene.anims;
   for (const [id, a] of Object.entries(M.atletas)) {
     for (const [pack, p] of Object.entries(a.packs)) {
+      // el pack de ropa de calle va con su propio nombre: calle_idle, calle_walk...
+      const pref = pack === 'calle' ? 'calle_' : '';
       for (const [anim, d] of Object.entries(p.anims)) {
         for (const fila of M.filas) {
-          const key = `${id}|${anim}|${fila}`;
+          const key = `${id}|${pref}${anim}|${fila}`;
           if (A.exists(key)) continue;
           const frames = [];
           for (let i = 0; i < d.cuadros; i++) frames.push({ key: `${id}_${pack}`, frame: `${anim}_${fila}_${i}` });
@@ -86,7 +88,8 @@ export function datosAnim(id, anim) {
   const a = M.atletas[id] || M.animales[id];
   if (!a) return null;
   if (a.anims) return a.anims[anim] || null;
-  for (const p of Object.values(a.packs)) if (p.anims[anim]) return p.anims[anim];
+  if (anim.startsWith('calle_')) return a.packs.calle?.anims[anim.slice(6)] || null;
+  for (const [n, p] of Object.entries(a.packs)) if (n !== 'calle' && p.anims[anim]) return p.anims[anim];
   return null;
 }
 
