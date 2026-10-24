@@ -100,6 +100,8 @@ export class Mingle extends Juego {
     const sobrantes = Math.floor(Math.random() * Math.min(4, libres.length));
     const usables = libres.slice(sobrantes);
     for (let i = 0; i + n <= usables.length; i += n) grupos.push(usables.slice(i, i + n));
+    // siempre quedan al menos dos cuartos para ti: los demás grupos que no caben se quedan afuera
+    grupos.splice(Math.max(0, this.puertas.length - 2 - (this.familia.filter((f) => f.vivo).length ? 1 : 0)));
     this.gruposNPC = grupos.map((gr, k) => ({ miembros: gr, puerta: null, demora: 1 + Math.random() * this.tFase * 0.8 }));
     this.gruposNPC.forEach((G) => G.miembros.forEach((m) => (m.grupoNPC = G)));
     // la familia que no va contigo se las arregla sola (entra con otros)

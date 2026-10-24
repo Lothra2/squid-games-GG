@@ -177,7 +177,7 @@ export class Galleta extends Juego {
   /** el pedazo sin raspar más cercano a la aguja (para la flechita guía) */
   pendienteCerca(x, y) {
     let mi = -1, md = 1e9;
-    for (let k = 0; k < this.camino.length; k += 2) { if (this.raspado[k]) continue; const d = Math.hypot(this.camino[k][0] - x, this.camino[k][1] - y); if (d < md) { md = d; mi = k; } }
+    for (let k = 0; k < this.camino.length; k++) { if (this.raspado[k]) continue; const d = Math.hypot(this.camino[k][0] - x, this.camino[k][1] - y); if (d < md) { md = d; mi = k; } }
     return mi;
   }
 
@@ -350,7 +350,8 @@ export class Galleta extends Juego {
     this.barraAv.width = 150 * (this.nRaspado / this.camino.length);
     if (this.lamiendo <= 0) this.cara.setFrame(t > 0.75 ? 'g_susto' : t > 0.45 ? 'g_dolor' : 'g_neutral');
 
-    if (this.nRaspado >= this.camino.length) this.terminarFigura();
+    // con casi toda la figura raspada, los últimos pixelitos se sueltan solos (no hay que cazar uno perdido)
+    if (this.nRaspado >= this.camino.length * 0.985) { this.raspado.fill(1); this.nRaspado = this.camino.length; this.pintarSurco(); this.terminarFigura(); }
   }
 
   estrellas() {

@@ -40,7 +40,10 @@ export class Escondite extends Juego {
     this.llave = Phaser.Utils.Array.GetRandom(FIGS);
     const sinSalida = this.callejones();
     Phaser.Utils.Array.Shuffle(sinSalida);
-    const lejos = sinSalida.filter(([x, y]) => x + y > 10 && this.pared(x, y - 1));
+    let lejos = sinSalida.filter(([x, y]) => x + y > 10 && this.pared(x, y - 1));
+    // por si el laberinto salió con pocos callejones: se usan los que haya (siempre hay una salida)
+    if (lejos.length < 3) lejos = sinSalida.filter(([x, y]) => x + y > 6);
+    if (!lejos.length) lejos = this.libres().filter(([x, y]) => x + y > 10);
     const elegidas = lejos.slice(0, 6);
     this.puertas = elegidas.map(([x, y], i) => ({ x, y, fig: i < 2 ? this.llave : FIGS[(FIGS.indexOf(this.llave) + 1 + (i % 2)) % 3], salida: i === 0, abierta: false }));
     this.puertas.forEach((p) => this.dibujarPuerta(p));

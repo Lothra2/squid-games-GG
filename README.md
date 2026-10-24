@@ -42,15 +42,15 @@ Toda en pixel art, con los mismos personajes:
 | # | Juego | Temporada | Cómo se gana |
 |---|---|---|---|
 | 1 | Luz roja, luz verde | 1 | Corre con la canción. En rojo, quieto: el ojo de la muñeca se llena si te mueves |
-| 2 | La galleta | 1 | Mantén A y empuja la palanca a lo largo de la línea. En el ¡CRAC! suelta A ya. B para lamer |
+| 2 | La galleta | 1 | La palanca mueve la aguja; A pica. Sobre la línea raspa, afuera se raja. Golpear seguido calienta. B lame |
 | 3 | Tira y afloja | 1 | A al pitazo para inclinarte. Las notas A y B llegan al círculo: aprieta justo. Y los tres pasos del 001 |
 | 4 | Las canicas | 1 | Par o impar y al hoyo contra el abuelo 001, tu gganbu |
-| 5 | Pentatlón de seis piernas | 2 | Ddakji, piedra voladora, gonggi, trompo y jegi, amarrados los cinco |
+| 5 | Pentatlón de seis piernas | 2 | Tú haces las cinco pruebas (ddakji, piedra, gonggi, trompo y jegi) con la familia amarrada |
 | 6 | Mingle | 2 | Gira en el carrusel. Cuando digan el número, arma un grupo exacto y entra a un cuarto |
 | 7 | El puente de cristal | 1 | Elige tu chaleco. Tu reloj empieza en tu turno y alcanza para tus vidrios. B mira el reflejo |
 | 8 | El escondite | 3 | Busca la salida con tu llave. Mira el minimapa y las líneas rojas de visión. B marca el camino |
-| 9 | La cuerda | 3 | Cruza el puente saltando la cuerda gigante y el hueco del medio |
-| 10 | El calamar en el cielo | 3 | Bota a los rivales de los pilares con embestidas |
+| 9 | La cuerda | 3 | Salta con A cuando el círculo sobre tu cabeza esté verde. En la orilla del hueco, A es un salto largo |
+| 10 | El calamar en el cielo | 3 | A embiste, B agarra y en el forcejeo machacas A. Bota a todos los rivales |
 | 11 | El juego del calamar | 1 | Contra el Front Man: en un pie hasta la cintura, después a la cabeza |
 
 ## Detalles que se notan

@@ -50,10 +50,10 @@
       if (c < s.n && !s.saltando) { inp._ty = s.templado[c] ? 1 : -1; if (s.fila === s.templado[c]) inp._kA = true; }
     }
     if (k === 'Cuerda') {
-      const j = s.jugador;
-      inp._tx = 1;
-      const llega = Math.PI - s.fase;
-      if ((llega > 0 && llega < 0.55) || (j.x > HUECO0 - 6 && j.x < HUECO0 - 1)) inp._kA = true;
+      const j = s.jugador, w = (Math.PI * 2) / Math.max(0.7, s.periodo - s.vueltas * 0.02), t = s.faltaCuerda(w);
+      const enOrilla = j.alto <= 0 && j.x >= 301 - 26 && j.x <= 301;
+      inp._tx = enOrilla ? 0 : 1;
+      if (t > 0.12 && t < 0.3 && j.alto <= 0) inp._kA = true;
     }
     if (k === 'Cielo') {
       const j = s.jugador;

@@ -12,7 +12,7 @@ const p = await b.newPage({ viewport: { width: 960, height: 540 } });
 const errores = [];
 p.on('pageerror', (e) => errores.push('pageerror: ' + e.message + '\n' + (e.stack || '').split('\n').slice(0, 14).join('\n')));
 await p.goto(url);
-await p.waitForTimeout(4000);
+await p.waitForFunction(() => window.__juego && window.__juego.scene.getScenes(true)[0] && window.__juego.scene.getScenes(true)[0].scene.key === 'Titulo', null, { timeout: 60000 });
 const res = {};
 for (const k of JUEGOS) {
   await p.evaluate(([k, dif]) => {
@@ -33,6 +33,8 @@ for (const k of JUEGOS) {
   await p.waitForTimeout(1200);
   await p.screenshot({ path: `${out}/${k}.png` });
   res[k] = r || 'SIN TERMINAR';
+  const fig = await p.evaluate(() => { const s = window.__juego.scene.getScenes(true)[0]; return s.figura ? s.figura + ' ' + s.nRaspado + '/' + s.camino.length : ''; });
+  if (fig) console.log('  figura:', fig);
   const causas = await p.evaluate(() => { const c = window.__causas || []; window.__causas = []; return c; });
   if (causas.length) console.log('  caídas:', causas.join(', '));
   console.log(k, '->', res[k], Math.round((Date.now() - t0) / 1000) + 's');
