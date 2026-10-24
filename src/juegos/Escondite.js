@@ -8,22 +8,24 @@ import { Actor } from '../core/actor.js';
 import { E, dif, sangre } from '../core/estado.js';
 import { sfx, tono, musica } from '../core/sonido.js';
 import { eliminar, fxSobre, sacudir } from '../core/efectos.js';
-import { cartel, esperar, hablar } from '../core/dialogo.js';
+import { cartel, esperar } from '../core/dialogo.js';
+import { texto, COLOR } from '../core/ui.js';
 import { jugadoresNPC } from '../core/kit.js';
 
-const T = 18; // tamaño del cuadro
+const T = 24; // tamaño del cuadro
 const FIGS = ['circulo', 'triangulo', 'cuadrado'];
 const COLOR_FIG = { circulo: 0xf2a6c3, triangulo: 0x9fe3cf, cuadrado: 0xf6e08a };
 
 export class Escondite extends Juego {
-  constructor() { super('Escondite'); }
+  constructor() { super('Escondite'); this.usaPistas = true; }
+  ambiente() { return { vineta: 0.75, motas: 0 }; }
 
   armar() {
     const cw = 14, ch = 9;
     this.TW = cw * 2 + 1; this.TH = ch * 2 + 1;
     this.mapa = this.laberinto(cw, ch);
-    const W = this.TW * T, H = this.TH * T + 20;
-    this.cameras.main.setBounds(0, -20, W, H);
+    const W = this.TW * T, H = this.TH * T + 30;
+    this.cameras.main.setBounds(0, -30, W, H);
     this.add.rectangle(W / 2, H / 2 - 20, W + 40, H + 40, 0x241c38).setDepth(-200);
     this.pintar();
     // la llave del jugador y las puertas
@@ -49,15 +51,20 @@ export class Escondite extends Juego {
       const [fx, fy] = this.pisoCerca(x, y);
       const a = new Actor(this, ids[(i * 5 + 2) % ids.length], (fx + 0.5) * T, (fy + 0.5) * T + 6, { dir: 'down' });
       a.sprite.setTint(0xff9a9a);
-      a.camino = []; a.persigue = 0; a.vel = dif(42, 50, 58);
+      a.camino = []; a.persigue = 0; a.vel = dif(56, 66, 77);
       return a;
     });
     this.tiempo = dif(150, 125, 100);
+    this.tiempoTotal = this.tiempo;
     this.escondido = null;
     this.vision = dif(4, 5, 6);
     // la llave en el HUD
-    this.add.image(this.scale.width - 14, 30, this.llave).setTint(COLOR_FIG[this.llave]).setScrollFactor(0).setDepth(8801);
-    this.add.bitmapText(this.scale.width - 26, 26, 'fuente_ui', 'TU LLAVE').setOrigin(1, 0).setScrollFactor(0).setDepth(8801);
+    this.add.image(this.scale.width - 18, 46, this.llave).setTint(COLOR_FIG[this.llave]).setScrollFactor(0).setDepth(8801);
+    texto(this, this.scale.width - 34, 46, 'TU LLAVE', { tam: 13, negrita: true, origen: [1, 0.5] }).setScrollFactor(0).setDepth(8801);
+    this.pistas = dif(2, 1, 0) + this.pistasExtra;
+    this.txtPistas = texto(this, 12, 44, '', { tam: 13, color: COLOR.oro }).setScrollFactor(0).setDepth(8801);
+    this.conos = this.add.graphics().setDepth(1);
+    this.armarMinimapa();
   }
 
   laberinto(cw, ch) {
@@ -111,8 +118,8 @@ export class Escondite extends Juego {
       } else {
         const c = tonos[Math.floor(x / 6 + y / 5) % tonos.length];
         g.fillStyle(Phaser.Display.Color.IntegerToColor(c).darken(30).color); g.fillRect(px, py, T, T);
-        g.fillStyle(c); g.fillRect(px, py - 8, T, T - 2);
-        g.fillStyle(0xffffff, 0.35); g.fillRect(px, py - 8, T, 1);
+        g.fillStyle(c); g.fillRect(px, py - 10, T, T - 2);
+        g.fillStyle(0xffffff, 0.35); g.fillRect(px, py - 10, T, 2);
         g.fillStyle(0x000000, 0.25); g.fillRect(px, py + T - 2, T, 2);
       }
     }
@@ -133,26 +140,64 @@ export class Escondite extends Juego {
     g.fillStyle(0x3a2412); g.fillRect(px - 1, py - 1, T - 4, T + 10);
     g.fillStyle(0xd8a868); g.fillRect(px, py, T - 6, T + 8);
     g.fillStyle(0xb8884a); g.fillRect(px + (T - 6) / 2, py, 1, T + 8);
-    for (let k = 0; k < 4; k++) { g.fillStyle(0x6a4422); g.fillRect(px + 2, py + 3 + k * 3, 4, 1); g.fillRect(px + T - 12, py + 3 + k * 3, 4, 1); }
-    g.fillStyle(0x3a2412); g.fillRect(px + (T - 6) / 2 - 3, py + 15, 2, 2); g.fillRect(px + (T - 6) / 2 + 2, py + 15, 2, 2);
+    for (let k = 0; k < 5; k++) { g.fillStyle(0x6a4422); g.fillRect(px + 3, py + 4 + k * 4, 5, 1); g.fillRect(px + T - 14, py + 4 + k * 4, 5, 1); }
+    g.fillStyle(0x3a2412); g.fillRect(px + (T - 6) / 2 - 4, py + 19, 3, 3); g.fillRect(px + (T - 6) / 2 + 2, py + 19, 3, 3);
     return g;
   }
 
   reglas() {
-    return [
-      ['guardia_cuadrado', 'neutral', 'Juego 8: el escondite. El equipo azul tiene llaves. El equipo rojo los busca.'],
-      ['guardia_cuadrado', 'neutral', 'Si encuentran la puerta de salida antes de que se acabe el tiempo, ganan.'],
-      ['steph', 'neutral', 'Nosotras tres nos escondemos en un armario de la entrada. ¡Tú busca la salida y vuelve por nosotras!'],
-      ['rick', 'neutral', `Tu llave es un ${{ circulo: 'círculo', triangulo: 'triángulo', cuadrado: 'cuadrado' }[this.llave]}. Solo abre puertas con esa figura. Y no todas son la salida.`],
-      ['sophie', 'susto', 'Si un rojo te ve, corre. Con A te metes en un armario y con A sales.'],
-    ];
+    const fig = { circulo: 'un CÍRCULO', triangulo: 'un TRIÁNGULO', cuadrado: 'un CUADRADO' }[this.llave];
+    return {
+      objetivo: [`Tu llave tiene ${fig}: solo abre puertas con esa figura, y solo una es la salida.`, 'Los del equipo rojo te buscan. Su línea de visión se ve en rojo: ¡no la cruces!', 'Escóndete en los armarios (A). Arriba a la derecha tienes el mapa.'],
+      controles: [['palanca', 'Moverse'], ['a', 'Abrir / esconderse'], ['b', `Pista (${this.pistas})`]],
+      frase: ['steph', 'neutral', 'Nosotras tres nos escondemos en un armario de la entrada. ¡Busca la salida y vuelve por nosotras!'],
+    };
+  }
+
+  /** el minimapa del laberinto: paredes, puertas de tu figura, el jugador y los rojos */
+  armarMinimapa() {
+    const k = 3, W = this.scale.width;
+    const x0 = W - this.TW * k - 10, y0 = 62;
+    this.mm = { k, x0, y0 };
+    const g = this.add.graphics().setScrollFactor(0).setDepth(8790);
+    g.fillStyle(0x07060c, 0.78); g.fillRect(x0 - 4, y0 - 4, this.TW * k + 8, this.TH * k + 8);
+    for (let y = 0; y < this.TH; y++) for (let x = 0; x < this.TW; x++) if (this.mapa[y][x] === 1) { g.fillStyle(0x6a5a8a, 0.9); g.fillRect(x0 + x * k, y0 + y * k, k, k); }
+    for (const p of this.puertas) { g.fillStyle(p.fig === this.llave ? 0xf7c948 : 0x5a5666); g.fillRect(x0 + p.x * k, y0 + p.y * k, k, k); }
+    this.mmPuntos = this.add.graphics().setScrollFactor(0).setDepth(8791);
+  }
+
+  pintarMinimapa() {
+    const { k, x0, y0 } = this.mm, g = this.mmPuntos;
+    g.clear();
+    const [jx, jy] = this.celda(this.jugador);
+    g.fillStyle(0x7fffe0); g.fillRect(x0 + jx * k - 1, y0 + jy * k - 1, k + 2, k + 2);
+    for (const r of this.rojos) { const [rx, ry] = this.celda(r); g.fillStyle(r.persigue > 0 ? 0xff3355 : 0xff8f8f); g.fillRect(x0 + rx * k, y0 + ry * k, k, k); }
+  }
+
+  /** la línea de visión de cada rojo: hasta donde ve en su dirección (sin atravesar paredes) */
+  pintarConos() {
+    const g = this.conos;
+    g.clear();
+    for (const r of this.rojos) {
+      const [cx, cy] = this.celda(r);
+      const dirs = { right: [r.izq ? -1 : 1, 0], down: [0, 1], up: [0, -1] };
+      const [dx, dy] = dirs[r.dir] || [1, 0];
+      let x = cx, y = cy;
+      for (let i = 0; i < this.vision; i++) {
+        x += dx; y += dy;
+        if (this.pared(x, y)) break;
+        g.fillStyle(r.persigue > 0 ? 0xff3355 : 0xff6a6a, (r.persigue > 0 ? 0.32 : 0.18) * (1 - i / (this.vision + 1)));
+        g.fillRect(x * T, y * T, T, T);
+      }
+      g.fillStyle(0xff6a6a, 0.12); g.fillCircle(r.x, r.y - 6, 34);
+    }
   }
 
   empezar() { musica('tension'); }
 
   libre(x, y) {
-    const r = 4;
-    for (const [dx, dy] of [[-r, -2], [r, -2], [-r, 2], [r, 2]]) if (this.pared(Math.floor((x + dx) / T), Math.floor((y - 6 + dy) / T))) return false;
+    const r = 6;
+    for (const [dx, dy] of [[-r, -3], [r, -3], [-r, 3], [r, 3]]) if (this.pared(Math.floor((x + dx) / T), Math.floor((y - 6 + dy) / T))) return false;
     return true;
   }
 
@@ -194,11 +239,14 @@ export class Escondite extends Juego {
     if (this.escondido) return false;
     const j = this.jugador;
     const d = Math.hypot(j.x - r.x, j.y - r.y);
-    if (d < 26) return true;
+    if (d < 34) return true;
     const [ax, ay] = this.celda(r), [bx, by] = this.celda(j);
     if (ax !== bx && ay !== by) return false;
     if (Math.abs(ax - bx) + Math.abs(ay - by) > this.vision) return false;
     const sx = Math.sign(bx - ax), sy = Math.sign(by - ay);
+    // solo ven hacia donde miran (es lo que muestra su línea roja)
+    const [fx, fy] = { right: [r.izq ? -1 : 1, 0], down: [0, 1], up: [0, -1] }[r.dir] || [1, 0];
+    if (r.persigue <= 0 && (sx !== fx || sy !== fy)) return false;
     let x = ax, y = ay;
     while (x !== bx || y !== by) { x += sx; y += sy; if (this.pared(x, y)) return false; }
     return true;
@@ -209,14 +257,29 @@ export class Escondite extends Juego {
     this.hud.setTiempo(this.tiempo);
     if (this.tiempo <= 0) { this.perder('SE ACABÓ EL TIEMPO'); return; }
     const j = this.jugador;
+    this.pintarConos();
+    this.pintarMinimapa();
+    this.txtPistas.setText(`Pistas: ${this.pistas}  (B)`);
+    // la pista: una flecha hacia la salida durante unos segundos
+    if (this.inp.tomarB() && !this.escondido) {
+      if (this.pistas > 0) {
+        this.pistas--; this.pistasUsadas = (this.pistasUsadas || 0) + 1;
+        const p = this.puertas.find((q) => q.salida);
+        const camino = this.ruta(this.celda(j), [p.x, p.y]);
+        const g = this.add.graphics().setDepth(2);
+        camino.slice(0, 14).forEach(([cx, cy], i) => { g.fillStyle(0xf7c948, 0.55 - i * 0.03); g.fillCircle((cx + 0.5) * T, (cy + 0.5) * T, 4); });
+        tono(1568, 0.2, 'campana', 0.1);
+        this.tweens.add({ targets: g, alpha: 0, delay: 3500, duration: 800, onComplete: () => g.destroy() });
+      } else tono(200, 0.06, 'cuadrada', 0.05);
+    }
 
     if (this.escondido) {
       this.hud.setExtra('ESCONDIDO · A: salir', 0x9fe3cf);
       if (this.inp.tomarA()) { this.escondido = null; j.setVisible(true); tono(440, 0.06); }
     } else {
-      this.moverCon(j, this.inp.x * 72, this.inp.y * 72, dt);
+      this.moverCon(j, this.inp.x * 96, this.inp.y * 96, dt);
       // puertas y armarios
-      const cerca = (o) => Math.hypot((o.x + 0.5) * T - j.x, (o.y + 0.5) * T - (j.y - 6)) < 16;
+      const cerca = (o) => Math.hypot((o.x + 0.5) * T - j.x, (o.y + 0.5) * T - (j.y - 6)) < 22;
       const puerta = this.puertas.find((p) => cerca(p) && !p.abierta);
       const armario = this.armarios.find(cerca);
       if (puerta) this.hud.setExtra(puerta.fig === this.llave ? 'A: abrir la puerta' : 'Tu llave no abre esta', puerta.fig === this.llave ? 0xf2c230 : 0xff8fb5);
@@ -227,7 +290,7 @@ export class Escondite extends Juego {
         else if (puerta) tono(200, 0.08, 'cuadrada', 0.06);
         else if (armario) {
           // si un rojo te está viendo, te encuentra igual
-          const visto = this.rojos.some((r) => r.persigue > 0 && Math.hypot(r.x - j.x, r.y - j.y) < 50);
+          const visto = this.rojos.some((r) => r.persigue > 0 && Math.hypot(r.x - j.x, r.y - j.y) < 66);
           this.escondido = armario; j.setVisible(false);
           sfx(this, 'golpe', 0.3);
           if (visto) this.time.delayedCall(700, () => { if (this.escondido && !this.terminado) { this.escondido = null; j.setVisible(true); this.atrapado(); } });
@@ -256,7 +319,7 @@ export class Escondite extends Juego {
         if (d < 2) r.camino.shift();
         else r.mover((dx / d) * v, (dy / d) * v, dt);
       } else r.mover(0, 0, dt);
-      if (!this.escondido && Math.hypot(r.x - j.x, r.y - j.y) < 11) { this.atrapado(r); return; }
+      if (!this.escondido && Math.hypot(r.x - j.x, r.y - j.y) < 15) { this.atrapado(r); return; }
     }
   }
 
@@ -279,10 +342,15 @@ export class Escondite extends Juego {
     }
   }
 
+  estrellas() {
+    const sobra = this.tiempo / this.tiempoTotal;
+    return (sobra > 0.45 && !this.pistasUsadas ? 3 : sobra > 0.2 ? 2 : 1) - Math.max(0, this.vidasInicio - E.vidas);
+  }
+
   atrapado(r) {
     if (this.terminado) return;
     sacudir(this, 200, 0.012);
-    if (r) r.anim(sangre() ? 'attack' : 'point', null, true);
+    if (r) r.anim('jab', null, true);
     this.perder('TE ENCONTRARON');
   }
 }

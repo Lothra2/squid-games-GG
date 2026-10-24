@@ -41,21 +41,19 @@ function ir(scene, paso) {
 }
 
 /** Sigue al próximo paso. Si se ganó un juego, se recuperan las vidas. */
-export function avanzar(scene, { gano = false, eliminados = 0, practica = false } = {}) {
+export function avanzar(scene, { gano = false, eliminados = 0 } = {}) {
   if (eliminados) sumarPozo(eliminados);
   if (gano) E.vidas = 3;
-  if (practica) { guardar(); scene.cameras.main.fadeOut(400); scene.time.delayedCall(420, () => scene.scene.start('Titulo')); return; }
   ir(scene, E.paso + 1);
 }
 
 /** Se perdió una vida. Devuelve true si quedan y se repite el juego. */
-export function perderVida(scene, practica = false) {
-  if (practica) { scene.time.delayedCall(200, () => scene.scene.restart()); return true; }
+export function perderVida(scene) {
   E.vidas -= 1;
   guardar();
   if (E.vidas > 0) {
     scene.cameras.main.fadeOut(500, 0, 0, 0);
-    scene.time.delayedCall(520, () => scene.scene.restart());
+    scene.time.delayedCall(520, () => scene.scene.restart(scene.datosReinicio ? scene.datosReinicio() : undefined));
     return true;
   }
   scene.cameras.main.fadeOut(600, 0, 0, 0);
@@ -67,6 +65,8 @@ export function perderVida(scene, practica = false) {
 export function reiniciarDesdeJuego1(scene) {
   E.vidas = 3;
   E.pozo = 0;
+  E.billetera = 0;
+  E.compras = { vida: 0, reloj: 0, pista: 0 };
   E.pozoVisto = 0;
   ir(scene, PRIMER_JUEGO);
 }
@@ -78,6 +78,8 @@ export function irAPaso(scene, paso) {
 export function nuevaPartida(scene) {
   E.vidas = 3;
   E.pozo = 0;
+  E.billetera = 0;
+  E.compras = { vida: 0, reloj: 0, pista: 0 };
   E.pozoVisto = 0;
   ir(scene, 0);
 }

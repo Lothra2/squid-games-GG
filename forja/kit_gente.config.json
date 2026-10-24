@@ -1,0 +1,43 @@
+{
+  "$schema": "../../pixel_forja/docs/kit-a-medida.schema.json",
+  "juego": "El Juego del Calamar GG (gente)",
+  "resolucion": [
+    640,
+    360
+  ],
+  "celda": 64,
+  "filas": [
+    "right",
+    "down",
+    "up"
+  ],
+  "fichas": "gente/",
+  "packs": {
+    "base": [
+      "idle",
+      "walk",
+      "run",
+      "jump",
+      "hit",
+      "knockout",
+      "fall_getup",
+      "celebrate",
+      "sad",
+      "dizzy",
+      "stagger"
+    ],
+    "juegos": [
+      "judo_grip",
+      "grab_hold",
+      "fall_off",
+      "dash",
+      "edge_teeter",
+      "jab",
+      "balance_walk",
+      "throw",
+      "dodge_jump"
+    ]
+  },
+  "retratos": true,
+  "cabecitas": false
+}

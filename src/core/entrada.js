@@ -1,14 +1,16 @@
-import Phaser from 'phaser';
 // Controles unificados: teclado, control (gamepad) y pantalla táctil.
 // x, y: dirección de -1 a 1. a, b: botones apretados. aPulso, bPulso: recién apretados en este cuadro.
+// aFisico: el pulso vino de una tecla, del control o del botón A en pantalla (no de un toque suelto).
 // Teclado: flechas o WASD. A = Espacio, Z o Enter. B = X o Shift. Pausa = Esc o P.
+
+import Phaser from 'phaser';
 
 export class Entrada {
   constructor(scene, { tactil = true, palanca = true, botonB = true } = {}) {
     this.scene = scene;
     this.x = 0; this.y = 0;
     this.a = false; this.b = false;
-    this.aPulso = false; this.bPulso = false; this.pausaPulso = false;
+    this.aPulso = false; this.bPulso = false; this.pausaPulso = false; this.aFisico = false;
     this._aAntes = false; this._bAntes = false;
     this._tA = false; this._tB = false; this._tx = 0; this._ty = 0;
     this._toque = false;
@@ -19,7 +21,7 @@ export class Entrada {
     });
     // los pulsos se guardan por evento: una tecla apretada y soltada entre dos cuadros también cuenta
     this._kA = false; this._kB = false;
-    const teclaA = ['Space', 'KeyZ', 'Enter', 'NumpadEnter'], teclaB = ['KeyX', 'ShiftLeft', 'ShiftRight'];
+    const teclaA = ['Space', 'KeyZ', 'Enter', 'NumpadEnter'], teclaB = ['KeyX', 'ShiftLeft', 'ShiftRight', 'Backspace'];
     this._onKey = (ev) => {
       if (ev.repeat) return;
       if (teclaA.includes(ev.code)) this._kA = true;
@@ -27,61 +29,57 @@ export class Entrada {
     };
     scene.input.keyboard.on('keydown', this._onKey);
     this.esTactil = scene.sys.game.device.input.touch && (navigator.maxTouchPoints || 0) > 0;
+    this.controles = [];
     if (this.esTactil && tactil) this._armarTactil(palanca, botonB);
-    // un toque en cualquier lado sirve de A cuando no hay controles en pantalla (diálogos, menús)
+    // un toque en cualquier lado sirve de A en diálogos (no en los menús: ahí se toca la opción)
     scene.input.on('pointerdown', (p) => { if (!this._sobreControl(p)) this._toque = true; });
     scene.events.on('update', this._leer, this);
     scene.events.once('shutdown', () => scene.events.off('update', this._leer, this));
   }
 
   _sobreControl(p) {
-    if (!this.controles) return false;
     const W = this.scene.scale.width, H = this.scene.scale.height;
-    if (this.zonaPalanca && p.x < W * 0.4 && p.y > H * 0.35) return true;
-    return this.controles.some((c) => c.visible && Phaser.Geom.Rectangle.Contains(c.getBounds(), p.x, p.y));
+    if (this.zonaPalanca && this.controles[0]?.visible && p.x < W * 0.38 && p.y > H * 0.4) return true;
+    return this.controles.some((c) => c.visible && c.getBounds && Phaser.Geom.Rectangle.Contains(c.getBounds(), p.x, p.y));
   }
 
   _armarTactil(palanca, botonB) {
     const s = this.scene, W = s.scale.width, H = s.scale.height;
-    this.controles = [];
     const prof = 1000;
     if (palanca) {
       this.zonaPalanca = true;
-      const base = s.add.image(46, H - 46, 'control_palanca', 0).setScale(0.75).setScrollFactor(0).setDepth(prof).setAlpha(0.55);
-      const bola = s.add.image(46, H - 46, 'control_palanca_bola', 0).setScale(0.75).setScrollFactor(0).setDepth(prof + 1).setAlpha(0.8);
-      this.controles.push(base);
+      const base = s.add.image(70, H - 70, 'control_palanca', 0).setScrollFactor(0).setDepth(prof).setAlpha(0.5);
+      const bola = s.add.image(70, H - 70, 'control_palanca_bola', 0).setScrollFactor(0).setDepth(prof + 1).setAlpha(0.85);
+      this.controles.push(base, bola);
       let id = null;
       const mover = (p) => {
-        const dx = p.x - base.x, dy = p.y - base.y, r = 24, d = Math.hypot(dx, dy);
+        const dx = p.x - base.x, dy = p.y - base.y, r = 32, d = Math.hypot(dx, dy);
         const k = d > r ? r / d : 1;
         bola.setPosition(base.x + dx * k, base.y + dy * k);
         this._tx = Phaser.Math.Clamp(dx / r, -1, 1); this._ty = Phaser.Math.Clamp(dy / r, -1, 1);
-        if (Math.abs(this._tx) < 0.25) this._tx = 0;
-        if (Math.abs(this._ty) < 0.25) this._ty = 0;
+        if (Math.abs(this._tx) < 0.22) this._tx = 0;
+        if (Math.abs(this._ty) < 0.22) this._ty = 0;
       };
-      s.input.on('pointerdown', (p) => { if (p.x < W * 0.4 && p.y > H * 0.35) { id = p.id; mover(p); base.setFrame(1); } });
+      s.input.on('pointerdown', (p) => { if (base.visible && p.x < W * 0.38 && p.y > H * 0.4) { id = p.id; base.setPosition(Phaser.Math.Clamp(p.x, 50, W * 0.38 - 20), Phaser.Math.Clamp(p.y, H * 0.4 + 20, H - 50)); mover(p); base.setFrame(1); } });
       s.input.on('pointermove', (p) => { if (p.id === id) mover(p); });
-      const soltar = (p) => { if (p.id === id) { id = null; this._tx = 0; this._ty = 0; bola.setPosition(base.x, base.y); base.setFrame(0); } };
+      const soltar = (p) => { if (p.id === id) { id = null; this._tx = 0; this._ty = 0; base.setPosition(70, H - 70); bola.setPosition(base.x, base.y); base.setFrame(0); } };
       s.input.on('pointerup', soltar);
       s.input.on('pointerupoutside', soltar);
     }
     const boton = (x, y, tex, campo) => {
-      const b = s.add.image(x, y, tex, 0).setScale(0.75).setScrollFactor(0).setDepth(prof).setAlpha(0.7).setInteractive();
+      const b = s.add.image(x, y, tex, 0).setScale(1.05).setScrollFactor(0).setDepth(prof).setAlpha(0.75).setInteractive();
       b.on('pointerdown', () => { this[campo] = true; b.setFrame(1); });
       const off = () => { this[campo] = false; b.setFrame(0); };
       b.on('pointerup', off); b.on('pointerout', off);
       this.controles.push(b);
       return b;
     };
-    this.botonA = boton(W - 34, H - 40, 'control_a', '_tA');
-    const pausa = s.add.image(76, 8, 'control_pausa', 0).setScale(0.3).setScrollFactor(0).setDepth(8890).setAlpha(0.6).setInteractive();
-    pausa.on('pointerdown', () => { this.pausaPulso = true; });
-    this.controles.push(pausa);
-    if (botonB) this.botonB = boton(W - 76, H - 22, 'control_b', '_tB');
+    this.botonA = boton(W - 50, H - 62, 'control_a', '_tA');
+    if (botonB) this.botonB = boton(W - 112, H - 34, 'control_b', '_tB');
   }
 
   ocultarTactil(v = false) {
-    (this.controles || []).forEach((c) => c.setVisible(v));
+    this.controles.forEach((c) => c.setVisible(v));
   }
 
   _leer() {
@@ -106,7 +104,9 @@ export class Entrada {
     }
     x += this._tx; y += this._ty;
     this.x = Phaser.Math.Clamp(x, -1, 1); this.y = Phaser.Math.Clamp(y, -1, 1);
-    this.aPulso = (a && !this._aAntes) || this._toque || this._kA;
+    const fisico = (a && !this._aAntes) || this._kA;
+    this.aFisico = fisico;
+    this.aPulso = fisico || this._toque;
     this.bPulso = (b && !this._bAntes) || this._kB;
     this._toque = false; this._kA = false; this._kB = false;
     this._aAntes = a; this._bAntes = b;
@@ -115,7 +115,7 @@ export class Entrada {
   }
 
   /** consume el pulso de A (para que dos cosas no lo usen en el mismo cuadro) */
-  tomarA() { const v = this.aPulso; this.aPulso = false; return v; }
+  tomarA() { const v = this.aPulso; this.aPulso = false; this.aFisico = false; return v; }
   tomarB() { const v = this.bPulso; this.bPulso = false; return v; }
   tomarPausa() { const v = this.pausaPulso; this.pausaPulso = false; return v; }
 }

@@ -1,104 +1,111 @@
-import Phaser from 'phaser';
 // Juego 1: Luz roja, luz verde. La muñeca canta de espaldas (verde: se corre) y se voltea (roja: quieto).
-// Quien se mueve en rojo queda eliminado. Hay que cruzar la raya antes de que se acabe el tiempo.
+// Si te mueves en rojo, se llena el ojo de la muñeca: lleno, te eliminan. Hay que cruzar la raya roja a tiempo.
 
+import Phaser from 'phaser';
 import { Juego } from '../core/juego.js';
 import { Actor } from '../core/actor.js';
-import { E, dif, sangre } from '../core/estado.js';
-import { cancionMuneca, sfx, tono, musica, pararMusica } from '../core/sonido.js';
+import { E, dif } from '../core/estado.js';
+import { cancionMuneca, sfx, tono, musica } from '../core/sonido.js';
 import { eliminar, fxSobre, sacudir } from '../core/efectos.js';
-import { hablar } from '../core/dialogo.js';
+import { texto, COLOR } from '../core/ui.js';
+import { cantoCoreano } from '../core/voz.js';
 
-const LARGO = 1700, META = 1530, PISO_Y0 = 150, PISO_Y1 = 262;
+const LARGO = 2320, META = 2060, SALIDA = 250, PISO_Y0 = 204, PISO_Y1 = 346;
 
 export class LuzRoja extends Juego {
   constructor() { super('LuzRoja'); }
 
+  ambiente() { return { vineta: 0.4, motas: 16, color: 0xfff0d0 }; }
+
   armar() {
     const W = this.scale.width;
-    this.cameras.main.setBounds(0, 0, LARGO, 270);
-    // la pared del cielo pintado (se mueve un poco más lento: profundidad)
-    this.add.tileSprite(0, 0, LARGO, 140, 'pared_cielo').setOrigin(0).setScrollFactor(0.75, 1).setDepth(-20);
-    // el piso de tierra
-    this.add.image(0, 0, this.texturaPiso()).setOrigin(0, 0).setPosition(0, 136).setDepth(-15);
-    // la raya de salida y la de meta
-    this.add.rectangle(190, (PISO_Y0 + PISO_Y1) / 2, 3, PISO_Y1 - PISO_Y0 + 14, 0xf4f0e8, 0.7).setDepth(-10);
-    this.add.rectangle(META, (PISO_Y0 + PISO_Y1) / 2, 4, PISO_Y1 - PISO_Y0 + 14, 0xe0457b).setDepth(-10);
+    this.cameras.main.setBounds(0, 0, LARGO, 360);
+    // la pared del cielo pintado (un poco más lenta: profundidad) y el piso de tierra
+    this.add.tileSprite(0, 0, LARGO, 186, 'pared_cielo').setOrigin(0).setScrollFactor(0.8, 1).setDepth(-20);
+    this.add.image(0, 180, this.texturaPiso()).setOrigin(0).setDepth(-15);
+    // las rayas de salida y de meta
+    this.add.rectangle(SALIDA, (PISO_Y0 + PISO_Y1) / 2, 4, PISO_Y1 - PISO_Y0 + 20, 0xf4f0e8, 0.7).setDepth(-10);
+    this.add.rectangle(META, (PISO_Y0 + PISO_Y1) / 2, 6, PISO_Y1 - PISO_Y0 + 20, 0xe0457b).setDepth(-10);
+    texto(this, META + 10, PISO_Y0 - 8, 'META', { tam: 13, negrita: true, color: COLOR.rosa }).setDepth(-9);
     // el árbol y la muñeca al final
-    this.arbol(1640, 150);
-    this.muneca = this.add.image(1600, 205, 'muneca_espalda').setOrigin(0.5, 1).setDepth(205);
-    this.add.image(1600, 205, 'sombra').setScale(2.4, 2).setAlpha(0.35).setDepth(200);
+    this.arbol(2250, 206);
+    this.muneca = this.add.image(2170, 282, 'muneca_espalda').setOrigin(0.5, 1).setDepth(282);
+    this.add.image(2170, 282, 'sombra').setScale(2.6, 2.2).setAlpha(0.35).setDepth(270);
     // los guardias con sus rifles
     this.guardias = [];
-    [[1570, 170], [1570, 245], [600, 142], [1100, 142], [1660, 205]].forEach(([x, y], i) => {
-      const g = new Actor(this, ['guardia_circulo', 'guardia_triangulo', 'guardia_cuadrado'][i % 3], x, y, { dir: x > 1500 ? 'right' : 'down', izquierda: x > 1500 });
-      g.anim('idle', x > 1500 ? 'left' : 'down');
+    [[2120, 220], [2120, 330], [800, 196], [1450, 196], [2260, 290]].forEach(([x, y], i) => {
+      const g = new Actor(this, ['guardia_circulo', 'guardia_triangulo', 'guardia_cuadrado'][i % 3], x, y, { dir: x > 2000 ? 'left' : 'down' });
       this.guardias.push(g);
     });
     // los jugadores
-    const n = dif(26, 34, 42);
-    this.gente = this.crearGente(n, (i) => [24 + Math.random() * 150, PISO_Y0 + 6 + Math.random() * (PISO_Y1 - PISO_Y0 - 10), 'right']);
+    const n = dif(28, 36, 44);
+    this.gente = this.crearGente(n, () => [26 + Math.random() * (SALIDA - 50), PISO_Y0 + 8 + Math.random() * (PISO_Y1 - PISO_Y0 - 12), 'right']);
     this.gente.forEach((g) => {
-      g.vel = 40 + Math.random() * 45;
-      g.torpe = Math.random() < dif(0.25, 0.32, 0.4); // a veces se mueven en rojo
+      g.vel = 52 + Math.random() * 58;
+      g.torpe = Math.random() < dif(0.25, 0.32, 0.4);
       g.listo = false;
     });
-    this.crearJugador(150, 205, 'right');
-    this.crearFamilia([[130, 180], [120, 232], [160, 252]]);
-    this.familia.forEach((f, i) => { f.vel = 52 + i * 4; f.listo = false; });
-    this.cameras.main.startFollow(this.jugador.sprite, true, 0.12, 0.12, -80, 0);
-    // el barrido de los ojos de la muñeca (luz roja): una franja roja que recorre la pantalla
-    this.barrido = this.add.rectangle(0, 205, 26, 130, 0xff1a3d, 0).setScrollFactor(0).setDepth(7000);
-    this.velo = this.add.rectangle(this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height, 0xff1a3d, 0).setScrollFactor(0).setDepth(6999);
-    // la ventanita de la muñeca: se ve siempre, aunque esté lejos
-    this.ventana = this.add.rectangle(W - 26, 52, 40, 60, 0x0b0a10, 0.75).setStrokeStyle(2, 0x23b39c).setScrollFactor(0).setDepth(8700);
-    this.mini = this.add.image(W - 26, 80, 'muneca_espalda').setOrigin(0.5, 1).setScale(0.42).setScrollFactor(0).setDepth(8701);
-    // el estado de la muñeca
-    this.luz = 'espera'; // verde, girando, roja
+    this.crearJugador(200, 276, 'right');
+    this.crearFamilia([[176, 240], [164, 306], [212, 330]]);
+    this.familia.forEach((f, i) => { f.vel = 70 + i * 5; f.listo = false; });
+    this.cameras.main.startFollow(this.jugador.sprite, true, 0.12, 0.12, -120, 0);
+    // la ventanita de la muñeca (se ve siempre aunque esté lejos) y el ojo que se llena si te mueves en rojo
+    this.ventana = this.add.rectangle(W - 40, 92, 58, 98, 0x0b0a10, 0.8).setStrokeStyle(3, 0x2fd4b4).setScrollFactor(0).setDepth(8700);
+    this.mini = this.add.image(W - 40, 136, 'muneca_espalda').setOrigin(0.5, 1).setScale(0.48).setScrollFactor(0).setDepth(8701);
+    this.luzTxt = texto(this, W - 40, 150, 'VERDE', { tam: 14, negrita: true, color: COLOR.verde, origen: [0.5, 0.5] }).setScrollFactor(0).setDepth(8701);
+    this.ojoFondo = this.add.rectangle(W - 40, 168, 50, 8, 0x2a2632).setScrollFactor(0).setDepth(8701);
+    this.ojo = this.add.rectangle(W - 65, 168, 0, 8, 0xff3355).setOrigin(0, 0.5).setScrollFactor(0).setDepth(8702);
+    // el barrido de los ojos (luz roja)
+    this.barrido = this.add.rectangle(0, 270, 34, 180, 0xff1a3d, 0).setScrollFactor(0).setDepth(7000);
+    this.velo = this.add.rectangle(W / 2, 180, W, 360, 0xff1a3d, 0).setScrollFactor(0).setDepth(6999);
+    this.luz = 'espera';
     this.tLuz = 0;
-    this.tiempo = dif(110, 90, 70);
+    this.tiempo = dif(120, 95, 75);
+    this.tiempoTotal = this.tiempo;
     this.gracia = 0;
     this.visto = 0;
-    this.velJugador = 76;
+    this.velJugador = 104;
   }
 
   texturaPiso() {
-    const key = 'piso_luzroja';
+    const key = 'piso_luzroja2';
     if (this.textures.exists(key)) return key;
-    const tex = this.textures.createCanvas(key, LARGO, 134);
+    const tex = this.textures.createCanvas(key, LARGO, 180);
     const c = tex.getContext();
-    const cols = ['#d9b98a', '#d2b080', '#c9a676', '#e0c294', '#bf9b6a'];
-    for (let y = 0; y < 134; y += 2) for (let x = 0; x < LARGO; x += 2) {
-      const n = (Math.sin(x * 0.13 + y * 0.31) + Math.sin(x * 0.047 - y * 0.11) + Math.random() * 1.2);
+    const cols = ['#dcbc8c', '#d4b282', '#cba878', '#e3c696', '#c09c6c'];
+    for (let y = 0; y < 180; y += 2) for (let x = 0; x < LARGO; x += 2) {
+      const n = Math.sin(x * 0.11 + y * 0.29) + Math.sin(x * 0.041 - y * 0.09) + Math.random() * 1.2;
       c.fillStyle = cols[Math.max(0, Math.min(4, Math.floor(n + 2)))];
       c.fillRect(x, y, 2, 2);
     }
-    // piedritas y matas
-    for (let i = 0; i < 220; i++) {
-      const x = Math.random() * LARGO, y = 8 + Math.random() * 120;
+    // huellas, piedritas y matas
+    for (let i = 0; i < 320; i++) {
+      const x = Math.random() * LARGO, y = 10 + Math.random() * 166;
       c.fillStyle = Math.random() < 0.7 ? '#9c7d52' : '#7d9a4a';
-      c.fillRect(Math.round(x), Math.round(y), 2, 1);
+      c.fillRect(Math.round(x), Math.round(y), 2 + (Math.random() < 0.3 ? 1 : 0), 1);
     }
-    // el borde con la pared
-    c.fillStyle = '#8f7350'; c.fillRect(0, 0, LARGO, 3);
+    // el borde con la pared y su sombra
+    c.fillStyle = '#8f7350'; c.fillRect(0, 0, LARGO, 4);
+    c.fillStyle = 'rgba(0,0,0,0.18)'; c.fillRect(0, 4, LARGO, 10);
     tex.refresh();
     return key;
   }
 
   arbol(x, y) {
-    const g = this.add.graphics().setDepth(150);
-    g.fillStyle(0x5a3a22); g.fillRect(x - 4, y - 40, 8, 44);
-    g.fillStyle(0x3d6b2e); g.fillCircle(x, y - 52, 22); g.fillCircle(x - 16, y - 42, 14); g.fillCircle(x + 16, y - 42, 14);
-    g.fillStyle(0x56923f); g.fillCircle(x - 6, y - 58, 12); g.fillCircle(x + 10, y - 50, 9);
+    const g = this.add.graphics().setDepth(200);
+    g.fillStyle(0x4a2e1a); g.fillRect(x - 6, y - 54, 12, 60);
+    g.fillStyle(0x6a4428); g.fillRect(x - 6, y - 54, 4, 60);
+    g.fillStyle(0x2f5a24); g.fillCircle(x, y - 72, 30); g.fillCircle(x - 22, y - 56, 19); g.fillCircle(x + 22, y - 56, 19);
+    g.fillStyle(0x4a8a36); g.fillCircle(x - 8, y - 80, 17); g.fillCircle(x + 14, y - 68, 12);
+    g.fillStyle(0x6fb04c); g.fillCircle(x - 12, y - 86, 7);
   }
 
   reglas() {
-    return [
-      ['guardia_cuadrado', 'neutral', 'Juego 1: luz roja, luz verde. Pueden moverse mientras la muñeca canta.'],
-      ['guardia_cuadrado', 'neutral', 'Cuando la muñeca se voltea, quédense quietos. Quien se mueva, queda eliminado.'],
-      ['guardia_cuadrado', 'neutral', `Tienen ${this.tiempo} segundos para cruzar la raya roja.`],
-      ['rick', 'neutral', 'Muévete con las flechas o la palanca. Y cuando se voltee... ni respires.'],
-    ];
+    return {
+      objetivo: ['Corre mientras la muñeca canta de espaldas.', 'Cuando se voltea: ¡quieto! Si te mueves, se llena su ojo rojo.', 'Cruza la raya rosada antes de que se acabe el tiempo.'],
+      controles: [['palanca', 'Moverse'], ['pausa', 'Pausa']],
+      frase: ['guardia_cuadrado', 'neutral', 'Juego 1. Que nadie se mueva cuando la muñeca los mire.'],
+    };
   }
 
   empezar() {
@@ -115,25 +122,29 @@ export class LuzRoja extends Juego {
     this.tLuz = dur;
     this.muneca.setTexture('muneca_espalda');
     this.mini.setTexture('muneca_espalda');
-    this.ventana.setStrokeStyle(2, 0x23b39c);
-    if (this.velo) { this.velo.setFillStyle(0xff1a3d, 0); this.tweens.killTweensOf(this.barrido); this.barrido.setFillStyle(0xff1a3d, 0); }
-    cancionMuneca(dur);
-    this.hud.setExtra('LUZ VERDE', 0x23b39c);
+    this.ventana.setStrokeStyle(3, 0x2fd4b4);
+    this.luzTxt.setText(rapido ? '¡RÁPIDA!' : 'VERDE').setColor(rapido ? COLOR.oro : COLOR.verde);
+    this.velo.setFillStyle(0xff1a3d, 0);
+    this.tweens.killTweensOf(this.barrido);
+    this.barrido.setFillStyle(0xff1a3d, 0);
+    if (!cantoCoreano(dur)) cancionMuneca(dur);
+    this.hud.setExtra('¡LUZ VERDE!', COLOR.verde);
   }
 
   roja() {
     this.luz = 'roja';
     this.tLuz = dif(2.6, 3, 3.4) + Math.random() * 1.2;
-    this.gracia = dif(0.42, 0.3, 0.18);
+    this.gracia = dif(0.45, 0.32, 0.2);
     // el giro de la cabeza: se achica de lado y aparece la cara
     this.tweens.add({ targets: this.muneca, scaleX: 0.1, duration: 90, yoyo: true, onYoyo: () => this.muneca.setTexture('muneca_frente') });
-    this.tweens.add({ targets: this.mini, scaleX: 0.04, duration: 90, yoyo: true, onYoyo: () => this.mini.setTexture('muneca_frente') });
-    this.ventana.setStrokeStyle(2, 0xff3355);
-    this.velo.setFillStyle(0xff1a3d, 0.1);
-    this.barrido.setFillStyle(0xff1a3d, 0.22).setX(this.scale.width + 20);
-    this.tweens.add({ targets: this.barrido, x: -20, duration: 900, ease: 'Sine.easeInOut', yoyo: true });
+    this.tweens.add({ targets: this.mini, scaleX: 0.05, duration: 90, yoyo: true, onYoyo: () => this.mini.setTexture('muneca_frente') });
+    this.ventana.setStrokeStyle(3, 0xff3355);
+    this.luzTxt.setText('ROJA').setColor(COLOR.rojo);
     tono(140, 0.25, 'metal', 0.12);
-    this.hud.setExtra('LUZ ROJA', 0xff3355);
+    this.hud.setExtra('¡LUZ ROJA! QUIETO', COLOR.rojo);
+    this.velo.setFillStyle(0xff1a3d, 0.1);
+    this.barrido.setFillStyle(0xff1a3d, 0.22).setX(this.scale.width + 30);
+    this.tweens.add({ targets: this.barrido, x: -30, duration: 900, ease: 'Sine.easeInOut', yoyo: true });
     // los torpes del grupo se mueven tarde
     this.gente.forEach((g) => { if (g.vivo && !g.listo) g.tardanza = g.torpe && Math.random() < 0.5 ? 0.2 + Math.random() * 0.8 : 0; });
   }
@@ -148,14 +159,17 @@ export class LuzRoja extends Juego {
 
     // el jugador
     const j = this.jugador;
-    const vx = this.inp.x * this.velJugador, vy = this.inp.y * this.velJugador * 0.7;
-    const moviendo = Math.hypot(this.inp.x, this.inp.y) > 0.15;
+    const mov = Math.hypot(this.inp.x, this.inp.y);
+    const moviendo = mov > 0.15;
     if (!j.listo) {
-      j.mover(vx, vy, dt, { limites: new Phaser.Geom.Rectangle(20, PISO_Y0, LARGO - 120, PISO_Y1 - PISO_Y0) });
+      j.mover(this.inp.x * this.velJugador, this.inp.y * this.velJugador * 0.7, dt, { limites: new Phaser.Geom.Rectangle(20, PISO_Y0, LARGO - 180, PISO_Y1 - PISO_Y0) });
       if (this.luz === 'roja' && this.gracia <= 0 && moviendo) {
-        this.visto += dt;
-        if (this.visto > dif(0.12, 0.06, 0.02)) { this.disparar(j, true); return; }
-      } else this.visto = 0;
+        // el ojo se llena: más rápido mientras más te mueves
+        this.visto += dt * (0.6 + mov) * dif(1.4, 2.2, 3.2);
+        if (Math.random() < dt * 10) tono(1500, 0.03, 'cuadrada', 0.04);
+        if (this.visto >= 1) { this.disparar(j, true); return; }
+      } else this.visto = Math.max(0, this.visto - dt * 0.8);
+      this.ojo.width = 50 * Math.min(1, this.visto);
       if (j.x >= META) {
         j.listo = true;
         j.anim('celebrate', 'right');
@@ -167,11 +181,11 @@ export class LuzRoja extends Juego {
     this.familia.forEach((f, i) => {
       if (f.listo) return;
       if (this.luz === 'verde') {
-        const tx = Math.min(META + 20 + i * 12, j.x + 30 - i * 26);
-        const ty = Phaser.Math.Clamp(j.y + [-24, 22, 40][i], PISO_Y0 + 4, PISO_Y1);
+        const tx = Math.min(META + 28 + i * 16, j.x + 40 - i * 34);
+        const ty = Phaser.Math.Clamp(j.y + [-32, 30, 54][i], PISO_Y0 + 4, PISO_Y1);
         const dx = tx - f.x, dy = ty - f.y;
         const d = Math.hypot(dx, dy);
-        if (d > 6) f.mover((dx / d) * f.vel, (dy / d) * f.vel * 0.6, dt);
+        if (d > 8) f.mover((dx / d) * f.vel, (dy / d) * f.vel * 0.6, dt);
         else f.mover(0, 0, dt);
         if (f.x >= META && j.listo) { f.listo = true; f.anim('celebrate', 'right'); }
       } else f.mover(0, 0, dt);
@@ -182,45 +196,50 @@ export class LuzRoja extends Juego {
       if (!g.vivo || g.listo) return;
       let mueve = this.luz === 'verde';
       if (this.luz === 'roja' && g.tardanza > 0) { g.tardanza -= dt; mueve = true; if (this.gracia <= 0 && Math.random() < 0.08) { this.disparar(g); return; } }
-      if (mueve) g.mover(g.vel, (Math.random() - 0.5) * 20, dt);
+      if (mueve) g.mover(g.vel, (Math.random() - 0.5) * 26, dt);
       else g.mover(0, 0, dt);
       if (g.x >= META) { g.listo = true; g.anim('idle', 'right'); }
     });
 
-    // el final del juego
-    if (j.listo && this.familia.every((f) => f.listo || f.x > META - 60)) {
+    if (j.listo && this.familia.every((f) => f.listo || f.x > META - 80)) {
       this.familia.forEach((f) => { f.listo = true; f.anim('celebrate', 'right'); });
+      this.sobra = this.tiempo / this.tiempoTotal;
       this.ganar({ lineas: [['steph', 'feliz', '¡Pasamos! ¡Los cuatro! No miren para atrás.']] });
       return;
     }
     if (this.tiempo <= 0) {
-      // se acabó el tiempo: los que no cruzaron quedan eliminados
       this.gente.filter((g) => g.vivo && !g.listo).forEach((g, i) => this.time.delayedCall(i * 120, () => this.disparar(g)));
       if (!j.listo) this.perder('SE ACABÓ EL TIEMPO');
-      else this.ganar();
+      else { this.sobra = 0; this.ganar(); }
     }
+  }
+
+  estrellas() {
+    const base = this.sobra > 0.35 ? 3 : this.sobra > 0.15 ? 2 : 1;
+    return base - Math.max(0, this.vidasInicio - E.vidas);
   }
 
   disparar(a, esJugador = false) {
     if (!a.vivo) return;
+    this.fogonazo(a);
     if (esJugador) {
-      this.hud.setExtra('¡TE MOVISTE!', 0xff3355);
+      this.hud.setExtra('¡TE MOVISTE!', COLOR.rojo);
       fxSobre(this, a, 'exclamacion');
       sacudir(this, 150, 0.01);
-      this.fogonazo(a);
       this.perder('ELIMINADO', { modo: 'disparo' });
       return;
     }
     this.contarEliminado();
-    this.fogonazo(a);
     eliminar(this, a);
+    // los de al lado se asustan
+    this.gente.forEach((g) => { if (g.vivo && g !== a && Math.hypot(g.x - a.x, g.y - a.y) < 50) g.anim('stagger', null, true); });
   }
 
   /** el destello del rifle desde el guardia más cercano hacia el eliminado */
   fogonazo(a) {
     const g = this.guardias.reduce((m, x) => (Math.abs(x.x - a.x) < Math.abs(m.x - a.x) ? x : m), this.guardias[0]);
-    const linea = this.add.line(0, 0, g.x, g.y - 24, a.x, a.y - 24, 0xfff2a0, 0.8).setOrigin(0).setDepth(7001);
-    const flash = this.add.circle(g.x, g.y - 24, 4, 0xfff2a0).setDepth(7002);
+    const linea = this.add.line(0, 0, g.x, g.y - 32, a.x, a.y - 32, 0xfff2a0, 0.8).setOrigin(0).setDepth(7001);
+    const flash = this.add.circle(g.x, g.y - 32, 5, 0xfff2a0).setDepth(7002);
     this.tweens.add({ targets: [linea, flash], alpha: 0, duration: 160, onComplete: () => { linea.destroy(); flash.destroy(); } });
   }
 }

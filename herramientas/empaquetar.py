@@ -37,19 +37,27 @@ for f in m['ui']['fuentes'].values():
 # el juego solo usa cuadros, fps y bucle de cada animación: los datos por cuadro (cajas, manos...) se quedan en el kit
 def flaco(anims):
     return {n: {k: d[k] for k in ('cuadros', 'fps', 'loop') if k in d} for n, d in anims.items()}
-for a in m['atletas'].values():
-    for p in a.get('packs', {}).values():
-        p['anims'] = flaco(p['anims'])
-for a in m['animales'].values():
-    a['anims'] = flaco(a['anims'])
-m.pop('creditos', None)
-json.dump(m, open(man_p, 'w'), ensure_ascii=False, separators=(',', ':'))
-# los atlas, sin espacios
-for r, _, fs in os.walk(kit):
-    for f in fs:
-        if f.endswith('.json') and f != 'manifest.json':
-            q = os.path.join(r, f)
-            json.dump(json.load(open(q)), open(q, 'w'), separators=(',', ':'))
+
+def adelgazar(carpeta, man):
+    for a in man.get('atletas', {}).values():
+        for p in a.get('packs', {}).values():
+            p['anims'] = flaco(p['anims'])
+    for a in man.get('animales', {}).values():
+        a['anims'] = flaco(a['anims'])
+    man.pop('creditos', None)
+    json.dump(man, open(os.path.join(carpeta, 'manifest.json'), 'w'), ensure_ascii=False, separators=(',', ':'))
+    # los atlas, sin espacios
+    for r, _, fs in os.walk(carpeta):
+        for f in fs:
+            if f.endswith('.json') and f != 'manifest.json':
+                q = os.path.join(r, f)
+                json.dump(json.load(open(q)), open(q, 'w'), separators=(',', ':'))
+
+adelgazar(kit, m)
+# el kit de la gente (los otros jugadores): solo personajes, sin audio ni fuentes
+gente = os.path.join(dist, 'assets', 'kit_gente')
+if os.path.exists(gente):
+    adelgazar(gente, json.load(open(os.path.join(gente, 'manifest.json'))))
 esc = os.path.join(kit, 'audio', 'escuchar.html')
 if os.path.exists(esc):
     os.remove(esc)

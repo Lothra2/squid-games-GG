@@ -1,6 +1,6 @@
 """Pasa las imágenes de Higgsfield (arte/higgsfield) a pixel del juego en public/assets/fondos.
 
-Cada fondo queda a 480 x 270 (la resolución del juego), con una paleta corta y sin tramado, para que se vea
+Cada fondo queda a 640 x 360 (la resolución del juego), con una paleta corta y sin tramado, para que se vea
 pixel de verdad al lado de los sprites de PixelForja. La muñeca se recorta del verde.
 
     python3 herramientas/arte.py
@@ -21,24 +21,23 @@ def pixel(im, w, h, colores=64):
     im = im.crop((x, y, x + w, y + h))
     return im.quantize(colores, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).convert('RGB')
 
-FONDOS = ['lancha', 'isla', 'metro', 'dormitorio', 'frontman', 'escaleras', 'titulo', 'gas', 'galleta', 'tira',
-          'canicas', 'puente', 'calamar', 'mingle', 'pentatlon', 'cuerda', 'cielo', 'amanecer', 'casa', 'votacion',
-          'laberinto']
+FONDOS = ['dormitorio', 'frontman', 'escaleras', 'titulo', 'galleta', 'tira',
+          'canicas', 'puente', 'calamar', 'mingle', 'pentatlon', 'cuerda', 'cielo', 'votacion']
 for n in FONDOS:
-    pixel(Image.open(os.path.join(src, n + '.png')), 480, 270).save(os.path.join(out, n + '.png'), optimize=True)
+    pixel(Image.open(os.path.join(src, n + '.png')), 640, 360).save(os.path.join(out, n + '.png'), optimize=True)
 
 # la pared del cielo pintado de luz roja: solo la pared (sin el piso), 140 de alto, y en espejo para que empalme
 im = Image.open(os.path.join(src, 'luz_roja.png')).convert('RGB')
 pared = im.crop((0, 0, im.width, int(im.height * 0.78)))
-w = round(pared.width * 140 / pared.height)
-pared = pixel(pared, w, 140, 48)
-doble = Image.new('RGB', (w * 2, 140))
+w = round(pared.width * 186 / pared.height)
+pared = pixel(pared, w, 186, 48)
+doble = Image.new('RGB', (w * 2, 186))
 doble.paste(pared, (0, 0))
 doble.paste(pared.transpose(Image.FLIP_LEFT_RIGHT), (w, 0))
 doble.save(os.path.join(out, 'pared_cielo.png'), optimize=True)
 
 # la muñeca: fuera el verde, recortada a su caja, a 128 de alto
-def muneca(n, alto=128):
+def muneca(n, alto=176):
     im = Image.open(os.path.join(src, n + '.png')).convert('RGBA')
     px = im.load()
     for y in range(im.height):

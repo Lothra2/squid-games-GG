@@ -1,0 +1,4136 @@
+{
+ "juego": "El Juego del Calamar GG (gente)",
+ "generado_con": "PixelForja",
+ "version": 1,
+ "tipo": "kit a medida",
+ "resolucion": [640,360],
+ "celda": 64,
+ "filas": ["right","down","up"],
+ "atletas": {
+  "j_abuela_nerva": {
+   "nombre": "Jugador 060",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "060",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_abuela_nerva/base.json",
+     "imagen": "atletas/j_abuela_nerva/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 18.4
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 30.5
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[18,-12],[3,-3],[-4,-6]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_abuela_nerva/juegos.json",
+     "imagen": "atletas/j_abuela_nerva/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,2,6.7,12,16,17.7]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[16,-23],[5,-20],[-5,-25]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 10.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_abuela_nerva/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_andres": {
+   "nombre": "Jugador 385",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "385",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_andres/base.json",
+     "imagen": "atletas/j_andres/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 19.4
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 32
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[19,-10],[2,-3],[-3,-6]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_andres/juegos.json",
+     "imagen": "atletas/j_andres/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,2.1,7,12.6,16.8,18.6]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[17,-23],[6,-20],[-6,-25]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 10.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_andres/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_ba_hoa": {
+   "nombre": "Jugador 232",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "232",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_ba_hoa/base.json",
+     "imagen": "atletas/j_ba_hoa/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 15.1
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 25
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[18,-13],[3,-3],[-4,-6]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_ba_hoa/juegos.json",
+     "imagen": "atletas/j_ba_hoa/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,1.6,5.5,9.8,13.1,14.5]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[18,-23],[7,-20],[-7,-25]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 10.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_ba_hoa/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_camila": {
+   "nombre": "Jugador 240",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "240",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_camila/base.json",
+     "imagen": "atletas/j_camila/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 22.8
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 37.7
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[21,-13],[2,-3],[-3,-6]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_camila/juegos.json",
+     "imagen": "atletas/j_camila/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,2.5,8.2,14.8,19.8,21.9]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[15,-23],[4,-20],[-4,-25]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 10.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_camila/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_carmen": {
+   "nombre": "Jugador 224",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "224",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_carmen/base.json",
+     "imagen": "atletas/j_carmen/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 15.9
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 26.3
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[18,-13],[3,-3],[-4,-6]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_carmen/juegos.json",
+     "imagen": "atletas/j_carmen/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,1.7,5.8,10.4,13.8,15.2]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[18,-23],[7,-20],[-7,-25]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 10.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_carmen/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_ender": {
+   "nombre": "Jugador 201",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "201",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_ender/base.json",
+     "imagen": "atletas/j_ender/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 15.9
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 26.3
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[18,-12],[2,-3],[-3,-6]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_ender/juegos.json",
+     "imagen": "atletas/j_ender/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,1.7,5.8,10.4,13.8,15.2]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[19,-23],[8,-20],[-8,-25]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 10.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_ender/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_gabo": {
+   "nombre": "Jugador 408",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "408",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_gabo/base.json",
+     "imagen": "atletas/j_gabo/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 19.4
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 32
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[18,-10],[2,-3],[-3,-6]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_gabo/juegos.json",
+     "imagen": "atletas/j_gabo/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,2.1,7,12.6,16.8,18.6]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[17,-23],[6,-20],[-6,-25]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 10.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_gabo/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_goro": {
+   "nombre": "Jugador 333",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "333",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_goro/base.json",
+     "imagen": "atletas/j_goro/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 16.6
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 27.4
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[20,-15],[2,-3],[-3,-7]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_goro/juegos.json",
+     "imagen": "atletas/j_goro/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,1.8,6,10.8,14.4,15.9]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[22,-27],[10,-24],[-10,-29]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 12.5
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_goro/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_jhonder": {
+   "nombre": "Jugador 022",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "022",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_jhonder/base.json",
+     "imagen": "atletas/j_jhonder/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 19.8
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 32.8
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[18,-9],[2,-3],[-3,-5]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_jhonder/juegos.json",
+     "imagen": "atletas/j_jhonder/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,2.2,7.2,12.9,17.2,19]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[15,-20],[4,-17],[-4,-22]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 8.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_jhonder/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_kenji": {
+   "nombre": "Jugador 318",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "318",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_kenji/base.json",
+     "imagen": "atletas/j_kenji/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 15.9
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 26.3
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[19,-12],[2,-3],[-3,-6]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_kenji/juegos.json",
+     "imagen": "atletas/j_kenji/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,1.7,5.8,10.4,13.8,15.2]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[19,-23],[8,-20],[-8,-25]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 10.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_kenji/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_lan": {
+   "nombre": "Jugador 376",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "376",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_lan/base.json",
+     "imagen": "atletas/j_lan/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 19.8
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 32.8
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[20,-13],[2,-3],[-3,-5]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_lan/juegos.json",
+     "imagen": "atletas/j_lan/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,2.2,7.2,12.9,17.2,19]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[15,-20],[4,-17],[-4,-22]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 8.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_lan/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_minh": {
+   "nombre": "Jugador 423",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "423",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_minh/base.json",
+     "imagen": "atletas/j_minh/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 19.4
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 32
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[21,-11],[2,-3],[-3,-6]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_minh/juegos.json",
+     "imagen": "atletas/j_minh/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,2.1,7,12.6,16.8,18.6]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[17,-23],[6,-20],[-6,-25]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 10.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_minh/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_pipe": {
+   "nombre": "Jugador 406",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "406",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_pipe/base.json",
+     "imagen": "atletas/j_pipe/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 17.2
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 28.5
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[18,-11],[2,-3],[-3,-5]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_pipe/juegos.json",
+     "imagen": "atletas/j_pipe/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,1.9,6.2,11.2,15,16.5]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[16,-20],[5,-17],[-5,-22]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 8.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_pipe/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_ryu": {
+   "nombre": "Jugador 269",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "269",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_ryu/base.json",
+     "imagen": "atletas/j_ryu/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 26.9
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 44.5
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[23,-11],[2,-3],[-3,-7]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_ryu/juegos.json",
+     "imagen": "atletas/j_ryu/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,2.9,9.7,17.5,23.4,25.8]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[15,-25],[4,-22],[-4,-27]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 12.5
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_ryu/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_tetsu": {
+   "nombre": "Jugador 455",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "455",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_tetsu/base.json",
+     "imagen": "atletas/j_tetsu/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 18.6
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 30.8
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[19,-10],[2,-3],[-3,-5]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_tetsu/juegos.json",
+     "imagen": "atletas/j_tetsu/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,2,6.7,12.1,16.2,17.9]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[15,-20],[4,-17],[-4,-22]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 8.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_tetsu/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_toto": {
+   "nombre": "Jugador 064",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "064",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_toto/base.json",
+     "imagen": "atletas/j_toto/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 11.2
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 18.6
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[18,-13],[2,-3],[-2,-4]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_toto/juegos.json",
+     "imagen": "atletas/j_toto/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,1.2,4.1,7.3,9.8,10.8]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[15,-16],[6,-14],[-6,-18]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 6.7
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_toto/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_tuan": {
+   "nombre": "Jugador 169",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "169",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_tuan/base.json",
+     "imagen": "atletas/j_tuan/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 15.4
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 25.5
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[17,-12],[2,-2],[-2,-3]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_tuan/juegos.json",
+     "imagen": "atletas/j_tuan/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,1.7,5.6,10,13.4,14.8]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[12,-15],[3,-13],[-3,-17]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 6.7
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_tuan/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_yuli": {
+   "nombre": "Jugador 252",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "252",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_yuli/base.json",
+     "imagen": "atletas/j_yuli/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 19.8
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 32.8
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[18,-15],[4,-3],[-2,-5]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_yuli/juegos.json",
+     "imagen": "atletas/j_yuli/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,2.2,7.2,12.9,17.2,19]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[14,-20],[3,-17],[-3,-22]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 8.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_yuli/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  },
+  "j_yusmary": {
+   "nombre": "Jugador 386",
+   "celda": 64,
+   "pivote": [32,62],
+   "numero": "386",
+   "packs": {
+    "base": {
+     "atlas": "atletas/j_yusmary/base.json",
+     "imagen": "atletas/j_yusmary/base.png",
+     "anims": {
+      "idle": {
+       "cuadros": 8,
+       "fps": 6,
+       "loop": true
+      },
+      "walk": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 19.4
+      },
+      "run": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 32
+      },
+      "jump": {
+       "cuadros": 10,
+       "fps": 12,
+       "loop": false
+      },
+      "hit": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "knockout": {
+       "cuadros": 10,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 6,
+         "fase": 0.6,
+         "punto": [[19,-12],[3,-3],[-4,-6]]
+        }
+       ]
+      },
+      "fall_getup": {
+       "cuadros": 12,
+       "fps": 10,
+       "loop": false
+      },
+      "celebrate": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "sad": {
+       "cuadros": 8,
+       "fps": 5,
+       "loop": true
+      },
+      "dizzy": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true
+      },
+      "stagger": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false
+      }
+     }
+    },
+    "juegos": {
+     "atlas": "atletas/j_yusmary/juegos.json",
+     "imagen": "atletas/j_yusmary/juegos.png",
+     "anims": {
+      "judo_grip": {
+       "cuadros": 4,
+       "fps": 10,
+       "loop": true
+      },
+      "grab_hold": {
+       "cuadros": 4,
+       "fps": 8,
+       "loop": true
+      },
+      "fall_off": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        }
+       ]
+      },
+      "dash": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.67,
+         "pie": "cerca"
+        }
+       ],
+       "desplazamiento": [0,2.1,7,12.6,16.8,18.6]
+      },
+      "edge_teeter": {
+       "cuadros": 8,
+       "fps": 10,
+       "loop": true
+      },
+      "jab": {
+       "cuadros": 6,
+       "fps": 16,
+       "loop": false,
+       "eventos": [
+        {
+         "tipo": "impacto",
+         "cuadro": 2,
+         "fase": 0.33,
+         "punto": [[16,-23],[5,-20],[-5,-25]]
+        }
+       ]
+      },
+      "balance_walk": {
+       "cuadros": 8,
+       "fps": 8,
+       "loop": true,
+       "eventos": [
+        {
+         "tipo": "paso",
+         "cuadro": 0,
+         "fase": 0,
+         "pie": "cerca"
+        },
+        {
+         "tipo": "paso",
+         "cuadro": 4,
+         "fase": 0.5,
+         "pie": "lejos"
+        }
+       ],
+       "avance": 10.6
+      },
+      "throw": {
+       "cuadros": 6,
+       "fps": 12,
+       "loop": false
+      },
+      "dodge_jump": {
+       "cuadros": 8,
+       "fps": 14,
+       "loop": false,
+       "elevacion": [0,0,5,16,17,8,0,0],
+       "eventos": [
+        {
+         "tipo": "despegue",
+         "cuadro": 2,
+         "fase": 0.25
+        },
+        {
+         "tipo": "aterriza",
+         "cuadro": 6,
+         "fase": 0.75
+        }
+       ]
+      }
+     }
+    }
+   },
+   "retratos": {
+    "archivo": "atletas/j_yusmary/retratos.png",
+    "chico": 40,
+    "grande": 96,
+    "expresiones": ["neutral","feliz","enojo","triste","susto","cerrado","dolor","burla"],
+    "escala_grande": 1
+   }
+  }
+ },
+ "creditos": "CREDITOS.txt",
+ "notas": ["Hojas: fila = dirección (orden de `filas`), columna = cuadro. El pivote es el punto de apoyo (pies) y no se mueve.","eventos: en qué cuadro cae cada paso, golpe (impacto), despegue, suelta (pelota, bala, jabalina, hechizo), aterrizaje y brazada (la mano entra al agua).","avance: pixeles que avanza el cuerpo en un ciclo sin patinar. Ritmo = velocidad_del_juego * cuadros / (avance * fps).","elevacion: pixeles que el juego sube el sprite en cada cuadro (saltos que no caben en la celda); la sombra queda en el piso.","agua: fila de la superficie en la celda; el juego puede dibujar su piscina detrás y el nadador ya trae el tinte y las gotas.","desplazamiento: en las acciones que avanzan (salto largo, clavado, remate), pixeles que el juego mueve el sprite hacia donde mira, acumulados desde el primer cuadro.","rumbo: en las pruebas de campo, de frente y de espalda se dibuja la diagonal más cercana; rumbo dice hacia dónde moverlo en cada fila.","packs: un atlas por pack (JSON Hash de TexturePacker, para this.load.atlas de Phaser). Cada cuadro se llama <anim>_<fila>_<cuadro>, con la fila por nombre (right, down...) y el cuadro desde 0.","retratos.png: arriba los chicos de 40 x 40 (el i en x = i * 40), abajo los grandes de 96 x 96 (el i en x = i * 96, y = 40), en el orden de `expresiones`. El grande es la cabeza y los hombros redibujados a 96, con contorno de un pixel (escala_grande 1: ya no es el sprite x3)."]
+}

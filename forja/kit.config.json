@@ -2,20 +2,14 @@
   "$schema": "../../pixel_forja/docs/kit-a-medida.schema.json",
   "juego": "El Juego del Calamar GG",
   "resolucion": [
-    480,
-    270
+    640,
+    360
   ],
-  "celda": 48,
+  "celda": 64,
   "filas": [
     "right",
     "down",
     "up"
-  ],
-  "datos_por_cuadro": [
-    "cajas",
-    "manos",
-    "cabeza",
-    "pies"
   ],
   "fichas": "fichas/",
   "packs": {
@@ -25,7 +19,6 @@
       "run",
       "jump",
       "hit",
-      "die",
       "knockout",
       "fall_getup",
       "celebrate",
@@ -51,7 +44,6 @@
       "judo_grip",
       "balance_walk",
       "balance_wobble",
-      "balance_fall",
       "fall_off",
       "edge_teeter",
       "dodge_jump",
@@ -59,9 +51,7 @@
       "punch",
       "dash",
       "duck_run",
-      "kick",
-      "attack",
-      "lift"
+      "kick"
     ],
     "calle": [
       "idle",
@@ -75,7 +65,9 @@
       "point",
       "jump",
       "dance",
-      "jab"
+      "jab",
+      "knockout",
+      "fall_getup"
     ]
   },
   "retratos": true,

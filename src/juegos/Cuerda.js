@@ -9,45 +9,48 @@ import { E, dif } from '../core/estado.js';
 import { sfx, tono, musica, cancionMuneca } from '../core/sonido.js';
 import { eliminar, sacudir } from '../core/efectos.js';
 import { cartel, esperar } from '../core/dialogo.js';
+import { COLOR } from '../core/ui.js';
 
-const PISO = 160, X_INI = 40, X_FIN = 430, HUECO = [226, 252];
-const MANO_I = [52, 112], MANO_D = [420, 104];
+const PISO = 213, X_INI = 53, X_FIN = 573, HUECO = [301, 336];
+const MANO_I = [69, 149], MANO_D = [560, 139];
 
 export class Cuerda extends Juego {
   constructor() { super('Cuerda'); }
+  ambiente() { return { vineta: 0.65, motas: 20, color: 0xcfe0ff }; }
 
   armar() {
     const W = this.scale.width, H = this.scale.height;
     this.add.image(W / 2, H / 2, 'cuerda').setDepth(-100);
     // el hueco del puente
     const g = this.add.graphics().setDepth(-50);
-    g.fillStyle(0x0d0c1c); g.fillRect(HUECO[0], PISO - 8, HUECO[1] - HUECO[0], 14);
-    g.fillStyle(0x6a4a5a); g.fillRect(HUECO[0] - 2, PISO - 8, 2, 16); g.fillRect(HUECO[1], PISO - 8, 2, 12);
+    g.fillStyle(0x0d0c1c); g.fillRect(HUECO[0], PISO - 11, HUECO[1] - HUECO[0], 19);
+    g.fillStyle(0x6a4a5a); g.fillRect(HUECO[0] - 3, PISO - 11, 3, 24); g.fillRect(HUECO[1], PISO - 11, 3, 18);
+    g.fillStyle(0x8a6a5a); g.fillRect(HUECO[0] - 10, PISO + 6, 8, 3); g.fillRect(HUECO[1] + 2, PISO + 4, 9, 3);
     // la muñeca a la derecha y un guardia a la izquierda con la otra punta
-    this.muneca = this.add.image(452, 150, 'muneca_frente').setOrigin(0.5, 1).setScale(0.62).setDepth(140);
-    this.guardia = new Actor(this, 'guardia_triangulo', 42, 150, { dir: 'right' });
+    this.muneca = this.add.image(603, 200, 'muneca_frente').setOrigin(0.5, 1).setScale(0.62).setDepth(190);
+    this.guardia = new Actor(this, 'guardia_triangulo', 56, 200, { dir: 'right' });
     this.cuerda = this.add.graphics();
     this.sombraCuerda = this.add.graphics().setDepth(PISO - 2);
-    this.crearJugador(70, PISO, 'right');
-    this.crearFamilia([[58, PISO - 3], [48, PISO + 2], [64, PISO + 4]]);
-    this.familia.forEach((f, i) => { f.sep = 14 + i * 12; f.alto = 0; f.vz = 0; });
+    this.crearJugador(93, PISO, 'right');
+    this.crearFamilia([[77, PISO - 4], [64, PISO + 3], [85, PISO + 5]]);
+    this.familia.forEach((f, i) => { f.sep = 19 + i * 16; f.alto = 0; f.vz = 0; });
     // otros jugadores adelante y atrás
-    this.gente = this.crearGente(dif(3, 4, 5), (i) => [100 + i * 22, PISO + ((i % 2) * 4 - 2), 'right']);
-    this.gente.forEach((g) => { g.vz = 0; g.torpe = Math.random() < 0.45; g.vel = 26 + Math.random() * 10; });
+    this.gente = this.crearGente(dif(3, 4, 5), (i) => [133 + i * 29, PISO + ((i % 2) * 5 - 2), 'right']);
+    this.gente.forEach((g) => { g.vz = 0; g.torpe = Math.random() < 0.45; g.vel = 35 + Math.random() * 13; g.polvo = false; });
     this.fase = 0;
     this.periodo = dif(1.8, 1.5, 1.2);
     this.tiempo = dif(70, 55, 45);
+    this.tiempoTotal = this.tiempo;
     this.j = { vz: 0 };
     this.vueltas = 0;
   }
 
   reglas() {
-    return [
-      ['guardia_cuadrado', 'neutral', 'Juego 9: saltar la cuerda. Crucen el puente mientras la cuerda gira.'],
-      ['guardia_cuadrado', 'neutral', 'Si la cuerda los toca, o si caen, quedan eliminados.'],
-      ['alana', 'feliz', '¡Esto lo practico en el recreo! Salta con A justo cuando la cuerda baja a los pies.'],
-      ['rick', 'susto', 'Y ojo: en el medio el puente está roto. Ese hueco hay que saltarlo también.'],
-    ];
+    return {
+      objetivo: ['Cruza el puente mientras la muñeca le da a la cuerda gigante.', 'Salta con A justo cuando la cuerda baje a tus pies (mira su sombra).', 'En el medio el puente está roto: ¡salta el hueco también!'],
+      controles: [['palanca', 'Caminar'], ['a', 'Saltar']],
+      frase: ['alana', 'feliz', '¡Esto lo practico en el recreo! Mira la sombra de la cuerda y salta.'],
+    };
   }
 
   empezar() { musica('tension'); }
@@ -58,7 +61,7 @@ export class Cuerda extends Juego {
     const base = MANO_I[1] + (MANO_D[1] - MANO_I[1]) * t;
     const panza = Math.sin(Math.PI * Phaser.Math.Clamp(t, 0, 1));
     const abajo = (1 - Math.cos(fase)) / 2; // 0 arriba, 1 abajo
-    const yMid = Phaser.Math.Linear(40, PISO + 2, abajo);
+    const yMid = Phaser.Math.Linear(53, PISO + 3, abajo);
     return base + (yMid - (MANO_I[1] + MANO_D[1]) / 2) * panza;
   }
 
@@ -67,9 +70,9 @@ export class Cuerda extends Juego {
     g.clear();
     const delante = Math.sin(this.fase) < 0; // la mitad de la vuelta pasa por delante
     g.setDepth(delante ? 1000 : -10);
-    g.lineStyle(3, delante ? 0xe0457b : 0x8a2a4a);
+    g.lineStyle(4, delante ? 0xe0457b : 0x8a2a4a);
     g.beginPath();
-    for (let x = MANO_I[0]; x <= MANO_D[0]; x += 6) {
+    for (let x = MANO_I[0]; x <= MANO_D[0]; x += 8) {
       const y = this.yCuerda(x, this.fase);
       if (x === MANO_I[0]) g.moveTo(x, y); else g.lineTo(x, y);
     }
@@ -79,7 +82,7 @@ export class Cuerda extends Juego {
     this.sombraCuerda.clear();
     if (abajo > 0.5) {
       this.sombraCuerda.fillStyle(0x000000, (abajo - 0.5) * 0.8);
-      this.sombraCuerda.fillRect(X_INI, PISO - 1, X_FIN - X_INI, 3);
+      this.sombraCuerda.fillRect(X_INI, PISO - 1, X_FIN - X_INI, 4);
     }
   }
 
@@ -92,7 +95,7 @@ export class Cuerda extends Juego {
 
   gravedad(a, dt) {
     if (a.alto <= 0 && a.vz <= 0) { a.alto = 0; return; }
-    a.vz -= 560 * dt;
+    a.vz -= 747 * dt;
     a.alto = Math.max(0, a.alto + a.vz * dt);
     if (a.alto === 0) { a.vz = 0; if (a.vivo) a.anim('idle', 'right'); }
   }
@@ -115,25 +118,25 @@ export class Cuerda extends Juego {
     // el jugador
     const j = this.jugador;
     if (j.vivo) {
-      const vx = this.inp.x * 52;
-      j.x = Phaser.Math.Clamp(j.x + vx * dt, X_INI, X_FIN + 20);
+      const vx = this.inp.x * 69;
+      j.x = Phaser.Math.Clamp(j.x + vx * dt, X_INI, X_FIN + 27);
       if (j.alto <= 0) { if (Math.abs(vx) > 2) { j.mirar(vx, 0); j.anim('walk'); } else j.anim('idle', 'right'); }
-      if (this.inp.tomarA()) { if (this.saltar(j, 140)) sfx(this, 'paso_tierra_1', 0.3); }
+      if (this.inp.tomarA()) { if (this.saltar(j, 187)) sfx(this, 'paso_tierra_1', 0.3); }
       this.gravedad(j, dt);
       // el hueco
-      if (j.alto <= 0 && j.x > HUECO[0] + 3 && j.x < HUECO[1] - 3) { this.caer(j, 'CAÍSTE EN EL HUECO'); return; }
-      if (paso && j.alto < 4 && j.x < X_FIN - 4) { this.enganchar(j); return; }
+      if (j.alto <= 0 && j.x > HUECO[0] + 4 && j.x < HUECO[1] - 4) { this.caer(j, 'CAÍSTE EN EL HUECO'); return; }
+      if (paso && j.alto < 5 && j.x < X_FIN - 5) { this.enganchar(j); return; }
       if (j.x >= X_FIN) { this.llegar(); return; }
     }
 
     // la familia: va detrás y salta perfecto (cuando le toca, salta)
     this.familia.forEach((f) => {
       const tx = Math.min(j.x - f.sep, X_FIN - 6);
-      if (f.alto <= 0 && Math.abs(tx - f.x) > 2) { f.x += Math.sign(tx - f.x) * 44 * dt; f.anim('walk', 'right'); }
+      if (f.alto <= 0 && Math.abs(tx - f.x) > 2) { f.x += Math.sign(tx - f.x) * 59 * dt; f.anim('walk', 'right'); }
       // saltan un poquito antes de que baje la cuerda (y siempre sobre el hueco)
       const llega = Math.PI - this.fase;
-      if (llega > 0 && llega < w * 0.16) this.saltar(f, 140);
-      if (f.x > HUECO[0] - 6 && f.x < HUECO[1] + 2) this.saltar(f, 145);
+      if (llega > 0 && llega < w * 0.16) this.saltar(f, 187);
+      if (f.x > HUECO[0] - 8 && f.x < HUECO[1] + 3) this.saltar(f, 193);
       this.gravedad(f, dt);
     });
 
@@ -142,13 +145,18 @@ export class Cuerda extends Juego {
       if (!g.vivo) return;
       if (g.alto <= 0) { g.x += g.vel * dt; g.anim('walk', 'right'); }
       const llega = Math.PI - this.fase;
-      if (llega > 0 && llega < w * 0.16 && !(g.torpe && Math.random() < 0.02)) this.saltar(g, 140);
-      if (g.x > HUECO[0] - 8 && g.x < HUECO[0]) this.saltar(g, g.torpe && Math.random() < 0.3 ? 70 : 145);
+      if (llega > 0 && llega < w * 0.16 && !(g.torpe && Math.random() < 0.02)) this.saltar(g, 187);
+      if (g.x > HUECO[0] - 11 && g.x < HUECO[0]) this.saltar(g, g.torpe && Math.random() < 0.3 ? 93 : 193);
       this.gravedad(g, dt);
-      if (g.alto <= 0 && g.x > HUECO[0] + 3 && g.x < HUECO[1] - 3) { this.contarEliminado(); eliminar(this, g, { modo: 'caida', dy: 150 }); return; }
-      if (paso && g.alto < 4 && g.x < X_FIN) { this.contarEliminado(); sacudir(this, 100, 0.006); eliminar(this, g, { modo: 'caida', dy: 150 }); return; }
-      if (g.x > X_FIN + 30) g.setVisible(false);
+      if (g.alto <= 0 && g.x > HUECO[0] + 4 && g.x < HUECO[1] - 4) { this.contarEliminado(); eliminar(this, g, { modo: 'caida', dy: 200 }); return; }
+      if (paso && g.alto < 5 && g.x < X_FIN) { this.contarEliminado(); sacudir(this, 100, 0.006); eliminar(this, g, { modo: 'caida', dy: 200 }); return; }
+      if (g.x > X_FIN + 40) g.setVisible(false);
     });
+  }
+
+  estrellas() {
+    const sobra = this.tiempo / this.tiempoTotal;
+    return (sobra > 0.5 ? 3 : sobra > 0.25 ? 2 : 1) - Math.max(0, this.vidasInicio - E.vidas);
   }
 
   enganchar(j) {
@@ -159,14 +167,14 @@ export class Cuerda extends Juego {
 
   caer(j, motivo) {
     this.jugando = false;
-    this.perder(motivo, { modo: 'caida', dy: 150 });
+    this.perder(motivo, { modo: 'caida', dy: 200 });
   }
 
   async llegar() {
     this.jugando = false;
     this.jugador.alto = 0;
     this.jugador.anim('celebrate', 'right');
-    this.familia.forEach((f, i) => this.tweens.add({ targets: f, px: X_FIN + 4 + i * 10, duration: 600, onComplete: () => { f.alto = 0; f.anim('celebrate', 'right'); } }));
+    this.familia.forEach((f, i) => this.tweens.add({ targets: f, px: X_FIN + 5 + i * 13, duration: 600, onComplete: () => { f.alto = 0; f.anim('celebrate', 'right'); } }));
     await esperar(this, 700);
     this.ganar({ lineas: [['alana', 'feliz', '¡Les dije! Campeona de la cuerda del recreo.']] });
   }

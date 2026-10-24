@@ -142,7 +142,7 @@
   "kit": "lpc",
   "lpc": {
    "head": "male_gaunt",
-   "hair": "swept_back",
+   "hair": "plain",
    "brows": "thick",
    "nose": "straight",
    "beard": "basic",

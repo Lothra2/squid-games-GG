@@ -17,13 +17,25 @@
     }
     const inp = s.inp, k = s.scene.key;
     inp._tx = 0; inp._ty = 0;
+    if (s.__mini) {
+      const m = s.__mini;
+      if (m.tipo === 'barra' && Math.abs(m.v() - m.ideal) < m.ancho / 4) inp._kA = true;
+      if (m.tipo === 'atrapar' && m.p() > 1 - m.zona / 2 && m.p() < 1.02) inp._kA = true;
+      if (m.tipo === 'machacar') inp._kA = alterna = !alterna;
+      return;
+    }
     if (!s.jugando) { inp._kA = true; inp._tA = false; return; }
     if (k === 'LuzRoja') { inp._tx = s.luz === 'verde' && s.tLuz > 0.3 ? 1 : 0; }
-    if (k === 'Galleta') { inp._tA = s.tension < 0.55; }
+    if (k === 'Galleta') {
+      // sigue la línea con la palanca, raspa mientras no se caliente, suelta en el crac y lame si hace falta
+      const [tx, ty] = s.tangente(Math.floor(s.s));
+      inp._tx = tx; inp._ty = ty;
+      inp._tA = s.crac <= 0 && s.lamiendo <= 0 && s.tension < 0.5;
+      if (s.tension > 0.6 && s.lamidas > 0 && s.lamiendo <= 0) inp._kB = true;
+    }
     if (k === 'TiraAfloja') {
       if (s.truco) { alterna = 1 - alterna; inp._tx = alterna; }
-      const b = Math.round(s.time.now / (s.compas * 1000));
-      if ((s.tBeat < 0.035 || s.tBeat > s.compas - 0.02) && b !== ultimoBeat) { ultimoBeat = b; inp._kA = true; }
+      for (const n of s.notas) if (!n.hecha && Math.abs(n.t - s.viaje) < 0.04) { if (n.tipo === 'a') inp._kA = true; else inp._kB = true; }
     }
     if (k === 'Puente') {
       const c = s.col + 1;
@@ -38,16 +50,16 @@
     if (k === 'Cielo') {
       const j = s.jugador;
       const r = s.masCerca(j, s.rivales);
-      if (r) { const d = ir(inp, j, r.x, r.y); if (d < 26) inp._kA = true; }
+      if (r) { const d = ir(inp, j, r.x, r.y); if (d < 35) inp._kA = true; }
     }
     if (k === 'Calamar') {
       const j = s.jugador;
       if (!s.cruzo) {
-        if (j.x < 300 && j.y > 150) ir(inp, j, 305, 222);
-        else ir(inp, j, 286, 146);
+        if (j.y > 205 && j.x < 392) ir(inp, j, 398, 292);
+        else ir(inp, j, 381, 195);
       } else {
-        ir(inp, j, 240, 75);
-        if (cerca(j, s.fm) < 26) inp._kA = true;
+        ir(inp, j, 320, 100);
+        if (cerca(j, s.fm) < 36) inp._kA = true;
       }
     }
     if (k === 'Mingle' && s.fase === 'busca' && !s.adentro) {
@@ -56,7 +68,7 @@
       if (s.grupo.length < quiero) {
         const libres = [...s.familia, ...s.gente].filter((a) => a.vivo && !a.salvo && !s.grupo.includes(a) && !a.grupoNPC);
         const m = libres.sort((a, b) => cerca(a, j) - cerca(b, j))[0];
-        if (m) { const d = ir(inp, j, m.x, m.y); if (d < 30) inp._kA = true; }
+        if (m) { const d = ir(inp, j, m.x, m.y); if (d < 40) inp._kA = true; }
       } else if (s.grupo.length > quiero) inp._kB = true;
       else {
         const p = s.puertas.filter((q) => !q.ocupada).sort((a, b) => cerca(a, j) - cerca(b, j))[0];
@@ -68,17 +80,11 @@
       const j = s.jugador;
       const p = s.puertas.find((q) => q.salida);
       const camino = s.ruta(s.celda(j), [p.x, p.y]);
-      if (camino.length > 1) { const [cx, cy] = camino[0]; ir(inp, j, (cx + 0.5) * 18, (cy + 0.5) * 18 + 6); }
-      else { ir(inp, j, (p.x + 0.5) * 18, (p.y + 0.5) * 18 + 6); inp._kA = true; }
-    }
-    if (k === 'Pentatlon' && s.__mini) {
-      const m = s.__mini;
-      if (m.tipo === 'barra' && Math.abs(m.v() - m.ideal) < m.ancho / 4) inp._kA = true;
-      if (m.tipo === 'atrapar' && m.p() > 1 - m.zona / 2 && m.p() < 1.02) inp._kA = true;
-      if (m.tipo === 'machacar') inp._kA = alterna = !alterna;
+      if (camino.length > 1) { const [cx, cy] = camino[0]; ir(inp, j, (cx + 0.5) * 24, (cy + 0.5) * 24 + 6); }
+      else { ir(inp, j, (p.x + 0.5) * 24, (p.y + 0.5) * 24 + 6); inp._kA = true; }
     }
     if (k === 'Canicas') { if (Math.random() < 0.25) inp._kA = true; }
   }, 30);
-  var HUECO0 = 226;
+  var HUECO0 = 301;
   return 1;
 })()

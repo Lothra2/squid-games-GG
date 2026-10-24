@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build && python3 herramientas/empaquetar.py",
     "preview": "vite preview",
-    "kit": "cd ../pixel_forja && npx tsx scripts/kit-a-medida.ts ../squid-games-GG/public/assets/kit --config ../squid-games-GG/forja/kit.config.json"
+    "kit": "cd ../pixel_forja && npx tsx scripts/kit-a-medida.ts ../squid-games-GG/public/assets/kit --config ../squid-games-GG/forja/kit.config.json && npx tsx scripts/kit-a-medida.ts ../squid-games-GG/public/assets/kit_gente --config ../squid-games-GG/forja/kit_gente.config.json"
   },
   "dependencies": {
     "phaser": "3.90.0"

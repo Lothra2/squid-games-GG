@@ -13,14 +13,15 @@ import { Escondite } from './juegos/Escondite.js';
 import { Cuerda } from './juegos/Cuerda.js';
 import { Cielo } from './juegos/Cielo.js';
 import { Calamar } from './juegos/Calamar.js';
+import { E } from './core/estado.js';
 
 const juegos = [LuzRoja, Galleta, TiraAfloja, Canicas, Pentatlon, Mingle, Puente, Escondite, Cuerda, Cielo, Calamar];
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'juego',
-  width: 480,
-  height: 270,
+  width: 640,
+  height: 360,
   pixelArt: true,
   roundPixels: true,
   backgroundColor: '#0b0a10',
@@ -31,3 +32,5 @@ const game = new Phaser.Game({
 
 // para las pruebas automáticas
 window.__juego = game;
+// para las pruebas automáticas (herramientas/jugar_todos.mjs)
+window.__E = E;

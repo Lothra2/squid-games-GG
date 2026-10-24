@@ -10,10 +10,14 @@ import copy, json, os, random, sys
 
 forja = sys.argv[1] if len(sys.argv) > 1 else '../pixel_forja'
 src = os.path.join(forja, 'docs/ejemplos/nekketsu/fichas')
-out = os.path.join(os.path.dirname(__file__), '..', 'forja', 'fichas')
-os.makedirs(out, exist_ok=True)
-for f in os.listdir(out):
-    os.remove(os.path.join(out, f))
+# dos kits: el principal (familia, guardias, Front Man, abuelo, reclutador) y la gente (los otros jugadores)
+base_dir = os.path.join(os.path.dirname(__file__), '..', 'forja')
+out_principal = os.path.join(base_dir, 'fichas')
+out_gente = os.path.join(base_dir, 'gente')
+for d in (out_principal, out_gente):
+    os.makedirs(d, exist_ok=True)
+    for f in os.listdir(d):
+        os.remove(os.path.join(d, f))
 
 def load(n):
     return json.load(open(os.path.join(src, n + '.ficha.json')))
@@ -31,6 +35,7 @@ def save(id, f, calle=None):
     # la ropa de calle (la de siempre) para las escenas fuera de la isla: el pack "calle" del kit
     if calle:
         f['wardrobe'] = {'variants': {'calle': calle}, 'packs': {'calle': 'calle'}}
+    out = out_gente if id.startswith('j_') and id != 'j_abuelo' else out_principal
     json.dump(f, open(os.path.join(out, id + '.ficha.json'), 'w'), ensure_ascii=False, indent=1)
 
 VERDE = '#127e70'
@@ -57,6 +62,9 @@ def chandal(f, numero):
 FAMILIA = {'rick': '456', 'steph': '067', 'sophie': '018', 'alana': '222'}
 for id, num in FAMILIA.items():
     f = load(id)
+    # Rick con el pelo corto completo (el peinado hacia atrás dejaba los lados pelados)
+    if id == 'rick':
+        f['avatar']['lpc']['hair'] = 'plain'
     # lo que el chándal pone y la ropa de calle no trae, se apaga (si no, la chaqueta verde se quedaría puesta)
     base = {'jacket': None, 'collar': 'redondo', 'pattern': 'liso', 'jacketCut': 'casual', 'jacketClosed': False,
             'jacketSleeves': 'long', 'armband': None, 'neck': None, 'cape': None, 'armor': None, 'emblem': None}
@@ -122,4 +130,5 @@ r['palette']['shoes'] = '#1a1820'
 r['avatar']['lpc'].update({'hair': 'swept_back', 'hat': None, 'hatColor': None})
 save('reclutador', r)
 
-print('fichas:', sorted(os.listdir(out)))
+print('principal:', sorted(os.listdir(out_principal)))
+print('gente:', len(os.listdir(out_gente)))

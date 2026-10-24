@@ -1,47 +1,78 @@
-import Phaser from 'phaser';
-// Escenas de historia: la intro en el metro, la llegada a la isla (lancha en tormenta, gas, dormitorio y el
-// Front Man), las noches entre juegos con la votación, el game over y el final.
+// Escenas de historia, todas en pixel art con los mismos personajes: el metro y el ddakji con el reclutador, la
+// tarjeta, la casa con Thor, la lancha en la tormenta, el muelle de la isla y el gas rosado, el dormitorio y el
+// Front Man. También las noches entre juegos (con la votación y la máquina donde se gasta la plata), el game over
+// y el final.
 
-import { E, sangre, NUMEROS, nombre, wones, NINAS, guardar } from '../core/estado.js';
+import Phaser from 'phaser';
+import { E, sangre, NUMEROS, nombre, wones, millones, guardar, TIENDA } from '../core/estado.js';
 import { Entrada } from '../core/entrada.js';
 import { Actor } from '../core/actor.js';
 import { hablar, cartel, esperar, elegir, esperarA } from '../core/dialogo.js';
 import { musica, pararMusica, sfx, ambiente, tono, despertar, fanfarria, bloque } from '../core/sonido.js';
-import { lluvia, relampago, destello, sacudir, zzz, chorro } from '../core/efectos.js';
+import { lluvia, relampago, destello, sacudir, zzz, chorro, texturasDdakji } from '../core/efectos.js';
 import { avanzar, reiniciarDesdeJuego1, JUEGOS } from '../core/flujo.js';
-import { jugadoresNPC, M } from '../core/kit.js';
+import { jugadoresNPC } from '../core/kit.js';
+import { texto, icono, atmosfera, COLOR, cadaCuadro } from '../core/ui.js';
+import { altavoz } from '../core/voz.js';
+import { barra } from '../core/mini.js';
 import { logo } from './Titulo.js';
+import {
+  metro, pilarMetro, tren, pisoCerca, tarjetas, casa, cielo, islaLejos, ola, OLAS, lancha, LANCHA, muelle,
+  texturasLuz, LAMPARAS_METRO, FAROLES_MUELLE, chanchitoGrande,
+} from './pintura.js';
 
 const P = () => E.perfil;
 const ninas = () => !sangre();
+const FAM = ['rick', 'steph', 'sophie', 'alana'];
 
 /** escena de historia con ayudas para armar tomas */
 class Historia extends Phaser.Scene {
   init(data) { this.datos = data || {}; }
   create() {
     despertar();
+    const W = this.scale.width;
     this.inp = new Entrada(this, { palanca: false, botonB: false });
     this.inp.ocultarTactil(false);
     this.capa = [];
+    this.limpiezas = [];
     // la misma escena se usa varias veces (las noches): todo vuelve a cero
     this.saltar = false;
     this.yaTermino = false;
     this.puedeSaltar = true;
-    // B salta la escena entera (para quien ya la vio)
-    this.ayuda = this.add.bitmapText(this.scale.width - 4, 2, 'fuente_ui', this.inp.esTactil ? 'SALTAR >>' : 'B: saltar').setOrigin(1, 0).setDepth(9999).setTint(0x8a8a9a).setScrollFactor(0);
-    this.ayuda.setInteractive(new Phaser.Geom.Rectangle(-10, -6, this.ayuda.width + 20, 22), Phaser.Geom.Rectangle.Contains).on('pointerdown', () => { if (!this.saltar && this.puedeSaltar !== false) { this.saltar = true; this.terminar(); } });
+    texturasLuz(this);
+    atmosfera(this, { vineta: 0.5, motas: 0 });
+    // B (o tocar el botón) salta la escena entera, para quien ya la vio
+    this.ayuda = texto(this, W - 12, 10, this.inp.esTactil ? 'SALTAR  >>' : 'B  ·  SALTAR  >>', { tam: 12, color: COLOR.apagado, origen: [1, 0] }).setDepth(9999).setScrollFactor(0);
+    this.ayuda.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.pedirSalto());
     this.cameras.main.fadeIn(500);
     this.correr();
   }
   update() {
-    if (this.inp.tomarB() && !this.saltar && this.puedeSaltar !== false) { this.saltar = true; this.terminar(); }
+    if (this.inp.tomarB()) this.pedirSalto();
   }
-  limpiar() { this.capa.forEach((o) => o.destroy()); this.capa = []; }
+  pedirSalto() {
+    if (this.saltar || this.puedeSaltar === false) return;
+    this.saltar = true;
+    this.terminar();
+  }
+  alLimpiar(fn) { this.limpiezas.push(fn); }
+  limpiar() {
+    this.limpiezas.forEach((f) => f()); this.limpiezas = [];
+    this.capa.forEach((o) => o.destroy()); this.capa = [];
+  }
   fondo(key) {
     const W = this.scale.width, H = this.scale.height;
-    const f = this.add.image(W / 2, H / 2, key).setDepth(-100);
-    this.capa.push(f);
-    return f;
+    return this.img(key, W / 2, H / 2).setDepth(-100);
+  }
+  img(key, x, y) {
+    const i = this.add.image(x, y, key);
+    this.capa.push(i);
+    return i;
+  }
+  /** una luz suave sobre una lámpara */
+  luz(x, y, esc, color = 0xfff0d0, alfa = 0.4, prof = 800) {
+    const l = this.img('brillo', x, y).setScale(esc).setTint(color).setAlpha(alfa).setDepth(prof).setBlendMode(Phaser.BlendModes.ADD);
+    return l;
   }
   actor(id, x, y, dir = 'right', opts) {
     const a = new Actor(this, id, x, y, { dir, ...opts });
@@ -64,8 +95,10 @@ class Historia extends Phaser.Scene {
       this.tweens.add({ targets: a, px: x, py: y, duration: ms, onComplete: () => { a.anim('idle'); ok(); } });
     });
   }
-  texto(t, y = 135, color = 0xffffff, esc = 1) {
-    const b = this.add.bitmapText(this.scale.width / 2, y, 'fuente_ui', t).setOrigin(0.5).setTint(color).setScale(esc).setDepth(500).setMaxWidth(420).setCenterAlign();
+  /** un texto centrado (narración, carteles) */
+  rotulo(t, y, { color = COLOR.texto, tam = 15, negrita = false } = {}) {
+    const W = this.scale.width;
+    const b = texto(this, W / 2, y, t, { tam, color, negrita, ancho: W - 80, alinear: 'center', origen: [0.5, 0.5] }).setDepth(9000);
     this.capa.push(b);
     return b;
   }
@@ -74,6 +107,95 @@ class Historia extends Phaser.Scene {
     this.yaTermino = true;
     pararMusica();
     avanzar(this);
+  }
+
+  // ---------------------------------------------------------------- piezas de escenario
+
+  /** el andén del metro con sus lámparas, los pilares y el cartel de la estación */
+  armarMetro() {
+    const W = this.scale.width;
+    metro(this); pilarMetro(this);
+    this.fondo('esc_metro');
+    this.capa.push(texto(this, W / 2, 74, 'BEN THANH', { tam: 22, negrita: true, origen: [0.5, 0.5], borde: 0 }).setDepth(-99));
+    this.capa.push(texto(this, W / 2, 95, 'METRO  ·  LINEA 1', { tam: 11, color: '#46c2b4', origen: [0.5, 0.5], borde: 0 }).setDepth(-99));
+    LAMPARAS_METRO.forEach((x, i) => {
+      const l = this.luz(x, 62, 2.6, 0xd8f0ff, 0.32, -90).setScale(3, 1.6);
+      // una lámpara titila
+      if (i === 2) this.time.addEvent({ delay: 140, loop: true, callback: () => l.setAlpha(Math.random() < 0.15 ? 0.05 : 0.32) });
+    });
+    for (const x of [124, 516]) this.img('esc_pilar', x, 292).setOrigin(0.5, 1).setDepth(-40);
+  }
+
+  /**
+   * El mar con la lancha. gente: [[id, x en la lancha, dir, opciones]]. La lancha se mece, las olas corren en
+   * capas y la gente se mece con ella. Devuelve el estado y golpe() para cuando revienta una ola.
+   */
+  armarMar({ dia = false, gente = [] } = {}) {
+    const W = this.scale.width;
+    const pal = dia ? OLAS.dia : OLAS.tormenta, suf = dia ? 'd' : 't';
+    cielo(this, dia); islaLejos(this); lancha(this);
+    pal.forEach((o, i) => ola(this, `esc_ola_${suf}${i}`, o));
+    const cieloImg = this.add.tileSprite(0, 0, W, 230, dia ? 'esc_cielo_dia' : 'esc_cielo_tormenta').setOrigin(0).setDepth(-100);
+    const isla = this.add.image(560, 208, 'esc_isla_lejos').setOrigin(0.5, 1).setScale(0.45).setDepth(-93).setVisible(!dia);
+    const fondoMar = this.add.rectangle(0, 204, W, 156, pal[0].cuerpo).setOrigin(0).setDepth(-92);
+    // las dos capas de adelante van al doble, como la lancha: el mar se ve cerca y grande
+    const capas = [[0, 188, 14, -90, 1.5, 1], [1, 208, 26, -85, 2.5, 1], [1, 232, 42, -80, 3.5, 1], [2, 258, 70, 950, 5, 2], [2, 300, 100, 960, 6, 2]]
+      .map(([i, y, vel, prof, amp, esc], k) => ({ ts: this.add.tileSprite(0, y, W, 60 * esc, `esc_ola_${suf}${i}`).setOrigin(0).setTileScale(esc).setDepth(prof), y, vel: vel * (dia ? 0.5 : 1), amp: amp * (dia ? 0.5 : 1), k, esc }));
+    const L = LANCHA, PX = 312, PY = 248, ESC = 2;
+    const atras = this.add.image(PX, PY, 'esc_lancha_atras').setOrigin(L.px / L.w, L.py / L.h).setScale(ESC).setDepth(400);
+    const frente = this.add.image(PX, PY, 'esc_lancha').setOrigin(L.px / L.w, L.py / L.h).setScale(ESC).setDepth(900);
+    this.capa.push(cieloImg, isla, fondoMar, atras, frente, ...capas.map((c) => c.ts));
+    const ocupantes = gente.map(([id, lx, dir, opts]) => {
+      const a = this.actor(id, PX, PY, dir || 'right', { ...opts, escala: ESC });
+      a.capa = 400; a.sombra.setVisible(false); a.lx = lx;
+      return a;
+    });
+    const estado = { t: 0, sac: 0, vel: 1, isla, PX, PY, ang: 0, off: 0 };
+    const enMundo = (lx, ly) => {
+      const r = (estado.ang * Math.PI) / 180, dx = (lx - L.px) * ESC, dy = (ly - L.py) * ESC;
+      return { x: PX + dx * Math.cos(r) - dy * Math.sin(r), y: PY + estado.off + dx * Math.sin(r) + dy * Math.cos(r) };
+    };
+    const f = (_, dt) => {
+      const s = dt / 1000; estado.t += s;
+      const t = estado.t;
+      if (!dia) cieloImg.tilePositionX += s * 6;
+      for (const c of capas) { c.ts.tilePositionX += (s * c.vel * estado.vel) / c.esc; c.ts.y = c.y + Math.sin(t * 1.3 + c.k * 0.9) * c.amp; }
+      estado.off = Math.sin(t * 1.7) * (dia ? 3 : 7) + estado.sac;
+      estado.ang = Math.sin(t * 1.15) * (dia ? 1.2 : 2.8) + estado.sac * 0.3;
+      atras.setPosition(PX, PY + estado.off).setAngle(estado.ang);
+      frente.setPosition(PX, PY + estado.off).setAngle(estado.ang);
+      for (const a of ocupantes) {
+        const p = enMundo(a.lx, 74);
+        a.px = p.x; a.py = p.y; a.sprite.setAngle(estado.ang);
+      }
+    };
+    cadaCuadro(this, f);
+    this.alLimpiar(() => this.events.off('update', f));
+    const golpe = () => {
+      this.tweens.add({ targets: estado, sac: -14, duration: 160, yoyo: true, ease: 'Quad.easeOut' });
+      const p = enMundo(286, 48);
+      chorro(this, p.x, p.y, 50, [0xd0e0ee, 0x9ab4cc, 0xffffff], 190, { g: 320, vida: 1000, prof: 980, tam: 2 });
+      sacudir(this, 260, 0.01);
+      sfx(this, 'chapuzon', 0.6);
+      ocupantes.forEach((a) => { if (!a.id.startsWith('guardia')) { a.anim('hit', null, true); this.time.delayedCall(500, () => a.sprite.active && a.anim('idle')); } });
+    };
+    return { estado, ocupantes, golpe };
+  }
+
+  /** un rayo de verdad en el cielo, además del destello */
+  rayo() {
+    relampago(this);
+    const g = this.add.graphics().setDepth(-89);
+    let x = 80 + Math.random() * 480, y = 0;
+    const pts = [[x, y]];
+    while (y < 170) { y += 12 + Math.random() * 18; x += Math.random() * 30 - 15; pts.push([x, y]); }
+    g.lineStyle(3, 0xb8a8ff, 0.6);
+    for (let i = 1; i < pts.length; i++) g.lineBetween(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]);
+    g.lineStyle(1, 0xffffff, 1);
+    for (let i = 1; i < pts.length; i++) g.lineBetween(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]);
+    this.time.delayedCall(90, () => g.setAlpha(0));
+    this.time.delayedCall(150, () => g.setAlpha(1));
+    this.time.delayedCall(260, () => g.destroy());
   }
 }
 
@@ -95,20 +217,32 @@ const ACEPTA = {
 export class Intro extends Historia {
   constructor() { super('Intro'); }
   async correr() {
+    tren(this);
+    ambiente(this, 'viento', 0.15);
+    this.armarMetro();
+    const t = this.rotulo('Ho Chi Minh City. Las 11:40 de la noche.', 180, { color: '#d8d0c0', tam: 16 });
+    t.setDepth(-30);
+    const yo = this.actor(P(), 250, 304, 'right', { ropa: 'calle' });
+    // el último tren se va sin esperar a nadie
+    const tr = this.img('esc_tren', -40, 241).setOrigin(0, 1).setDepth(-60);
+    await this.pausa(900);
+    tono(330, 0.25, 'cuerdas', 0.06);
+    this.tweens.add({ targets: tr, x: -900, duration: 2600, ease: 'Quad.easeIn' });
+    this.tweens.add({ targets: t, alpha: 0, delay: 1800, duration: 600 });
+    await this.pausa(1600);
+    yo.anim('sad', 'right');
+    await this.pausa(900);
     musica('flauta');
-    const W = this.scale.width;
-    await this.pausa(200);
-    this.fondo('metro');
-    const t = this.texto('Ho Chi Minh City. Una noche cualquiera.', 40, 0xd8d0c0);
-    const yo = this.actor(P(), 150, 190, 'right', { ropa: 'calle' });
-    await this.pausa(1400);
-    t.destroy();
-    const rec = this.actor('reclutador', W + 20, 190, 'left');
-    await this.caminar(rec, 250, 190, 1800);
+    const rec = this.actor('reclutador', 690, 304, 'left');
+    await this.caminar(rec, 392, 304, 2200);
     rec.anim('idle', 'left');
     yo.anim('idle', 'right');
+    // los dos sobres del reclutador
+    texturasDdakji(this);
+    const a = this.img('ddakji_azul', 378, 284).setScale(0.2).setDepth(400).setAngle(-10);
+    const r = this.img('ddakji_rojo', 382, 286).setScale(0.2).setDepth(401).setAngle(8);
     await this.decir([
-      ['reclutador', 'feliz', 'Buenas noches. ¿Tiene un minutito? ¿Sabe jugar ddakji?'],
+      ['reclutador', 'feliz', 'Buenas noches. Se le fue el último tren, ¿verdad? ¿Tiene un minutito? ¿Sabe jugar ddakji?'],
       SALUDO[P()],
       ['reclutador', 'feliz', 'Es muy sencillo. Tengo dos sobres de papel: uno azul y uno rojo.'],
       ['reclutador', 'neutral', 'Yo pongo el rojo en el piso. Usted tira el azul encima. Si lo voltea, gana 100.000 wones.'],
@@ -117,31 +251,15 @@ export class Intro extends Historia {
         : ['reclutador', 'burla', 'Y si pierde... me paga con una cachetada.'],
       ACEPTA[P()],
     ]);
+    if (!this.saltar) {
+      this.tweens.add({ targets: [a, r], alpha: 0, duration: 300 });
+      await this.pausa(300);
+    }
     this.terminar();
   }
 }
 
 // ---------------------------------------------------------------- el ddakji (minijuego de la intro)
-
-export function texturasDdakji(scene) {
-  const g = scene.make.graphics({ add: false });
-  const sobre = (key, c1, c2, c3) => {
-    if (scene.textures.exists(key)) return;
-    g.clear();
-    g.fillStyle(0x1e1418); g.fillRect(0, 0, 40, 40);
-    g.fillStyle(c2); g.fillRect(1, 1, 38, 38);
-    g.fillStyle(c1); g.fillTriangle(1, 1, 39, 1, 20, 20); g.fillTriangle(1, 39, 39, 39, 20, 20);
-    g.fillStyle(c3); g.fillTriangle(1, 1, 1, 39, 20, 20);
-    g.lineStyle(1, 0x1e1418, 0.8); g.lineBetween(1, 1, 39, 39); g.lineBetween(39, 1, 1, 39);
-    g.fillStyle(0xffffff, 0.25); g.fillRect(3, 3, 12, 2);
-    g.generateTexture(key, 40, 40);
-  };
-  sobre('ddakji_azul', 0x3d6fd6, 0x2a52a8, 0x5a8cf0);
-  sobre('ddakji_rojo', 0xd63d4a, 0xa82a36, 0xf05a68);
-  // el reverso del rojo (cuando se voltea): las cuatro solapas al revés
-  sobre('ddakji_rojo_atras', 0xa82a36, 0xd63d4a, 0x8a1f2a);
-  g.destroy();
-}
 
 export class Ddakji extends Historia {
   constructor() { super('Ddakji'); }
@@ -149,19 +267,17 @@ export class Ddakji extends Historia {
     this.puedeSaltar = false;
     this.ayuda.setVisible(false);
     texturasDdakji(this);
+    pisoCerca(this);
+    this.miraTextura();
     musica('tension');
-    const W = this.scale.width, H = this.scale.height;
-    this.fondo('metro');
-    this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.35).setDepth(-50);
-    const yo = this.actor(P(), 120, 196, 'right', { ropa: 'calle' });
-    const rec = this.actor('reclutador', 360, 196, 'left');
+    this.armarMetro();
+    const yo = this.actor(P(), 250, 304, 'right', { ropa: 'calle' });
+    const rec = this.actor('reclutador', 392, 304, 'left');
     this.yo = yo; this.rec = rec;
-    // el piso de cerca: el sobre rojo
-    this.add.ellipse(W / 2, 120, 150, 50, 0x30343c).setDepth(10);
-    this.rojo = this.add.image(W / 2, 118, 'ddakji_rojo').setScale(1.4, 0.7).setDepth(11);
-    this.dif = [0.22, 0.15, 0.1][E.dificultad];
+    this.rojoChico = this.img('ddakji_rojo', 322, 306).setScale(0.36, 0.22).setDepth(300);
+    this.ancho = [0.22, 0.15, 0.1][E.dificultad];
     this.intentos = 0;
-    await this.decir([[null, null, 'Primero apunta a la orilla del sobre rojo. Después mide la fuerza. Las dos con A en el momento justo.']]);
+    await this.decir([[null, null, 'Primero apunta: la mira gira sobre el sobre rojo y lo mejor es pegarle en la orilla. Después mide la fuerza. Las dos con A en el momento justo.']]);
     this.inp.ocultarTactil(true);
     for (;;) {
       this.intentos++;
@@ -173,101 +289,124 @@ export class Ddakji extends Historia {
     pararMusica();
     fanfarria();
     yo.anim('celebrate');
+    const plata = texto(this, yo.x, yo.y - 70, '+100.000 W', { tam: 16, negrita: true, color: COLOR.verde, origen: [0.5, 0.5] }).setDepth(7000);
+    this.capa.push(plata);
+    this.tweens.add({ targets: plata, y: plata.y - 24, alpha: 0, duration: 1600, delay: 400 });
+    sfx(this, 'moneda', 0.7);
     await this.decir([
       ['reclutador', 'feliz', '¡Excelente! Aquí tiene sus 100.000 wones.'],
       ['reclutador', 'neutral', 'Usted tiene talento. Y su familia también, me imagino.'],
+      ['reclutador', 'feliz', 'Tome. Una tarjeta. Por si quiere jugar algo más grande.'],
     ]);
     this.terminar();
   }
 
-  /** un tiro: primero el punto (mira que gira por la orilla), después la fuerza (barra que sube y baja) */
+  miraTextura() {
+    if (this.textures.exists('mira')) return;
+    const g = this.make.graphics({ add: false });
+    g.lineStyle(2, 0x120e18); g.strokeCircle(14, 14, 11);
+    g.lineStyle(2, 0xffe066); g.strokeCircle(14, 14, 10);
+    g.fillStyle(0xffe066); g.fillRect(13, 0, 2, 8); g.fillRect(13, 20, 2, 8); g.fillRect(0, 13, 8, 2); g.fillRect(20, 13, 8, 2);
+    g.fillStyle(0xff4d6d); g.fillRect(12, 12, 4, 4);
+    g.generateTexture('mira', 28, 28);
+    g.destroy();
+  }
+
+  /** un tiro de cerca: la mira gira por el sobre (A la fija), la barra de fuerza (A) y el sobre azul cae */
   async tiro() {
-    const W = this.scale.width;
-    const mira = this.add.image(W / 2, 118, 'circulo').setTint(0xffe066).setDepth(20);
-    const ayuda = this.add.bitmapText(W / 2, 84, 'fuente_ui', 'A: APUNTAR A LA ORILLA').setOrigin(0.5).setDepth(30);
-    let ang = 0, r = 0;
-    const vel = [2.2, 3.1, 4][E.dificultad];
-    // la mira va y viene del centro a la orilla: lo mejor es la orilla (r cerca de 1)
-    let t = 0;
+    const W = this.scale.width, CX = W / 2, CY = 210, MEDIO = 65;
+    const cerca = [
+      this.add.image(W / 2, 180, 'esc_piso_cerca').setDepth(5000),
+      this.add.ellipse(CX + 6, CY + 8, MEDIO * 2 + 8, MEDIO * 2 + 8, 0x000000, 0.35).setDepth(5001),
+    ];
+    const rojo = this.add.image(CX, CY, 'ddakji_rojo').setScale(2.4).setDepth(5002).setAngle(-8);
+    cerca.push(rojo);
+    this.cameras.main.flash(120, 255, 255, 255);
+    const mira = this.add.image(CX, CY, 'mira').setDepth(5010);
+    const ins = [
+      icono(this, CX - 120, 36, 'a', 26).setDepth(5011),
+      texto(this, CX - 100, 36, 'APUNTA A LA ORILLA', { tam: 17, negrita: true, origen: [0, 0.5] }).setDepth(5011),
+    ];
+    let ang = Math.random() * 6, r = 0, t = 0;
+    const vel = [2.2, 3, 3.8][E.dificultad];
+    // la mira va y viene del centro a la orilla mientras gira: lo mejor es la orilla
+    this.__mini = { tipo: 'barra', ideal: 0.86, ancho: 0.26, v: () => r };
     await new Promise((ok) => {
       const f = (_, dt) => {
         t += dt / 1000;
-        r = 0.5 + 0.5 * Math.sin(t * vel);
-        ang += dt / 1000 * 1.3;
-        mira.setPosition(W / 2 + Math.cos(ang) * 30 * r, 118 + Math.sin(ang) * 15 * r);
+        r = 0.5 - 0.5 * Math.cos(t * vel);
+        ang += (dt / 1000) * 1.4;
+        mira.setPosition(CX + Math.cos(ang) * MEDIO * r, CY + Math.sin(ang) * MEDIO * r);
+        mira.setTint(r > 0.73 ? 0x9effc8 : 0xffffff);
         if (this.inp.tomarA()) { this.events.off('update', f); ok(); }
       };
-      this.events.on('update', f);
+      cadaCuadro(this, f);
     });
     tono(990, 0.05);
-    ayuda.setText('A: LA FUERZA');
-    // la barra de fuerza
-    const bx = W / 2 - 60, by = 54;
-    const marco = this.add.nineslice(W / 2, by, 'barra_marco', undefined, 124, 10, 4, 4, 0, 0).setDepth(30);
-    const zona = this.add.rectangle(bx + 120 * (0.85 - this.dif / 2), by - 3, 120 * this.dif, 6, 0x23b39c).setOrigin(0, 0).setDepth(31);
-    const aguja = this.add.rectangle(bx, by, 2, 12, 0xffffff).setDepth(32);
-    let v = 0, sube = 1;
-    const velF = [1.1, 1.5, 2][E.dificultad];
-    await new Promise((ok) => {
-      const f = (_, dt) => {
-        v += sube * dt / 1000 * velF;
-        if (v > 1) { v = 1; sube = -1; } if (v < 0) { v = 0; sube = 1; }
-        aguja.setX(bx + 120 * v);
-        if (this.inp.tomarA()) { this.events.off('update', f); ok(); }
-      };
-      this.events.on('update', f);
-    });
-    const enZona = Math.abs(v - 0.85) <= this.dif / 2;
-    const orilla = r > 0.72;
-    [marco, zona, aguja, ayuda].forEach((o) => o.destroy());
-    // el tiro
-    await this.yo.hacer('cap_pitch');
-    const azul = this.add.image(W / 2, 40, 'ddakji_azul').setDepth(25).setScale(1.2);
-    await new Promise((ok) => this.tweens.add({ targets: azul, x: mira.x, y: mira.y - 4, scaleX: 1.4, scaleY: 0.75, duration: 180, ease: 'Quad.easeIn', onComplete: ok }));
+    const orilla = r > 0.73;
+    ins.forEach((o) => o.destroy());
+    const fuerza = await barra(this, this.inp, { vel: [1.1, 1.5, 1.9][E.dificultad], ideal: 0.85, ancho: this.ancho, texto: 'LA FUERZA', y: 64 });
+    this.__mini = null;
+    const enZona = fuerza.ok;
+    // el sobre azul cae de arriba con todo
+    const azul = this.add.image(mira.x - 20, -80, 'ddakji_azul').setScale(4).setDepth(5005).setAngle(30);
+    tono(300, 0.2, 'cuerdas', 0.05);
+    await new Promise((ok) => this.tweens.add({ targets: azul, x: mira.x, y: mira.y - 6, scale: 2.3, angle: 12, duration: 220, ease: 'Quad.easeIn', onComplete: ok }));
     mira.destroy();
-    sfx(this, 'chapa', 0.8);
-    sacudir(this, 120, 0.01);
+    sfx(this, 'chapa', 0.9);
+    sacudir(this, 160, 0.014);
+    chorro(this, azul.x, azul.y + 30, 18, [0x8a8e9a, 0x6a6e7a], 90, { g: 200, vida: 600, prof: 5008 });
     // la suerte: orilla y fuerza dan casi seguro; una sola, a veces
     const prob = (enZona ? 0.55 : 0.08) + (orilla ? 0.42 : 0.05) + Math.min(0.2, this.intentos * 0.04);
     const volteo = Math.random() < prob;
+    let ok = false;
     if (volteo) {
-      this.tweens.add({ targets: this.rojo, scaleY: 0, y: 100, duration: 140, yoyo: false, onComplete: () => {
-        this.rojo.setTexture('ddakji_rojo_atras');
-        this.tweens.add({ targets: this.rojo, scaleY: 0.7, y: 118, duration: 160 });
-      } });
-      this.tweens.add({ targets: azul, alpha: 0, duration: 400, delay: 200 });
-      await esperar(this, 500);
-      await cartel(this, '¡VOLTEADO!', '', { ms: 1000, color: 0x23b39c });
-      azul.destroy();
-      return true;
+      this.tweens.add({ targets: azul, x: azul.x + 40, y: azul.y + 30, angle: 40, alpha: 0.6, duration: 260 });
+      await new Promise((res) => this.tweens.add({ targets: rojo, scaleY: 0, y: CY - 50, angle: 20, duration: 160, ease: 'Quad.easeOut', onComplete: res }));
+      rojo.setTexture('ddakji_rojo_atras');
+      await new Promise((res) => this.tweens.add({ targets: rojo, scaleY: 2.4, y: CY, angle: -4, duration: 220, ease: 'Bounce.easeOut', onComplete: res }));
+      sfx(this, 'chapa', 0.5);
+      await cartel(this, '¡VOLTEADO!', '', { ms: 1000, color: 0x2fd4b4 });
+      ok = true;
+    } else {
+      this.tweens.add({ targets: rojo, y: CY - 6, duration: 80, yoyo: true });
+      await esperar(this, 350);
+      await cartel(this, 'NO SE VOLTEÓ', enZona ? 'apunta más a la orilla' : orilla ? 'la fuerza no era la justa' : 'apunta a la orilla y mide la fuerza', { ms: 1200, color: 0xff8fb5 });
     }
-    this.tweens.add({ targets: this.rojo, y: 114, duration: 80, yoyo: true });
-    await esperar(this, 300);
-    await cartel(this, 'NO SE VOLTEÓ', enZona ? 'apunta más a la orilla' : orilla ? 'la fuerza no era la justa' : 'apunta a la orilla y mide la fuerza', { ms: 1200, color: 0xff8fb5 });
-    azul.destroy();
-    return false;
+    cerca.push(azul);
+    this.cameras.main.flash(100, 0, 0, 0);
+    cerca.forEach((o) => o.destroy());
+    if (ok) this.rojoChico.setTexture('ddakji_rojo_atras');
+    return ok;
   }
 
   async castigo() {
     const { yo, rec } = this;
-    await this.caminar(rec, yo.x + 34, yo.y, 300);
+    await this.caminar(rec, yo.x + 40, yo.y, 320);
     rec.anim('idle', 'left');
     if (ninas()) {
       rec.anim('point', 'left');
       bloque(this, ['E6', 0.05], ['G6', 0.05], ['E6', 0.05], ['G6', 0.05], ['E6', 0.05], ['G6', 0.08]);
       yo.anim('laugh', 'right');
+      const ji = texto(this, yo.x, yo.y - 70, '¡JIJIJI!', { tam: 18, negrita: true, color: COLOR.rosa, origen: [0.5, 0.5] }).setDepth(7000);
+      this.capa.push(ji);
+      this.tweens.add({ targets: ji, y: ji.y - 16, alpha: 0, duration: 900 });
       await esperar(this, 900);
       await this.decir([[yo.id, 'feliz', ['¡Jajaja! ¡Basta, basta!', '¡Nooo, cosquillas no! ¡Jajaja!', '¡Ya! ¡Otra vez!'][this.intentos % 3]]]);
     } else {
       await rec.hacer('jab', 'left');
-      sfx(this, 'golpe_pesado', 0.8);
-      destello(this, 0xff3355, 90, 0.4);
-      sacudir(this, 180, 0.015);
+      sfx(this, 'golpe_pesado', 0.9);
+      destello(this, 0xff3355, 110, 0.45);
+      sacudir(this, 220, 0.02);
       yo.anim('hit', 'right');
-      await esperar(this, 600);
+      const plaf = texto(this, yo.x + 6, yo.y - 66, '¡PLAF!', { tam: 24, negrita: true, color: COLOR.rojo, origen: [0.5, 0.5] }).setDepth(7000).setAngle(-8);
+      this.capa.push(plaf);
+      plaf.setScale(1.8); this.tweens.add({ targets: plaf, scale: 1, duration: 160, ease: 'Back.easeOut' });
+      this.tweens.add({ targets: plaf, alpha: 0, delay: 600, duration: 300 });
+      await esperar(this, 700);
       await this.decir([[yo.id, 'dolor', ['¡Ay! ¡Qué mano tan pesada!', '¡Coño! Otra vez. Esta sí va.', '¡Ya va! Una más y te volteo el sobre.'][this.intentos % 3]]]);
     }
-    await this.caminar(rec, 360, 196, 300);
+    await this.caminar(rec, 392, 304, 320);
     rec.anim('idle', 'left');
     yo.anim('idle', 'right');
   }
@@ -279,141 +418,12 @@ export class Llegada extends Historia {
   constructor() { super('Llegada'); }
   async correr() {
     const W = this.scale.width, H = this.scale.height;
-    // la tarjeta
-    this.fondo('metro').setAlpha(0.3);
-    const tarjeta = this.add.container(W / 2, H / 2 - 20).setDepth(100);
-    const papel = this.add.rectangle(0, 0, 150, 86, 0xd8c39a).setStrokeStyle(2, 0x6a5a3a);
-    const s1 = this.add.image(-34, 0, 'circulo').setTint(0x3a2a18).setScale(1.4);
-    const s2 = this.add.image(0, 0, 'triangulo').setTint(0x3a2a18).setScale(1.4);
-    const s3 = this.add.image(34, 0, 'cuadrado').setTint(0x3a2a18).setScale(1.4);
-    tarjeta.add([papel, s1, s2, s3]);
-    this.capa.push(tarjeta);
-    tarjeta.setScale(0.2); this.tweens.add({ targets: tarjeta, scale: 1, duration: 500, ease: 'Back.easeOut' });
-    await this.pausa(600);
-    await this.decir([
-      ['reclutador', 'neutral', 'Hay un juego más grande. 45.600 millones de wones para el ganador.'],
-      ['reclutador', 'feliz', 'Llame a este número. Y lleve a su familia. Los juegos son más divertidos en familia.'],
-    ]);
-    // la vuelta de la tarjeta: el número
-    await new Promise((ok) => this.tweens.add({ targets: tarjeta, scaleX: 0, duration: 200, onComplete: ok }));
-    [s1, s2, s3].forEach((s) => s.setVisible(false));
-    const num = this.add.bitmapText(0, 0, 'fuente_ui', '010-4562-0222').setOrigin(0.5).setTint(0x3a2a18).setScale(1.5);
-    tarjeta.add(num);
-    await new Promise((ok) => this.tweens.add({ targets: tarjeta, scaleX: 1, duration: 200, onComplete: ok }));
-    await this.pausa(1200);
-    await this.fundido();
-
-    // la casa: la familia y Thor
-    musica('noche');
-    this.fondo('casa');
-    const r = this.actor('rick', 170, 232, 'right', { ropa: 'calle' }), s = this.actor('steph', 205, 236, 'left', { ropa: 'calle' });
-    const so = this.actor('sophie', 250, 238, 'left', { ropa: 'calle' }), a = this.actor('alana', 280, 240, 'left', { ropa: 'calle' });
-    const thor = this.actor('thor', 340, 236, 'left');
-    thor.anim('wag', 'left');
-    await this.decir([
-      ['steph', 'susto', '¿Y esa tarjeta tan rara? ¿Un círculo, un triángulo y un cuadrado?'],
-      ['rick', 'feliz', 'Un señor en el metro. Dice que si ganamos unos jueguitos nos vamos con una millonada.'],
-      ['steph', 'enojo', 'Eso suena a estafa, mi amor. Pero bueno... nadie ha ganado tanto jugando en familia como nosotros.'],
-      ['sophie', 'feliz', '¡Yo quiero ir! ¡Soy la mejor en juegos!'],
-      ['alana', 'feliz', '¡Y yo! ¿Thor puede venir?'],
-      ['rick', 'neutral', 'Thor se queda cuidando la casa. Le dejamos comida para una semana.'],
-    ]);
-    if (!this.saltar) { thor.anim('bark', 'left'); sfx(this, 'ladrido', 0.6); await this.pausa(700); thor.anim('sit', 'left'); }
-    await this.decir([['alana', 'triste', 'Chao, Thor. Ya volvemos con muchos millones para comprarte huesos.']]);
-    await this.fundido();
-
-    // la lancha en la tormenta
-    musica('tormenta');
-    const mar = ambiente(this, 'mar', 0.6);
-    const viento = ambiente(this, 'viento', 0.35);
-    const f = this.fondo('lancha');
-    const parar = lluvia(this, 110);
-    this.tweens.add({ targets: f, y: f.y + 4, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-    this.tweens.add({ targets: f, angle: 0.8, duration: 1300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-    const t = this.texto('Esa noche, una lancha negra los recogió en el muelle...', 30, 0xd8d0c0);
-    const rayos = this.time.addEvent({ delay: 2600, loop: true, callback: () => { relampago(this); sacudir(this, 250, 0.006); } });
-    await this.pausa(1500);
-    relampago(this);
-    await this.pausa(900);
-    t.destroy();
-    await this.decir([
-      ['alana', 'susto', '¡Papá! ¡Las olas están gigantes!'],
-      ['steph', 'susto', '¡Agárrense duro del barco! ¡Sophie, agarra a tu hermana!'],
-      ['rick', 'feliz', '¡Tranquilas, que esto es igualito al ferry a Margarita!'],
-      ['sophie', 'enojo', '¡Papá, el ferry a Margarita no tiene rayos!'],
-    ], { arriba: true });
-    await this.pausa(400);
-    await this.fundido(700);
-    rayos.remove();
-    parar();
-
-    // la isla
-    const fi = this.fondo('isla');
-    fi.setScale(1.15);
-    this.tweens.add({ targets: fi, scale: 1, duration: 4000, ease: 'Sine.easeOut' });
-    const p2 = lluvia(this, 70);
-    relampago(this);
-    await this.pausa(800);
-    await this.decir([
-      ['sophie', 'susto', '¡Miren! ¡Una isla! Y hay gente vestida de rosado esperando en el muelle...'],
-      ['guardia_triangulo', 'neutral', 'Bienvenidos, jugadores. Por favor, no se resistan.'],
-      ['rick', 'susto', '¿Por qué tienen máscaras? ¿Eso es un triángulo?'],
-    ], { arriba: true });
-    p2();
-    await this.fundido(400);
-
-    // el gas
-    this.fondo('gas');
-    await this.decir([['guardia_cuadrado', 'neutral', 'Ahora duerman. Mañana empieza el juego.']], { arriba: true });
-    if (!this.saltar) {
-      const niebla = this.add.rectangle(W / 2, H / 2, W, H, 0xe0457b, 0).setDepth(400);
-      this.capa.push(niebla);
-      tono(220, 1.5, 'cuerdas', 0.08);
-      this.tweens.add({ targets: niebla, fillAlpha: 0.75, duration: 1800 });
-      await this.pausa(1900);
-      const zz = this.texto('Z  z  z . . .', H / 2, 0xffffff, 2);
-      await this.pausa(1200);
-    }
-    if (mar) mar.stop(); if (viento) viento.stop();
-    await this.fundido(900);
-
-    // el despertar: el dormitorio con el Danubio Azul
-    musica('danubio');
-    this.fondo('dormitorio');
-    const ids = jugadoresNPC();
-    for (let i = 0; i < 16; i++) {
-      const x = 40 + (i % 8) * 56 + (Math.random() * 10 - 5), y = 185 + Math.floor(i / 8) * 40 + Math.random() * 6;
-      const n = this.actor(ids[i % ids.length], x, y, i % 3 ? 'up' : 'down');
-      n.anim(i % 4 ? 'idle' : 'sad');
-    }
-    const fam = ['rick', 'steph', 'sophie', 'alana'].map((id, i) => this.actor(id, 200 + i * 26, 250, 'up'));
-    fam.forEach((x) => x.anim('knockout'));
-    await this.pausa(1200);
-    fam.forEach((x, i) => this.time.delayedCall(i * 250, () => x.hacer('fall_getup').then(() => x.anim('idle', 'down'))));
-    await this.pausa(1700);
-    await this.decir([
-      ['steph', 'susto', '¿Dónde estamos? ¿Y por qué tenemos todos este mono verde?'],
-      ['alana', 'feliz', 'Yo tengo el 222. ¡Es mi número favorito!'],
-      ['sophie', 'neutral', 'Yo el 018. Papá tiene el 456 y mamá el 067. Hay un montón de gente...'],
-      ['rick', 'neutral', '456 jugadores. Y miren arriba: un chanchito de oro gigante.'],
-    ]);
-    // el guardia del cuadrado y las reglas
-    const g = this.actor('guardia_cuadrado', 240, 168, 'down');
-    const g1 = this.actor('guardia_circulo', 150, 172, 'down'), g2 = this.actor('guardia_triangulo', 330, 172, 'down');
-    sfx(this, 'pitazo_largo', 0.5);
-    await this.decir([
-      ['guardia_cuadrado', 'neutral', 'Bienvenidos, jugadores. Tienen 6... perdón, 11 juegos por delante.'],
-      ['guardia_cuadrado', 'neutral', 'Regla 1: un jugador no puede dejar de jugar.'],
-      ['guardia_cuadrado', 'neutral', 'Regla 2: el jugador que se niegue a jugar será eliminado.'],
-      ['guardia_cuadrado', 'neutral', 'Regla 3: los juegos se pueden terminar si la mayoría vota.'],
-      ['guardia_cuadrado', 'neutral', 'Por cada jugador eliminado, el chanchito suma 100 millones de wones.'],
-      ninas()
-        ? ['alana', 'susto', '¿Eliminado? ¿Eso es que lo mandan a dormir temprano?']
-        : ['steph', 'susto', 'Rick... ¿qué significa "eliminado"?'],
-      ['rick', 'neutral', 'No sé, pero mejor no averiguarlo. Pase lo que pase, estamos juntos.'],
-    ]);
-    await this.fundido(600);
-
+    await this.tarjeta();
+    await this.casa();
+    await this.tormenta();
+    await this.muelle();
+    await this.dormitorio();
+    if (this.saltar) return;
     // el Front Man
     musica('guardias');
     this.fondo('frontman');
@@ -427,15 +437,201 @@ export class Llegada extends Historia {
     if (!this.saltar) {
       this.fondo('titulo');
       this.capa.push(this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.3));
-      logo(this, W / 2, 80).forEach((o) => this.capa.push(o));
+      logo(this, W / 2, 130).forEach((o) => this.capa.push(o));
       destello(this, 0xff3d7f, 400, 0.6);
       sfx(this, 'pitazo_largo', 0.5);
-      await this.pausa(2600);
+      altavoz('Que comiencen los juegos.', { baja: true });
+      await this.pausa(2800);
       await this.fundido(500);
     }
     this.fondo('escaleras');
     await this.pausa(1800);
     this.terminar();
+  }
+
+  async tarjeta() {
+    const W = this.scale.width;
+    tarjetas(this);
+    this.armarMetro();
+    this.capa.push(this.add.rectangle(W / 2, 180, W, 360, 0x000000, 0.55).setDepth(100));
+    const tj = this.add.container(W / 2, 200).setDepth(200);
+    const frente = this.add.image(0, 0, 'esc_tarjeta').setScale(2.5);
+    tj.add(frente);
+    this.capa.push(tj);
+    tj.setScale(0.2).setAngle(-20);
+    this.tweens.add({ targets: tj, scale: 1, angle: -3, duration: 600, ease: 'Back.easeOut' });
+    await this.pausa(700);
+    await this.decir([
+      ['reclutador', 'neutral', 'Hay un juego más grande. 45.600 millones de wones para el ganador.'],
+      ['reclutador', 'feliz', 'Llame a este número. Y lleve a su familia. Los juegos son más divertidos en familia.'],
+    ]);
+    if (this.saltar) return;
+    // la vuelta de la tarjeta: el número
+    await new Promise((ok) => this.tweens.add({ targets: tj, scaleX: 0, duration: 180, onComplete: ok }));
+    frente.setTexture('esc_tarjeta_atras');
+    tj.add(texto(this, 0, 0, '010-4562-0222', { tam: 24, negrita: true, color: '#3a2a18', borde: 0, origen: [0.5, 0.5] }));
+    await new Promise((ok) => this.tweens.add({ targets: tj, scaleX: 1, duration: 180, onComplete: ok }));
+    tono(1568, 0.1, 'campana', 0.08);
+    await this.pausa(1400);
+    await this.fundido();
+  }
+
+  async casa() {
+    if (this.saltar) return;
+    musica('noche');
+    casa(this, false);
+    this.fondo('esc_casa_noche');
+    this.luz(562, 112, 3, 0xffd890, 0.45);
+    this.luz(160, 130, 4, 0x8a9aff, 0.12);
+    const r = this.actor('rick', 190, 318, 'right', { ropa: 'calle' }), s = this.actor('steph', 240, 322, 'left', { ropa: 'calle' });
+    const so = this.actor('sophie', 300, 326, 'left', { ropa: 'calle' }), a = this.actor('alana', 344, 330, 'left', { ropa: 'calle' });
+    const thor = this.actor('thor', 430, 332, 'left');
+    thor.anim('wag', 'left');
+    void r; void s; void so; void a;
+    await this.decir([
+      ['steph', 'susto', '¿Y esa tarjeta tan rara? ¿Un círculo, un triángulo y un cuadrado?'],
+      ['rick', 'feliz', 'Un señor en el metro. Dice que si ganamos unos jueguitos nos vamos con una millonada.'],
+      ['steph', 'enojo', 'Eso suena a estafa, mi amor. Pero bueno... nadie juega en familia como nosotros.'],
+      ['sophie', 'feliz', '¡Yo quiero ir! ¡Soy la mejor en juegos!'],
+      ['alana', 'feliz', '¡Y yo! ¿Thor puede venir?'],
+      ['rick', 'neutral', 'Thor se queda cuidando la casa. Le dejamos comida para una semana.'],
+    ]);
+    if (!this.saltar) { thor.anim('bark', 'left'); sfx(this, 'ladrido', 0.6); await this.pausa(700); thor.anim('sit', 'left'); }
+    await this.decir([['alana', 'triste', 'Chao, Thor. Ya volvemos con muchos millones para comprarte huesos.']]);
+    await this.fundido();
+  }
+
+  async tormenta() {
+    if (this.saltar) return;
+    musica('tormenta');
+    const mar = ambiente(this, 'mar', 0.6);
+    const viento = ambiente(this, 'viento', 0.35);
+    this.alLimpiar(() => { if (mar) mar.stop(); if (viento) viento.stop(); });
+    const calle = { ropa: 'calle' };
+    const m = this.armarMar({ gente: [['rick', 40, 'right', calle], ['steph', 70, 'right', calle], ['sophie', 102, 'right', calle], ['alana', 130, 'right', calle], ['guardia_triangulo', 184, 'right']] });
+    const parar = lluvia(this, 150);
+    this.alLimpiar(parar);
+    const rayos = this.time.addEvent({ delay: 2400, loop: true, callback: () => { this.rayo(); sacudir(this, 250, 0.006); } });
+    const olas = this.time.addEvent({ delay: 3700, loop: true, callback: () => m.golpe() });
+    this.alLimpiar(() => { rayos.remove(); olas.remove(); });
+    const t = this.rotulo('Esa noche, una lancha negra los recogió en el muelle...', 40, { color: '#d8d0c0', tam: 16 });
+    await this.pausa(1500);
+    this.rayo();
+    await this.pausa(1000);
+    t.destroy();
+    m.golpe();
+    await this.decir([
+      ['alana', 'susto', '¡Papá! ¡Las olas están gigantes!'],
+      ['steph', 'susto', '¡Agárrense duro del barco! ¡Sophie, agarra a tu hermana!'],
+      ['rick', 'feliz', '¡Tranquilas, que esto es igualito al ferry a Margarita!'],
+      ['sophie', 'enojo', '¡Papá, el ferry a Margarita no tiene rayos!'],
+    ]);
+    if (this.saltar) return;
+    // la isla sale de la tormenta
+    const isla = m.estado.isla;
+    this.tweens.add({ targets: isla, scale: 1.6, x: 520, y: 214, duration: 4200, ease: 'Sine.easeInOut' });
+    this.rayo();
+    await this.pausa(1800);
+    m.ocupantes[2].anim('point', 'right');
+    await this.decir([
+      ['sophie', 'susto', '¡Miren! ¡Una isla! Y hay gente vestida de rosado esperando en el muelle...'],
+      ['guardia_triangulo', 'neutral', 'Llegamos. No hagan preguntas.'],
+    ]);
+    await this.pausa(600);
+    await this.fundido(700);
+  }
+
+  async muelle() {
+    if (this.saltar) return;
+    const W = this.scale.width, H = this.scale.height;
+    muelle(this); lancha(this); ola(this, 'esc_ola_t0', OLAS.tormenta[0]);
+    this.fondo('esc_muelle');
+    const mar = this.add.tileSprite(0, 188, W, 52, 'esc_ola_t0').setOrigin(0).setDepth(-96).setAlpha(0.8);
+    this.capa.push(mar);
+    const ev = this.time.addEvent({ delay: 16, loop: true, callback: () => { mar.tilePositionX += 0.3; } });
+    this.alLimpiar(() => ev.remove());
+    FAROLES_MUELLE.forEach((x) => this.luz(x, 144, 2.2, 0xffa8cc, 0.5));
+    this.luz(515, 166, 2.4, 0xff4d8d, 0.25, -95);
+    const parar = lluvia(this, 60);
+    this.alLimpiar(parar);
+    // la lancha se va
+    const la = this.img('esc_lancha_atras', 200, 214).setScale(0.35).setDepth(-95);
+    const lf = this.img('esc_lancha', 200, 214).setScale(0.35).setDepth(-94);
+    this.tweens.add({ targets: [la, lf], x: -80, duration: 7000, delay: 2500, ease: 'Sine.easeIn' });
+    const guardias = [['guardia_circulo', 440, 292], ['guardia_triangulo', 486, 300], ['guardia_cuadrado', 532, 296], ['guardia_triangulo', 580, 304]]
+      .map(([id, x, y]) => this.actor(id, x, y, 'left'));
+    const fam = FAM.map((id, i) => this.actor(id, -30 - i * 34, 296 + (i % 2) * 8, 'right', { ropa: 'calle' }));
+    await Promise.all(fam.map((f, i) => this.caminar(f, 230 - i * 40, f.y, 2200 + i * 120)));
+    fam.forEach((f) => f.anim('idle', 'right'));
+    await this.decir([
+      ['guardia_cuadrado', 'neutral', 'Bienvenidos, jugadores. Por favor, no se resistan.'],
+      ['rick', 'susto', '¿Por qué tienen máscaras? ¿Eso es un triángulo?'],
+      ['steph', 'enojo', '¡Rick! ¡Agarra a las niñas!'],
+      ['guardia_cuadrado', 'neutral', 'Ahora duerman. Mañana empieza el juego.'],
+    ]);
+    if (this.saltar) return;
+    // el gas rosado
+    guardias[2].anim('point', 'left');
+    tono(180, 2, 'cuerdas', 0.06);
+    for (let i = 0; i < 46; i++) {
+      this.time.delayedCall(i * 45, () => {
+        const b = this.img('bocanada', 420 + Math.random() * 40, 270 + Math.random() * 40).setScale(0.6).setAlpha(0.55).setDepth(7000);
+        this.tweens.add({ targets: b, x: 40 + Math.random() * 280, y: 220 + Math.random() * 110, scale: 2.4 + Math.random() * 1.5, alpha: 0.4, duration: 1800 + Math.random() * 600, ease: 'Sine.easeOut' });
+      });
+    }
+    await this.pausa(1300);
+    for (const [i, f] of fam.entries()) {
+      this.time.delayedCall(i * 260, () => { f.anim('knockout', 'right', true); zzz(this, f, 3); });
+    }
+    await this.pausa(1700);
+    const niebla = this.add.rectangle(W / 2, H / 2, W, H, 0xe0457b, 0).setDepth(8000);
+    this.capa.push(niebla);
+    this.tweens.add({ targets: niebla, fillAlpha: 0.85, duration: 1400 });
+    await this.pausa(1500);
+    this.rotulo('Z  z  z . . .', H / 2, { tam: 30, negrita: true });
+    await this.pausa(1200);
+    await this.fundido(900);
+  }
+
+  async dormitorio() {
+    if (this.saltar) return;
+    musica('danubio');
+    this.fondo('dormitorio');
+    const ids = jugadoresNPC();
+    for (let i = 0; i < 16; i++) {
+      const x = 53 + (i % 8) * 75 + (Math.random() * 12 - 6), y = 250 + Math.floor(i / 8) * 52 + Math.random() * 8;
+      const n = this.actor(ids[i % ids.length], x, y, i % 3 ? 'up' : 'down');
+      n.anim(i % 4 ? 'idle' : 'sad');
+    }
+    const fam = FAM.map((id, i) => this.actor(id, 266 + i * 36, 334, 'up'));
+    fam.forEach((x) => x.anim('knockout'));
+    await this.pausa(1200);
+    fam.forEach((x, i) => this.time.delayedCall(i * 250, () => x.hacer('fall_getup').then(() => x.anim('idle', 'down'))));
+    await this.pausa(1700);
+    await this.decir([
+      ['steph', 'susto', '¿Dónde estamos? ¿Y por qué tenemos todos este mono verde?'],
+      ['alana', 'feliz', 'Yo tengo el 222. ¡Es mi número favorito!'],
+      ['sophie', 'neutral', 'Yo el 018. Papá tiene el 456 y mamá el 067. Hay un montón de gente...'],
+      ['rick', 'neutral', '456 jugadores. Y miren arriba: un chanchito de oro gigante.'],
+    ]);
+    if (this.saltar) return;
+    // los guardias y las reglas
+    this.actor('guardia_cuadrado', 320, 226, 'down');
+    this.actor('guardia_circulo', 200, 230, 'down');
+    this.actor('guardia_triangulo', 440, 230, 'down');
+    sfx(this, 'pitazo_largo', 0.5);
+    await this.decir([
+      ['guardia_cuadrado', 'neutral', 'Bienvenidos, jugadores. Tienen 11 juegos por delante.'],
+      ['guardia_cuadrado', 'neutral', 'Regla 1: un jugador no puede dejar de jugar.'],
+      ['guardia_cuadrado', 'neutral', 'Regla 2: el jugador que se niegue a jugar será eliminado.'],
+      ['guardia_cuadrado', 'neutral', 'Regla 3: los juegos se pueden terminar si la mayoría vota.'],
+      ['guardia_cuadrado', 'neutral', 'Por cada eliminado, el chanchito suma 100 millones. Y por cada juego bien jugado, su familia cobra un premio para la máquina de la noche.'],
+      ninas()
+        ? ['alana', 'susto', '¿Eliminado? ¿Eso es que lo mandan a dormir temprano?']
+        : ['steph', 'susto', 'Rick... ¿qué significa "eliminado"?'],
+      ['rick', 'neutral', 'No sé, pero mejor no averiguarlo. Pase lo que pase, estamos juntos.'],
+    ]);
+    await this.fundido(600);
   }
 }
 
@@ -476,7 +672,7 @@ const NOCHES = {
   6: [
     ['rick', 'neutral', 'Quedamos muy pocos. Mañana es el puente. Dicen que es de vidrio.'],
     ['steph', 'susto', '¿De vidrio? ¿Y si se rompe?'],
-    ['sophie', 'neutral', 'Hay que mirar con cuidado. El vidrio bueno brilla distinto.'],
+    ['sophie', 'neutral', 'Hay que mirar con cuidado. El vidrio bueno brilla distinto. Y en la máquina venden pistas...'],
   ],
   7: [
     ['alana', 'triste', 'No me gustan las alturas. Ni el vidrio. Ni esta isla.'],
@@ -513,48 +709,52 @@ export class Noche extends Historia {
     const W = this.scale.width;
     musica('noche');
     this.fondo('dormitorio');
-    this.add.rectangle(W / 2, 135, W, 270, 0x081028, 0.45).setDepth(-60);
-    const fam = ['rick', 'steph', 'sophie', 'alana'].map((id, i) => this.actor(id, 170 + i * 32, 240 - (i % 2) * 4, i < 2 ? 'right' : 'left'));
+    this.capa.push(this.add.rectangle(W / 2, 180, W, 360, 0x081028, 0.5).setDepth(-60));
+    FAM.map((id, i) => this.actor(id, 254 + i * 44, 326 - (i % 2) * 6, i < 2 ? 'right' : 'left'));
+    if (n === 3 || n === 10) this.actor(n === 3 ? 'j_abuelo' : 'front_man', 460, 320, 'left');
     const vivos = Math.max(2, 456 - Math.round(E.pozo / 100_000_000));
-    const t = this.texto(`NOCHE ${n} · Quedan ${vivos} jugadores`, 96, 0xf2c230);
-    this.chanchito(n);
-    if (n === 3 || n === 10) { const ab = this.actor(n === 3 ? 'j_abuelo' : 'front_man', 330, 236, 'left'); }
-    await this.pausa(600);
+    this.rotulo(`NOCHE ${n}  ·  Quedan ${vivos} jugadores`, 112, { color: COLOR.oro, tam: 18, negrita: true });
+    this.chanchito();
+    this.rotulo(`Billetera de la familia: ${millones(E.billetera)}`, 238, { color: COLOR.verde, tam: 14 });
+    await this.pausa(900);
     await this.decir(NOCHES[n] || []);
-    t.destroy();
     if (VOTOS.includes(n)) await this.votar(n);
+    await this.maquina();
     // la mañana
     if (!this.saltar) {
       await this.fundido(500);
       musica('danubio');
       this.fondo('escaleras');
       const prox = JUEGOS[n];
-      this.texto('A la mañana siguiente...', 120, 0xffffff);
-      if (prox) this.texto(`JUEGO ${n + 1}: ${prox.titulo}`, 140, 0xe0457b);
+      this.rotulo('A la mañana siguiente...', 150, { tam: 16 });
+      if (prox) this.rotulo(`JUEGO ${n + 1}: ${prox.titulo}`, 180, { color: COLOR.rosa, tam: 22, negrita: true });
       await this.pausa(2200);
     }
     this.terminar();
   }
 
   /** el pozo sube desde lo que había antes de este juego: billetes cayendo en el chanchito de oro */
-  chanchito(n) {
+  chanchito() {
     const W = this.scale.width;
     const ganado = Math.round(E.pozo / 100_000_000) - (E.pozoVisto || 0);
     const desde = Math.max(0, E.pozo - Math.max(0, ganado) * 100_000_000);
     E.pozoVisto = Math.round(E.pozo / 100_000_000);
     guardar();
-    const t = this.texto(wones(desde), 112, 0xffffff, 1);
+    chanchitoGrande(this);
+    this.luz(W / 2, 158, 2.6, 0xffd060, 0.35, 290);
+    const cerdo = this.img('chanchito_grande', W / 2, 160).setScale(2).setDepth(300);
+    this.tweens.add({ targets: cerdo, y: 154, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    const t = this.rotulo(wones(desde), 210, { color: COLOR.oro, tam: 20, negrita: true });
     if (ganado <= 0) return;
     const o = { v: desde };
-    this.tweens.add({ targets: o, v: E.pozo, duration: 1800, ease: 'Sine.easeOut', onUpdate: () => t.setText(wones(o.v)) });
-    for (let i = 0; i < Math.min(30, ganado); i++) {
-      this.time.delayedCall(i * 60, () => {
-        const b = this.add.rectangle(W / 2 - 40 + Math.random() * 80, -6, 6, 3, Math.random() < 0.5 ? 0x9ed08a : 0x5aa66a).setDepth(400);
+    this.tweens.add({ targets: o, v: E.pozo, duration: 2000, ease: 'Sine.easeOut', onUpdate: () => t.setText(wones(o.v)) });
+    for (let i = 0; i < Math.min(36, ganado); i++) {
+      this.time.delayedCall(i * 55, () => {
+        const b = this.add.rectangle(W / 2 - 60 + Math.random() * 120, -8, 10, 5, Math.random() < 0.5 ? 0x9ed08a : 0x5aa66a).setDepth(299).setStrokeStyle(1, 0x2a5a2a);
         this.capa.push(b);
-        this.tweens.add({ targets: b, y: 40 + Math.random() * 10, angle: Math.random() * 360, duration: 700, ease: 'Quad.easeIn', onComplete: () => b.destroy() });
+        this.tweens.add({ targets: b, x: W / 2 + (Math.random() * 20 - 10), y: 142, angle: Math.random() * 360, duration: 800, ease: 'Quad.easeIn', onComplete: () => { b.destroy(); if (i % 4 === 0) tono(1568 + (i % 3) * 200, 0.05, 'campana', 0.05); } });
       });
     }
-    this.time.delayedCall(300, () => tono(1568, 0.08, 'campana', 0.08));
   }
 
   async votar(n) {
@@ -570,12 +770,13 @@ export class Noche extends Historia {
       ['rick', 'neutral', '¿Y la plata? Con eso arreglamos todo.'],
       [P() === 'steph' ? 'rick' : 'steph', 'neutral', 'Tú decides, ' + nombre(P()) + '. Nosotros votamos contigo.'],
     ]);
-    const r = await elegir(this, this.inp, ['O  · Seguir jugando', 'X  · Terminar el juego'], { titulo: 'TU VOTO', ancho: 210, y: 210 });
+    if (this.saltar) return;
+    const r = await elegir(this, this.inp, ['O  ·  Seguir jugando', 'X  ·  Terminar el juego'], { titulo: 'TU VOTO', y: 250 });
     // el conteo: siempre termina en O por un voto, como en la serie
     const mitad = Math.floor(total / 2);
     const o = mitad + 1, x = total - o;
-    const to = this.texto('O: 0', 120, 0x5aa0ff, 2), tx = this.texto('X: 0', 150, 0xff4d6d, 2);
-    to.setX(W / 2 - 60); tx.setX(W / 2 + 60); tx.setY(120);
+    const to = this.rotulo('O: 0', 132, { color: COLOR.azul, tam: 30, negrita: true }).setX(W / 2 - 62);
+    const tx = this.rotulo('X: 0', 132, { color: COLOR.rojo, tam: 30, negrita: true }).setX(W / 2 + 62);
     for (let i = 0; i <= 20; i++) {
       to.setText('O: ' + Math.round((o * i) / 20)); tx.setText('X: ' + Math.round((x * i) / 20));
       tono(500 + i * 20, 0.03, 'cuadrada', 0.04);
@@ -591,6 +792,32 @@ export class Noche extends Historia {
       ['steph', 'triste', 'Bueno... ya no hay vuelta atrás.'],
     ]);
   }
+
+  /** la máquina del dormitorio: lo que se gana con estrellas se gasta aquí, para el próximo juego */
+  async maquina() {
+    if (this.saltar) return;
+    await this.decir([[null, null, 'En la esquina del dormitorio hay una máquina rosada que brilla. Acepta los premios de la familia.']]);
+    for (;;) {
+      if (this.saltar) return;
+      const ops = TIENDA.map((t) => `${t.nombre}  ·  ${millones(t.precio)}${E.compras[t.id] ? '  (ya lo tienes)' : ''}`);
+      ops.push('Listo, a dormir');
+      const det = TIENDA.map((t) => t.detalle).concat(['Lo que no gastes queda guardado']);
+      const r = await elegir(this, this.inp, ops, { titulo: 'LA MÁQUINA  ·  tienes ' + millones(E.billetera), detalles: det, y: 196, cancelar: true });
+      if (r < 0 || r === TIENDA.length) return;
+      const t = TIENDA[r];
+      if (E.compras[t.id]) { await cartel(this, 'YA LO TIENES', 'se usa en el próximo juego', { ms: 900, color: 0x9a96a8 }); continue; }
+      if (E.billetera < t.precio) {
+        tono(200, 0.15, 'cuadrada', 0.08);
+        await cartel(this, 'NO ALCANZA', 'más estrellas en los juegos = más plata', { ms: 1200, color: 0xff4d6d });
+        continue;
+      }
+      E.billetera -= t.precio;
+      E.compras[t.id] = 1;
+      guardar();
+      sfx(this, 'moneda', 0.8);
+      await cartel(this, '¡COMPRADO!', t.nombre, { ms: 900, color: 0x2fd4b4 });
+    }
+  }
 }
 
 // ---------------------------------------------------------------- el game over
@@ -603,16 +830,17 @@ export class GameOver extends Historia {
     pararMusica();
     const W = this.scale.width, H = this.scale.height;
     this.fondo('frontman').setTint(0x886677);
-    this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.5).setDepth(-50);
+    this.capa.push(this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.5).setDepth(-50));
     const titulo = ninas() ? '¡A DORMIR!' : 'ELIMINADO';
-    const tt = this.add.bitmapText(W / 2, 70, 'fuente_titulo', titulo).setOrigin(0.5).setScale(2).setTint(ninas() ? 0xff8fb5 : 0xff3355);
+    const tt = this.add.bitmapText(W / 2, 150, 'fuente_titulo', titulo).setOrigin(0.5).setScale(3).setTint(ninas() ? 0xff8fb5 : 0xff3355);
     this.capa.push(tt);
     if (!ninas()) sfx(this, 'pistola', 0.6);
     else bloque(this, ['C5', 0.15, 'campana'], ['G4', 0.15, 'campana'], ['E4', 0.3, 'campana']);
-    await this.pausa(900);
+    altavoz(ninas() ? 'Jugador ' + NUMEROS[E.perfil] + ', a dormir.' : 'Jugador ' + NUMEROS[E.perfil] + ', eliminado.');
+    await this.pausa(1100);
     await this.decir([
-      ['front_man', 'neutral', 'Se acabaron tus tres vidas, jugador ' + NUMEROS[E.perfil] + '.'],
-      ['front_man', 'neutral', 'Pero esta isla es generosa. Vuelves al primer juego. Con el chanchito vacío.'],
+      ['front_man', 'neutral', 'Se acabaron tus vidas, jugador ' + NUMEROS[E.perfil] + '.'],
+      ['front_man', 'neutral', 'Pero esta isla es generosa. Vuelves al primer juego. Con el chanchito y la billetera vacíos.'],
       [E.perfil, 'enojo', '¡Esta vez sí vamos a ganar!'],
     ], { arriba: false });
     this.terminado = true;
@@ -626,16 +854,17 @@ export class Final extends Historia {
   constructor() { super('Final'); }
   async correr() {
     this.puedeSaltar = false;
+    this.ayuda.setVisible(false);
     const W = this.scale.width, H = this.scale.height;
     E.pozo = 45_600_000_000;
     guardar();
     musica('danubio');
     this.fondo('votacion');
-    const fam = ['rick', 'steph', 'sophie', 'alana'].map((id, i) => this.actor(id, 190 + i * 30, 236, 'up'));
+    const fam = FAM.map((id, i) => this.actor(id, 254 + i * 44, 318, 'down'));
     fam.forEach((f) => f.anim('celebrate'));
-    const t = this.texto(wones(), 104, 0xf2c230, 2);
+    this.rotulo(wones(), 150, { color: COLOR.oro, tam: 30, negrita: true });
     // la lluvia de billetes
-    for (let i = 0; i < 6; i++) this.time.delayedCall(i * 300, () => chorro(this, W / 2, 60, 20, [0x9ed08a, 0x5aa66a, 0xf2c230], 120, { g: 120, vida: 2200 }));
+    for (let i = 0; i < 6; i++) this.time.delayedCall(i * 300, () => chorro(this, W / 2, 80, 26, [0x9ed08a, 0x5aa66a, 0xf2c230], 160, { g: 120, vida: 2200 }));
     fanfarria();
     await this.pausa(1500);
     await this.decir([
@@ -645,24 +874,30 @@ export class Final extends Historia {
       ['steph', 'feliz', 'Ahora llévenos a la casa. Y apúrese, que Thor nos está esperando.'],
     ]);
     await this.fundido(800);
+    // de vuelta en la lancha, al amanecer
     musica('flauta');
-    const am = this.fondo('amanecer');
-    await this.pausa(400);
+    const m = this.armarMar({ dia: true, gente: [['rick', 40, 'right'], ['steph', 70, 'right'], ['sophie', 102, 'right'], ['alana', 130, 'right'], ['guardia_circulo', 184, 'right']] });
+    m.ocupantes.slice(0, 4).forEach((a) => a.anim('celebrate'));
+    ambiente(this, 'mar', 0.3);
+    await this.pausa(800);
     await this.decir([
       ['alana', 'feliz', '¡Ya no hay tormenta! ¡Sale el sol!'],
       ['sophie', 'feliz', 'Papá... ¿qué vamos a hacer con tanta plata?'],
       ['rick', 'feliz', 'Primero, un montón de huesos para Thor. Después vemos.'],
-    ], { arriba: true });
+    ]);
     await this.fundido(800);
-    this.fondo('casa');
-    const thor = this.actor('thor', 470, 238, 'left');
-    const fam2 = ['rick', 'steph', 'sophie', 'alana'].map((id, i) => this.actor(id, 120 + i * 28, 238, 'right', { ropa: 'calle' }));
-    await this.caminar(thor, 260, 238, 1200, 'run');
+    // la casa de día y Thor
+    casa(this, true);
+    this.fondo('esc_casa_dia');
+    const thor = this.actor('thor', 680, 330, 'left');
+    const fam2 = FAM.map((id, i) => this.actor(id, 150 + i * 40, 322 + (i % 2) * 6, 'right', { ropa: 'calle' }));
+    await this.caminar(thor, 330, 330, 1400, 'run');
     thor.anim('jump', 'left');
     sfx(this, 'ladrido', 0.7);
     await this.pausa(500);
     thor.anim('wag', 'left');
     fam2.forEach((f) => f.anim('celebrate'));
+    chorro(this, 330, 290, 30, [0xe0457b, 0x23b39c, 0xf2c230, 0x5aa0ff, 0xffffff], 150, { g: 160, vida: 1600 });
     await this.decir([
       ['alana', 'feliz', '¡THOOOR! ¡Te extrañé!'],
       ['sophie', 'feliz', '¡Thor, somos millonarios!'],
@@ -670,23 +905,23 @@ export class Final extends Historia {
       ['rick', 'feliz', 'Familia GG. Siempre juntos. Fin.'],
     ]);
     await this.fundido(900);
-    // créditos
-    logo(this, W / 2, 60).forEach((o) => this.capa.push(o));
+    // los créditos
+    logo(this, W / 2, 80, 0.8).forEach((o) => this.capa.push(o));
     const lineas = [
       'UN JUEGO PARA LA FAMILIA GG',
       'Rick · Steph · Sophie · Alana · y Thor',
       '',
-      'Personajes: PixelForja (motor propio, arte LPC)',
-      'Escenarios de la intro: Higgsfield',
+      'Personajes y animaciones: PixelForja',
+      'Escenarios: pintados en pixel art',
       'Música: sintetizada en el navegador',
       'El Danubio Azul: Johann Strauss II',
       '',
-      'Inspirado en El Juego del Calamar (Netflix)',
+      'Inspirado en El Juego del Calamar',
       'Hecho con cariño en Ho Chi Minh City',
     ];
-    lineas.forEach((l, i) => this.texto(l, 140 + i * 11, i === 0 ? 0xe0457b : 0xffffff));
+    lineas.forEach((l, i) => this.rotulo(l, 176 + i * 15, { color: i === 0 ? COLOR.rosa : COLOR.texto, tam: i === 0 ? 15 : 13, negrita: i === 0 }));
     await this.pausa(1000);
-    this.texto('A: volver al menú', H - 10, 0x8a8a9a);
+    this.rotulo('A: volver al menú', H - 14, { color: COLOR.apagado, tam: 12 });
     await esperarA(this, this.inp);
     E.paso = 0;
     guardar();

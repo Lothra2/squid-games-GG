@@ -1,29 +1,39 @@
-import Phaser from 'phaser';
-// Carga el kit de PixelForja (public/assets/kit) y los fondos, y arma las animaciones de Phaser.
+// Carga los kits de PixelForja (public/assets/kit: la familia, guardias, Front Man, abuelo y reclutador, con audio,
+// efectos e interfaz; public/assets/kit_gente: los otros jugadores) y los fondos, y arma las animaciones de Phaser.
 // Animación: `${id}|${anim}|${fila}` con fila right, down o up. La izquierda es right con flipX.
 
+import Phaser from 'phaser';
+
 export const KIT = 'assets/kit/';
+export const KIT_GENTE = 'assets/kit_gente/';
 export const FONDOS = 'assets/fondos/';
 
-export const FONDOS_IDS = ['lancha', 'isla', 'metro', 'dormitorio', 'frontman', 'escaleras', 'titulo', 'gas', 'galleta',
-  'tira', 'canicas', 'puente', 'calamar', 'mingle', 'pentatlon', 'cuerda', 'cielo', 'amanecer', 'casa', 'votacion',
-  'laberinto', 'pared_cielo', 'muneca_frente', 'muneca_espalda'];
+export const FONDOS_IDS = ['dormitorio', 'frontman', 'escaleras', 'titulo', 'galleta',
+  'tira', 'canicas', 'puente', 'calamar', 'mingle', 'pentatlon', 'cuerda', 'cielo', 'votacion',
+  'pared_cielo', 'muneca_frente', 'muneca_espalda'];
 
-/** El manifiesto, una vez cargado. */
+/** El manifiesto de los dos kits juntos, una vez cargado. Cada atleta sabe de qué kit viene (base). */
 export let M = null;
 
 export function precargarManifiesto(scene) {
   scene.load.json('manifest', KIT + 'manifest.json');
+  scene.load.json('manifest_gente', KIT_GENTE + 'manifest.json');
 }
 
-/** Encola todo el kit. Se llama en el preload de la escena de carga, con el manifiesto ya en caché. */
+function juntar(principal, gente) {
+  for (const a of Object.values(principal.atletas)) a.base = KIT;
+  for (const a of Object.values(gente.atletas)) a.base = KIT_GENTE;
+  return { ...principal, atletas: { ...principal.atletas, ...gente.atletas } };
+}
+
+/** Encola todo. Se llama en el preload de la escena de carga, con los manifiestos ya en caché. */
 export function encolarKit(scene) {
-  M = scene.cache.json.get('manifest');
+  M = juntar(scene.cache.json.get('manifest'), scene.cache.json.get('manifest_gente'));
   const L = scene.load;
   for (const [id, a] of Object.entries(M.atletas)) {
-    for (const [pack, p] of Object.entries(a.packs)) L.atlas(`${id}_${pack}`, KIT + p.imagen, KIT + p.atlas);
-    if (a.retratos) L.image(`ret_${id}`, KIT + a.retratos.archivo);
-    if (a.voz) a.voz.archivos.forEach((f, i) => L.audio(`voz_${id}_${i}`, KIT + f));
+    for (const [pack, p] of Object.entries(a.packs)) L.atlas(`${id}_${pack}`, a.base + p.imagen, a.base + p.atlas);
+    if (a.retratos) L.image(`ret_${id}`, a.base + a.retratos.archivo);
+    if (a.voz) a.voz.archivos.forEach((f, i) => L.audio(`voz_${id}_${i}`, a.base + f));
   }
   for (const [id, a] of Object.entries(M.animales)) L.atlas(`${id}_animal`, KIT + a.imagen, KIT + a.atlas);
   for (const [id, f] of Object.entries(M.fx)) L.spritesheet(`fx_${id}`, KIT + f.archivo, { frameWidth: f.w, frameHeight: f.h });
@@ -81,9 +91,10 @@ export function armarAnimaciones(scene) {
     if (!A.exists('fx_' + id)) A.create({ key: 'fx_' + id, frames: A.generateFrameNumbers('fx_' + id), frameRate: f.fps, repeat: f.loop ? -1 : 0 });
   }
   if (!A.exists('dialogo_flecha')) A.create({ key: 'dialogo_flecha', frames: A.generateFrameNumbers('dialogo_flecha'), frameRate: 4, repeat: -1 });
+  void Phaser;
 }
 
-/** datos de una animación (cuadros, fps, eventos, cajas...) */
+/** datos de una animación (cuadros, fps, loop) */
 export function datosAnim(id, anim) {
   const a = M.atletas[id] || M.animales[id];
   if (!a) return null;

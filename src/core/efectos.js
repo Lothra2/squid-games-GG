@@ -9,29 +9,33 @@ export function texturas(scene) {
   const g = scene.make.graphics({ x: 0, y: 0, add: false });
   const hacer = (key, w, h, fn) => { if (scene.textures.exists(key)) return; g.clear(); fn(g); g.generateTexture(key, w, h); };
   hacer('pix', 1, 1, (g) => { g.fillStyle(0xffffff); g.fillRect(0, 0, 1, 1); });
-  hacer('sombra', 20, 6, (g) => { g.fillStyle(0x000000, 1); g.fillEllipse(10, 3, 20, 6); });
-  hacer('charco', 28, 10, (g) => { g.fillStyle(0x7a0c12); g.fillEllipse(14, 5, 28, 10); g.fillStyle(0xa3161d); g.fillEllipse(12, 4, 18, 6); g.fillStyle(0xd23a3a); g.fillRect(8, 3, 3, 1); });
+  hacer('sombra', 28, 8, (g) => { g.fillStyle(0x000000, 1); g.fillEllipse(14, 4, 28, 8); });
+  hacer('charco', 38, 13, (g) => { g.fillStyle(0x6a0a10); g.fillEllipse(19, 7, 38, 13); g.fillStyle(0x9a1219); g.fillEllipse(17, 6, 26, 8); g.fillStyle(0xc8262e); g.fillEllipse(14, 5, 10, 3); g.fillStyle(0xff6a6a); g.fillRect(11, 4, 3, 1); });
   // la caja de regalo con lazo rosado, donde se llevan a los dormidos en el modo de las niñas
-  hacer('regalo', 18, 20, (g) => {
-    g.fillStyle(0x1e1418); g.fillRect(0, 5, 18, 15);
-    g.fillStyle(0x1b1a22); g.fillRect(1, 6, 16, 13);
-    g.fillStyle(0x2b2a36); g.fillRect(1, 6, 16, 3);
-    g.fillStyle(0xe0457b); g.fillRect(8, 6, 2, 13); g.fillRect(1, 11, 16, 2);
-    g.fillStyle(0xff8fb5); g.fillRect(3, 1, 4, 4); g.fillRect(11, 1, 4, 4);
-    g.fillStyle(0xe0457b); g.fillRect(4, 2, 2, 3); g.fillRect(12, 2, 2, 3); g.fillRect(7, 3, 4, 3);
+  hacer('regalo', 26, 28, (g) => {
+    g.fillStyle(0x120e18); g.fillRect(0, 8, 26, 20);
+    g.fillStyle(0x1b1a22); g.fillRect(1, 9, 24, 18);
+    g.fillStyle(0x2f2d3c); g.fillRect(1, 9, 24, 4);
+    g.fillStyle(0x3d3a4c); g.fillRect(2, 10, 10, 1);
+    g.fillStyle(0xe0457b); g.fillRect(11, 9, 4, 18); g.fillRect(1, 16, 24, 3);
+    g.fillStyle(0xff8fb5); g.fillRect(12, 9, 1, 18);
+    g.fillStyle(0xe0457b); g.fillTriangle(13, 8, 4, 1, 5, 9); g.fillTriangle(13, 8, 22, 1, 21, 9);
+    g.fillStyle(0xff8fb5); g.fillTriangle(12, 7, 6, 3, 7, 7); g.fillTriangle(14, 7, 20, 3, 19, 7);
+    g.fillStyle(0xc8306a); g.fillRect(11, 6, 4, 4);
   });
-  hacer('gota_lluvia', 1, 6, (g) => { g.fillStyle(0xaac8ff, 0.7); g.fillRect(0, 0, 1, 6); });
+  hacer('gota_lluvia', 1, 8, (g) => { g.fillStyle(0xaac8ff, 0.7); g.fillRect(0, 0, 1, 8); });
   // los símbolos del juego: círculo, triángulo y cuadrado (blancos, se tiñen)
-  hacer('circulo', 16, 16, (g) => { g.lineStyle(2, 0xffffff); g.strokeCircle(8, 8, 6.5); });
-  hacer('triangulo', 16, 16, (g) => { g.lineStyle(2, 0xffffff); g.strokeTriangle(8, 2, 14.5, 14, 1.5, 14); });
-  hacer('cuadrado', 16, 16, (g) => { g.lineStyle(2, 0xffffff); g.strokeRect(2, 2, 12, 12); });
-  hacer('flecha', 7, 5, (g) => { g.fillStyle(0x1e1418); g.fillTriangle(0, 0, 7, 0, 3.5, 5); g.fillStyle(0x7fffe0); g.fillTriangle(1.5, 1, 5.5, 1, 3.5, 3.6); });
+  hacer('circulo', 22, 22, (g) => { g.lineStyle(3, 0xffffff); g.strokeCircle(11, 11, 9); });
+  hacer('triangulo', 22, 22, (g) => { g.lineStyle(3, 0xffffff); g.strokeTriangle(11, 2.5, 20, 19, 2, 19); });
+  hacer('cuadrado', 22, 22, (g) => { g.lineStyle(3, 0xffffff); g.strokeRect(3, 3, 16, 16); });
+  hacer('flecha', 11, 8, (g) => { g.fillStyle(0x120e18); g.fillTriangle(0, 0, 11, 0, 5.5, 8); g.fillStyle(0x7fffe0); g.fillTriangle(2, 1.5, 9, 1.5, 5.5, 5.8); });
   hacer('circulo_lleno', 10, 10, (g) => { g.fillStyle(0xffffff); g.fillCircle(5, 5, 5); });
-  hacer('vida_on', 11, 11, (g) => { g.fillStyle(0x0d4d44); g.fillCircle(5.5, 5.5, 5.5); g.fillStyle(0x23b39c); g.fillCircle(5.5, 5.5, 4); g.fillStyle(0xa6f0e2); g.fillRect(3, 3, 2, 2); });
-  hacer('vida_off', 11, 11, (g) => { g.lineStyle(1, 0x5a5a66); g.strokeCircle(5.5, 5.5, 4.5); });
-  hacer('chanchito', 16, 13, (g) => {
-    g.fillStyle(0x7a5a10); g.fillEllipse(8, 7, 16, 12); g.fillStyle(0xf2c230); g.fillEllipse(8, 7, 14, 10);
-    g.fillStyle(0xffe58a); g.fillRect(4, 3, 4, 2); g.fillStyle(0x7a5a10); g.fillRect(6, 1, 4, 2); g.fillRect(2, 11, 3, 2); g.fillRect(11, 11, 3, 2);
+  hacer('vida_on', 14, 14, (g) => { g.fillStyle(0x0d4d44); g.fillCircle(7, 7, 7); g.fillStyle(0x23b39c); g.fillCircle(7, 7, 5.5); g.fillStyle(0x7fe8d2); g.fillCircle(6, 6, 3); g.fillStyle(0xd6fff6); g.fillRect(4, 4, 2, 2); });
+  hacer('vida_off', 14, 14, (g) => { g.lineStyle(2, 0x4a4656); g.strokeCircle(7, 7, 5.5); });
+  hacer('chanchito', 22, 18, (g) => {
+    g.fillStyle(0x7a5a10); g.fillEllipse(11, 9, 22, 15); g.fillStyle(0xf2c230); g.fillEllipse(11, 9, 19, 12);
+    g.fillStyle(0xffe58a); g.fillEllipse(8, 6, 8, 4); g.fillStyle(0x7a5a10); g.fillRect(8, 1, 6, 2); g.fillRect(3, 14, 4, 4); g.fillRect(15, 14, 4, 4);
+    g.fillStyle(0xd89a18); g.fillEllipse(20, 9, 4, 5); g.fillStyle(0x3a2a08); g.fillRect(14, 6, 2, 2);
   });
   g.destroy();
 }
@@ -68,8 +72,8 @@ export function zzz(scene, actor, veces = 4) {
   for (let i = 0; i < veces; i++) {
     scene.time.delayedCall(i * 450, () => {
       if (!actor.sprite.active) return;
-      const z = scene.add.bitmapText(actor.x + 6, actor.y - 18, 'fuente_ui', i % 2 ? 'z' : 'Z').setTint(0xbfe3ff).setDepth(6000);
-      scene.tweens.add({ targets: z, x: z.x + 10, y: z.y - 22, alpha: 0, duration: 1300, onComplete: () => z.destroy() });
+      const z = scene.add.bitmapText(actor.x + 8, actor.y - 24, 'fuente_ui', i % 2 ? 'z' : 'Z').setTint(0xbfe3ff).setDepth(6000).setScale(2);
+      scene.tweens.add({ targets: z, x: z.x + 14, y: z.y - 30, alpha: 0, duration: 1300, onComplete: () => z.destroy() });
     });
   }
 }
@@ -103,19 +107,19 @@ export function eliminar(scene, actor, { modo = 'disparo', sonido = true, dy = 1
     }
     if (conSangre) {
       if (sonido) sfx(scene, 'pistola', 0.55);
-      chorro(scene, x, y - 24, 26, SANGRE, 110, { g: 320 });
-      scene.time.delayedCall(60, () => chorro(scene, x + (actor.izq ? 4 : -4), y - 20, 12, SANGRE, 70, { g: 300 }));
-      actor.anim(actor.animal ? 'die' : 'die', null, true);
-      scene.time.delayedCall(actor.duracion('die') * 700, () => {
+      chorro(scene, x, y - 32, 30, SANGRE, 140, { g: 400 });
+      scene.time.delayedCall(60, () => chorro(scene, x + (actor.izq ? 5 : -5), y - 26, 14, SANGRE, 90, { g: 380 }));
+      actor.anim(actor.animal ? 'die' : 'knockout', null, true);
+      scene.time.delayedCall(actor.duracion('knockout') * 700, () => {
         if (!dejar) return;
-        const c = scene.add.image(x + (actor.izq ? 8 : -8), y + 1, 'charco').setDepth(y - 1).setScale(0.3).setAlpha(0.95);
+        const c = scene.add.image(x + (actor.izq ? 12 : -12), y + 1, 'charco').setDepth(y - 1).setScale(0.3).setAlpha(0.95);
         scene.tweens.add({ targets: c, scale: 1, duration: 1500 });
         actor.charco = c;
       });
-      scene.time.delayedCall(actor.duracion('die') * 1000, ok);
+      scene.time.delayedCall(actor.duracion('knockout') * 1000, ok);
     } else {
       if (sonido) { bloque(scene, ['G5', 0.05, 'cuadrada', 0.12], ['C6', 0.05, 'cuadrada', 0.12], ['E6', 0.1, 'cuadrada', 0.12]); sfx(scene, 'chapa', 0.4); }
-      chorro(scene, x, y - 26, 30, CONFETI, 100, { g: 160, vida: 1300 });
+      chorro(scene, x, y - 34, 36, CONFETI, 130, { g: 200, vida: 1400 });
       actor.anim('knockout', null, true);
       scene.time.delayedCall(400, () => zzz(scene, actor, 3));
       scene.time.delayedCall(1500, () => {
@@ -146,7 +150,7 @@ export function lluvia(scene, n = 90, prof = 8000) {
   for (let i = 0; i < n; i++) gotas.push(scene.add.image(Math.random() * W, Math.random() * H, 'gota_lluvia').setScrollFactor(0).setDepth(prof).setAngle(15));
   const ev = scene.time.addEvent({
     delay: 16, loop: true, callback: () => {
-      for (const g of gotas) { g.y += 7; g.x -= 1.8; if (g.y > H) { g.y = -6; g.x = Math.random() * (W + 40); } }
+      for (const g of gotas) { g.y += 9; g.x -= 2.4; if (g.y > H) { g.y = -8; g.x = Math.random() * (W + 50); } }
     },
   });
   return () => { ev.remove(); gotas.forEach((g) => g.destroy()); };
@@ -159,10 +163,31 @@ export function relampago(scene) {
 }
 
 /** una exclamación o efecto del kit encima de un actor */
-export function fxSobre(scene, actor, id, dy = -46) {
+export function fxSobre(scene, actor, id, dy = -62) {
   if (!scene.textures.exists('fx_' + id)) return;
   const s = scene.add.sprite(actor.x, actor.y + dy, 'fx_' + id).setDepth(7000);
   s.play('fx_' + id);
   s.once('animationcomplete', () => s.destroy());
   scene.time.delayedCall(1500, () => s.active && s.destroy());
+}
+
+/** los sobres de papel del ddakji: azul, rojo y el rojo volteado (las solapas al revés) */
+export function texturasDdakji(scene) {
+  const g = scene.make.graphics({ add: false });
+  const sobre = (key, c1, c2, c3) => {
+    if (scene.textures.exists(key)) return;
+    const L = 54;
+    g.clear();
+    g.fillStyle(0x120e18); g.fillRect(0, 0, L, L);
+    g.fillStyle(c2); g.fillRect(2, 2, L - 4, L - 4);
+    g.fillStyle(c1); g.fillTriangle(2, 2, L - 2, 2, L / 2, L / 2); g.fillTriangle(2, L - 2, L - 2, L - 2, L / 2, L / 2);
+    g.fillStyle(c3); g.fillTriangle(2, 2, 2, L - 2, L / 2, L / 2);
+    g.lineStyle(1, 0x120e18, 0.8); g.lineBetween(2, 2, L - 2, L - 2); g.lineBetween(L - 2, 2, 2, L - 2);
+    g.fillStyle(0xffffff, 0.25); g.fillRect(5, 5, 16, 3);
+    g.generateTexture(key, L, L);
+  };
+  sobre('ddakji_azul', 0x3d6fd6, 0x2a52a8, 0x5a8cf0);
+  sobre('ddakji_rojo', 0xd63d4a, 0xa82a36, 0xf05a68);
+  sobre('ddakji_rojo_atras', 0xa82a36, 0xd63d4a, 0x8a1f2a);
+  g.destroy();
 }

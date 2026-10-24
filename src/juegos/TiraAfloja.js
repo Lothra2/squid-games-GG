@@ -1,6 +1,7 @@
 // Juego 3: Tira y afloja. Dos equipos de 10 en dos torres, con una cuerda sobre el vacío.
-// Se jala con ritmo: A cuando el anillo cierra sobre el círculo. Al pitazo, A para inclinarse.
-// El abuelo 001 grita "¡tres pasos adelante!": derecha tres veces rápido y el otro equipo se va de boca.
+// Las notas (botones A y B) viajan por un carril hacia el círculo: hay que apretar el botón cuando la nota llega.
+// A = jalar al ritmo. B = aguantar cuando el otro equipo jala duro. Al pitazo, A para inclinarse.
+// El abuelo 001 grita "¡tres pasos adelante!": derecha tres veces y el otro equipo se va de boca.
 
 import Phaser from 'phaser';
 import { Juego } from '../core/juego.js';
@@ -10,83 +11,76 @@ import { sfx, tono, musica } from '../core/sonido.js';
 import { eliminar, sacudir, fxSobre } from '../core/efectos.js';
 import { cartel, esperar } from '../core/dialogo.js';
 import { jugadoresNPC } from '../core/kit.js';
+import { texto, COLOR, icono, cadaCuadro } from '../core/ui.js';
 
-const PISO = 130, CENTRO = 240;
+const PISO = 171, CENTRO = 320;
+const CARRIL = { x0: 130, x1: 560, y: 300 }; // el círculo está en x0
 
 export class TiraAfloja extends Juego {
   constructor() { super('TiraAfloja'); }
 
+  ambiente() { return { vineta: 0.6, motas: 12, color: 0xdfe6ff }; }
+
   armar() {
     const W = this.scale.width, H = this.scale.height;
     this.add.image(W / 2, H / 2, 'tira').setDepth(-100);
-    // la cuerda
     this.cuerda = this.add.graphics().setDepth(400);
-    // nuestro equipo: la familia, el abuelo y otros (de la cuerda hacia atrás)
     const ids = jugadoresNPC();
     const nuestros = [E.perfil, ...familiaNPC(), 'j_abuelo', ids[0], ids[3], ids[6], ids[9], ids[12]];
-    this.equipo = nuestros.map((id, i) => {
-      const a = new Actor(this, id, 0, PISO, { dir: 'right' });
-      a.base = 176 - i * 17;
-      return a;
-    });
+    this.equipo = nuestros.map((id, i) => { const a = new Actor(this, id, 0, PISO, { dir: 'right' }); a.base = 236 - i * 23; return a; });
     this.jugador = this.equipo[0];
     this.jugador.ponerNumero(NUMEROS[E.perfil], 0x7fffe0);
     this.jugador.ponerFlecha();
     this.familia = this.equipo.slice(1, 4);
-    this.rivales = ids.slice(4, 14).map((id, i) => {
-      const a = new Actor(this, id, 0, PISO, { dir: 'left' });
-      a.base = 304 + i * 17;
-      a.anim('idle', 'left');
-      return a;
-    });
+    this.rivales = ids.slice(4, 14).map((id, i) => { const a = new Actor(this, id, 0, PISO, { dir: 'left' }); a.base = 404 + i * 23; return a; });
     this.r = 0; // la cuerda: positivo hacia nosotros, 1 = ganamos
     this.tiempo = dif(70, 60, 50);
-    this.compas = dif(0.8, 0.66, 0.55);
-    this.tBeat = this.compas;
+    this.compas = dif(0.78, 0.64, 0.52);
+    this.viaje = dif(1.9, 1.6, 1.35); // segundos que tarda una nota en llegar al círculo
+    this.notas = [];
+    this.tNota = 0.6;
     this.fuerzas = [0.6, 0.6, 0.6, 0.6];
-    this.oleada = 0;
-    this.tOleada = 6;
-    this.trucoHecho = false;
-    this.truco = null;
-    this.tropiezo = 0;
-    this.yaJalo = false;
-    // el anillo de ritmo
-    const y = 222;
-    this.add.rectangle(W / 2, y, 160, 44, 0x000000, 0.5).setDepth(800);
-    this.objetivo = this.add.circle(W / 2, y, 11).setStrokeStyle(2, 0xffffff).setDepth(801);
-    this.anillo = this.add.circle(W / 2, y, 30).setStrokeStyle(2, 0xf2c230).setDepth(801);
-    this.calif = this.add.bitmapText(W / 2, y - 30, 'fuente_ui', '').setOrigin(0.5).setDepth(802);
-    this.ayuda = this.add.bitmapText(W / 2, y + 16, 'fuente_ui', 'A: ¡JALA!').setOrigin(0.5).setDepth(802);
+    this.aciertos = 0; this.total = 0;
+    this.oleada = 0; this.tOleada = 7;
+    this.trucoHecho = false; this.truco = null; this.tropiezo = 0; this.aguante = 0;
+    // el carril de ritmo
+    const c = CARRIL;
+    this.add.rectangle((c.x0 + c.x1) / 2, c.y, c.x1 - c.x0 + 60, 54, 0x07060c, 0.72).setStrokeStyle(2, 0x3a3646).setDepth(800);
+    this.add.rectangle((c.x0 + c.x1) / 2, c.y, c.x1 - c.x0, 2, 0x3a3646).setDepth(801);
+    this.objetivo = this.add.circle(c.x0, c.y, 21).setStrokeStyle(4, 0xffffff).setDepth(802);
+    this.brillo = this.add.circle(c.x0, c.y, 21, 0xffffff, 0).setDepth(801);
+    this.calif = texto(this, c.x0, c.y - 40, '', { tam: 16, negrita: true, origen: [0.5, 0.5] }).setDepth(803);
+    this.avisoT = texto(this, W / 2, 236, '', { tam: 20, negrita: true, origen: [0.5, 0.5] }).setDepth(803);
     // el medidor de la cuerda
-    this.add.rectangle(W / 2, 30, 200, 6, 0x333344).setDepth(800);
-    this.add.rectangle(W / 2, 30, 2, 12, 0xffffff).setDepth(801);
-    this.marca = this.add.rectangle(W / 2, 30, 6, 10, 0xe0457b).setDepth(802);
+    this.add.rectangle(W / 2, 54, 280, 10, 0x2a2632).setStrokeStyle(2, 0x4a4656).setDepth(800);
+    this.add.rectangle(W / 2 - 140, 54, 6, 18, 0x2fd4b4).setDepth(801);
+    this.add.rectangle(W / 2 + 140, 54, 6, 18, 0xff4d6d).setDepth(801);
+    this.add.rectangle(W / 2, 54, 2, 16, 0xffffff).setDepth(801);
+    this.marca = this.add.rectangle(W / 2, 54, 8, 14, 0xff4d8d).setDepth(802);
+    texto(this, W / 2 - 148, 54, 'NOSOTROS', { tam: 11, color: COLOR.verde, origen: [1, 0.5] }).setDepth(801);
+    texto(this, W / 2 + 148, 54, 'ELLOS', { tam: 11, color: COLOR.rojo, origen: [0, 0.5] }).setDepth(801);
     this.colocar();
   }
 
   colocar() {
-    const d = this.r * 70;
+    const d = this.r * 92;
     this.equipo.forEach((a) => { if (a.vivo) a.x = a.base - d; });
     this.rivales.forEach((a) => { if (a.vivo) a.x = a.base - d; });
     const g = this.cuerda;
     g.clear();
-    g.lineStyle(3, 0x8a6a3a);
-    const x0 = this.equipo[this.equipo.length - 1].x - 6, x1 = this.rivales[this.rivales.length - 1].x + 6;
-    g.lineBetween(x0, PISO - 22, x1, PISO - 22);
-    g.lineStyle(1, 0xc8a46a); g.lineBetween(x0, PISO - 23, x1, PISO - 23);
-    // la cinta roja del medio
-    g.fillStyle(0xe0457b); g.fillRect(CENTRO - d - 2, PISO - 26, 4, 9);
-    this.marca.x = this.scale.width / 2 + this.r * 98;
+    const x0 = this.equipo[this.equipo.length - 1].x - 8, x1 = this.rivales[this.rivales.length - 1].x + 8;
+    g.lineStyle(4, 0x6a4a24); g.lineBetween(x0, PISO - 29, x1, PISO - 29);
+    g.lineStyle(1, 0xc8a46a); g.lineBetween(x0, PISO - 30, x1, PISO - 30);
+    g.fillStyle(0xe0457b); g.fillRect(CENTRO - d - 3, PISO - 35, 6, 12);
+    this.marca.x = this.scale.width / 2 - this.r * 138;
   }
 
   reglas() {
-    return [
-      ['guardia_cuadrado', 'neutral', 'Juego 3: tira y afloja. El equipo que caiga al vacío queda eliminado.'],
-      ['j_abuelo', 'feliz', 'Yo jugaba esto de niño. Escúchenme bien, que tengo tres trucos.'],
-      ['j_abuelo', 'neutral', 'Uno: cuando suene el pitazo, échense para atrás. A apenas suene.'],
-      ['j_abuelo', 'neutral', 'Dos: jalen todos al mismo ritmo. A cuando el anillo amarillo cierre en el círculo.'],
-      ['j_abuelo', 'neutral', 'Tres: cuando yo grite, den tres pasos adelante. Derecha, derecha, derecha. Se van a ir de boca.'],
-    ];
+    return {
+      objetivo: ['Las notas viajan hacia el círculo blanco: aprieta el botón justo cuando llegan.', 'A = jalar. B = aguantar cuando ellos jalan duro.', 'Cuando el abuelo 001 grite, ¡derecha tres veces!'],
+      controles: [['a', 'Jalar'], ['b', 'Aguantar'], ['palanca', '→ → → tres pasos']],
+      frase: [['j_abuelo', 'feliz', 'Yo jugaba esto de niño. Al pitazo, échense para atrás. Y jalen todos al mismo ritmo.']],
+    };
   }
 
   async antesDeEmpezar() {
@@ -95,89 +89,137 @@ export class TiraAfloja extends Juego {
     await cartel(this, 'LISTOS...', '', { ms: 900 + Math.random() * 900, fondo: false });
     // el pitazo: A rápido para inclinarse
     sfx(this, 'pitazo_largo', 0.7);
-    this.hud.setExtra('¡AHORA! ¡A!', 0xf2c230);
+    const W = this.scale.width;
+    const ic = icono(this, W / 2, 140, 'a', 64).setDepth(9000);
+    this.avisoT.setText('¡INCLÍNATE!').setColor(COLOR.oro);
     const t0 = this.time.now;
     let ok = false;
     await new Promise((res) => {
       const f = () => {
-        if (this.inp.tomarA()) { ok = this.time.now - t0 < 700; this.events.off('update', f); res(); }
-        if (this.time.now - t0 > 1200) { this.events.off('update', f); res(); }
+        if (this.inp.tomarA()) { ok = this.time.now - t0 < 800; this.events.off('update', f); res(); }
+        if (this.time.now - t0 > 1300) { this.events.off('update', f); res(); }
       };
-      this.events.on('update', f);
+      cadaCuadro(this, f);
     });
-    if (ok) { this.r = 0.2; tono(1320, 0.15, 'campana', 0.12); this.hud.setExtra('¡BUENA INCLINADA!', 0x23b39c); }
-    else { this.r = -0.15; this.hud.setExtra('Tarde...', 0xff8fb5); }
+    ic.destroy();
+    if (ok) { this.r = 0.2; tono(1320, 0.15, 'campana', 0.12); this.avisoT.setText('¡BUENA INCLINADA!').setColor(COLOR.verde); }
+    else { this.r = -0.15; this.avisoT.setText('Tarde...').setColor('#ff8fb5'); }
+    this.time.delayedCall(900, () => this.avisoT.setText(''));
     this.colocar();
   }
 
   empezar() { musica('guardias'); }
 
+  /** una nota nueva en el carril: llega al círculo en `viaje` segundos */
+  nota(tipo) {
+    const c = CARRIL;
+    const img = icono(this, c.x1, c.y, tipo, 36).setDepth(805);
+    this.notas.push({ tipo, img, t: 0, hecha: false });
+  }
+
+  calificar(texto_, color, tonoF) {
+    this.calif.setText(texto_).setColor(color).setAlpha(1).setScale(1.2);
+    this.tweens.add({ targets: this.calif, alpha: 0, scale: 1, duration: 550 });
+    if (tonoF) tono(tonoF, 0.06, 'campana', 0.1);
+  }
+
+  apretar(tipo) {
+    // la nota más cercana al círculo de ese tipo
+    const c = CARRIL;
+    let mejor = null, md = 1e9;
+    for (const n of this.notas) {
+      if (n.hecha || n.tipo !== tipo) continue;
+      const d = Math.abs(n.t - this.viaje);
+      if (d < md) { md = d; mejor = n; }
+    }
+    if (!mejor || md > 0.3) { this.fuerzas.push(0.1); this.fuerzas.shift(); this.calificar('¡ANTES DE TIEMPO!', '#ff8fb5', 220); return; }
+    mejor.hecha = true;
+    this.total++;
+    let f;
+    if (md < dif(0.11, 0.085, 0.065)) { f = 1.08; this.aciertos++; this.calificar('¡PERFECTO!', COLOR.verde, 1046); this.brillo.setFillStyle(0x2fd4b4, 0.6); }
+    else if (md < dif(0.22, 0.17, 0.13)) { f = 0.72; this.aciertos += 0.6; this.calificar('BIEN', COLOR.oro, 784); this.brillo.setFillStyle(0xf7c948, 0.5); }
+    else { f = 0.2; this.calificar('FUERA DE RITMO', COLOR.rojo, 220); }
+    this.tweens.add({ targets: this.brillo, fillAlpha: 0, duration: 250 });
+    this.tweens.add({ targets: mejor.img, scale: mejor.img.scale * 1.6, alpha: 0, duration: 200, onComplete: () => mejor.img.destroy() });
+    if (tipo === 'a') {
+      this.fuerzas.push(f); this.fuerzas.shift();
+      this.jugador.anim('grab_hold', 'right', true);
+      this.time.delayedCall(200, () => this.jugador.vivo && this.jugador.anim('judo_grip', 'right'));
+    } else if (f > 0.5) this.aguante = 1.2;
+    void c;
+  }
+
   paso(dt) {
     this.tiempo -= dt;
     this.hud.setTiempo(this.tiempo);
+    const c = CARRIL;
 
-    // el ritmo
-    this.tBeat -= dt;
-    const fase = this.tBeat / this.compas; // 1 -> 0
-    this.anillo.setRadius(11 + 22 * Math.max(0, fase));
-    if (this.inp.tomarA() && !this.truco) {
-      const err = Math.min(Math.abs(this.tBeat), Math.abs(this.compas - this.tBeat));
-      let f, txt, col;
-      if (err < dif(0.11, 0.08, 0.06)) { f = 1.05; txt = '¡PERFECTO!'; col = 0x23b39c; tono(1046, 0.06, 'campana', 0.1); }
-      else if (err < dif(0.22, 0.16, 0.12)) { f = 0.7; txt = 'BIEN'; col = 0xf2c230; tono(784, 0.05, 'cuadrada', 0.06); }
-      else { f = 0.15; txt = 'FUERA DE RITMO'; col = 0xff4d6d; tono(200, 0.08, 'cuadrada', 0.06); }
-      this.fuerzas.push(f); this.fuerzas.shift();
-      this.calif.setText(txt).setTint(col).setAlpha(1);
-      this.tweens.add({ targets: this.calif, alpha: 0, duration: 500 });
-      this.jugador.anim('grab_hold', 'right', true);
-      this.time.delayedCall(200, () => this.jugador.vivo && this.jugador.anim('judo_grip', 'right'));
-      this.yaJalo = true;
+    // las notas: una por compás (B durante la oleada)
+    this.tNota -= dt;
+    if (this.tNota <= 0 && !this.truco) {
+      this.tNota += this.compas;
+      this.nota(this.oleada > 0 && Math.random() < 0.6 ? 'b' : 'a');
     }
-    if (this.tBeat <= 0) {
-      this.tBeat += this.compas;
-      if (!this.yaJalo) { this.fuerzas.push(0.25); this.fuerzas.shift(); }
-      this.yaJalo = false;
-      sfx(this, 'paso_tierra_0', 0.25);
+    for (const n of this.notas) {
+      n.t += dt;
+      const k = n.t / this.viaje;
+      if (!n.hecha) n.img.setX(c.x1 + (c.x0 - c.x1) * k);
+      if (!n.hecha && n.t > this.viaje + 0.3) {
+        n.hecha = true; this.total++;
+        if (n.tipo === 'a') { this.fuerzas.push(0.2); this.fuerzas.shift(); }
+        this.calificar('SE PASÓ', COLOR.apagado, null);
+        this.tweens.add({ targets: n.img, alpha: 0, duration: 150, onComplete: () => n.img.destroy() });
+      }
     }
+    this.notas = this.notas.filter((n) => !n.hecha || n.img.active);
+    if (this.inp.tomarA() && !this.truco) this.apretar('a');
+    if (this.inp.tomarB() && !this.truco) this.apretar('b');
+    // el círculo late con el ritmo
+    this.objetivo.setScale(1 + Math.max(0, 0.15 - (this.tNota / this.compas) * 0.15));
     const nuestra = this.fuerzas.reduce((a, b) => a + b, 0) / 4;
 
-    // las oleadas del otro equipo
+    // las oleadas del otro equipo (con aviso)
     this.tOleada -= dt;
     if (this.tOleada <= 0 && this.oleada <= 0) {
-      this.oleada = 1.6; this.tOleada = 5 + Math.random() * 4;
-      this.hud.setExtra('¡ELLOS JALAN DURO!', 0xff4d6d);
+      this.oleada = 2.4; this.tOleada = 6 + Math.random() * 4;
+      this.avisoT.setText('¡ELLOS JALAN DURO! ¡AGUANTA CON B!').setColor(COLOR.rojo);
       sacudir(this, 300, 0.004);
     }
-    let rival = dif(0.6, 0.7, 0.8) + (this.oleada > 0 ? dif(0.35, 0.45, 0.55) : 0);
-    if (this.oleada > 0) { this.oleada -= dt; if (this.oleada <= 0) this.hud.setExtra(''); }
+    let rival = dif(0.6, 0.7, 0.8);
+    if (this.oleada > 0) {
+      this.oleada -= dt;
+      rival += this.aguante > 0 ? 0.05 : dif(0.35, 0.45, 0.55);
+      if (this.oleada <= 0) this.avisoT.setText('');
+    }
+    if (this.aguante > 0) this.aguante -= dt;
 
     // el truco de los tres pasos
     if (!this.trucoHecho && !this.truco && (this.r < -0.25 || this.tiempo < dif(45, 38, 30))) {
-      this.truco = { t: dif(2.6, 2, 1.6), n: 0, soltado: true };
-      this.hud.setExtra('001: ¡TRES PASOS ADELANTE! → → →', 0xf2c230);
+      this.truco = { t: dif(2.8, 2.2, 1.7), n: 0, soltado: true };
+      this.avisoT.setText('001: ¡TRES PASOS ADELANTE!  →  →  →').setColor(COLOR.oro);
       fxSobre(this, this.equipo[4], 'exclamacion');
       tono(880, 0.1, 'metal', 0.15);
     }
     if (this.truco) {
       const tr = this.truco;
       tr.t -= dt;
-      if (this.inp.x > 0.5 && tr.soltado) { tr.n++; tr.soltado = false; tono(600 + tr.n * 200, 0.05, 'cuadrada', 0.08); this.r -= 0.05; }
+      if (this.inp.x > 0.5 && tr.soltado) { tr.n++; tr.soltado = false; tono(600 + tr.n * 200, 0.05, 'cuadrada', 0.08); this.r -= 0.05; this.avisoT.setText('→ '.repeat(tr.n) + '· '.repeat(3 - tr.n)); }
       if (this.inp.x <= 0.3) tr.soltado = true;
       if (tr.n >= 3) {
-        this.truco = null; this.trucoHecho = true;
-        this.tropiezo = 2.2;
-        this.hud.setExtra('¡SE FUERON DE BOCA!', 0x23b39c);
+        this.truco = null; this.trucoHecho = true; this.tropiezo = 2.4;
+        this.avisoT.setText('¡SE FUERON DE BOCA!').setColor(COLOR.verde);
         this.rivales.forEach((a) => a.vivo && a.anim('stagger', 'left', true));
         sacudir(this, 300, 0.01);
         sfx(this, 'publico_ooh', 0.4);
+        this.time.delayedCall(1200, () => this.avisoT.setText(''));
       } else if (tr.t <= 0) {
         this.truco = null; this.trucoHecho = true;
-        this.hud.setExtra('No dio tiempo...', 0xff8fb5);
+        this.avisoT.setText('No dio tiempo...').setColor('#ff8fb5');
+        this.time.delayedCall(1000, () => this.avisoT.setText(''));
       }
     }
     if (this.tropiezo > 0) {
-      this.tropiezo -= dt;
-      rival = -0.4;
+      this.tropiezo -= dt; rival = -0.4;
       if (this.tropiezo <= 0) this.rivales.forEach((a) => a.vivo && a.anim('judo_grip', 'left'));
     }
 
@@ -189,12 +231,17 @@ export class TiraAfloja extends Juego {
     else if (this.tiempo <= 0) (this.r > 0 ? this.ganarTira() : this.perderTira());
   }
 
+  estrellas() {
+    const p = this.total ? this.aciertos / this.total : 0;
+    return (p > 0.75 ? 3 : p > 0.5 ? 2 : 1) - Math.max(0, this.vidasInicio - E.vidas);
+  }
+
   async ganarTira() {
     this.jugando = false;
+    this.notas.forEach((n) => n.img.active && n.img.destroy());
     sfx(this, 'publico_grito', 0.4);
-    // el otro equipo cae al vacío
     for (const [i, a] of this.rivales.entries()) {
-      this.time.delayedCall(i * 90, () => { this.contarEliminado(); eliminar(this, a, { modo: 'caida', dy: 160, sonido: i === 0 }); });
+      this.time.delayedCall(i * 90, () => { this.contarEliminado(); eliminar(this, a, { modo: 'caida', dy: 200, sonido: i === 0 }); });
     }
     await esperar(this, 1600);
     this.cuerda.clear();
@@ -203,9 +250,9 @@ export class TiraAfloja extends Juego {
 
   async perderTira() {
     this.jugando = false;
-    // nuestro equipo cae (la familia se agarra del borde: el jugador es el que se cae)
-    this.equipo.slice(4).forEach((a, i) => this.time.delayedCall(i * 90, () => eliminar(this, a, { modo: 'caida', dy: 160, sonido: false })));
+    this.notas.forEach((n) => n.img.active && n.img.destroy());
+    this.equipo.slice(4).forEach((a, i) => this.time.delayedCall(i * 90, () => eliminar(this, a, { modo: 'caida', dy: 200, sonido: false })));
     this.familia.forEach((f) => f.anim('edge_teeter', 'right'));
-    this.perder('AL VACÍO', { modo: 'caida', dy: 160 });
+    this.perder('AL VACÍO', { modo: 'caida', dy: 200 });
   }
 }
