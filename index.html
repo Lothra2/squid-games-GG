@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Calamar GG" />
+  <link rel="apple-touch-icon" href="./icono.png" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#0b0a10" />
+  <title>El Juego del Calamar GG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&display=swap" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 fill=%27%230b0a10%27/%3E%3Ccircle cx=%278%27 cy=%278%27 r=%275%27 fill=%27none%27 stroke=%27%23e0457b%27 stroke-width=%272%27/%3E%3C/svg%3E" />
+  <style>
+    html, body { margin: 0; height: 100%; background: #0b0a10; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
+    #juego { position: fixed; inset: 0; }
+    canvas { image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; image-rendering: pixelated; }
+    #girar { display: none; position: fixed; inset: 0; z-index: 10; background: #0b0a10; color: #f4f0e8; font: 16px/1.5 monospace;
+      align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 16px; }
+    #girar b { color: #e0457b; font-size: 40px; }
+    @media (orientation: portrait) and (max-width: 1100px) { #girar { display: flex; } }
+  </style>
+  <script type="module" crossorigin src="./assets/juego.js?v=b1d4753"></script>
+</head>
+<body>
+  <div id="juego"></div>
+  <div id="girar"><b>○ △ □</b><p>Gira el teléfono o el iPad para jugar</p></div>
+</body>
+</html>
