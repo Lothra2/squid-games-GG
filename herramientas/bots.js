@@ -27,11 +27,19 @@
     if (!s.jugando) { inp._kA = true; inp._tA = false; return; }
     if (k === 'LuzRoja') { inp._tx = s.luz === 'verde' && s.tLuz > 0.3 ? 1 : 0; }
     if (k === 'Galleta') {
-      // sigue la línea con la palanca, raspa mientras no se caliente, suelta en el crac y lame si hace falta
-      const [tx, ty] = s.tangente(Math.floor(s.s));
-      inp._tx = tx; inp._ty = ty;
-      inp._tA = s.crac <= 0 && s.lamiendo <= 0 && s.tension < 0.5;
-      if (s.tension > 0.6 && s.lamidas > 0 && s.lamiendo <= 0) inp._kB = true;
+      // lleva la aguja al pedazo que falta y pica cuando está encima, sin calentar de más
+      const p = s.punta;
+      if (p) {
+        if (s.tension > 0.7 && s.lamidas > 0 && s.lamiendo <= 0) inp._kB = true;
+        else {
+          const kk = s.pendienteCerca(p.x, p.y);
+          if (kk >= 0) {
+            const [gx, gy] = s.camino[kk], dx = gx - p.x, dy = gy - p.y, d = Math.hypot(dx, dy) || 1;
+            if (d > 1.5) { inp._tx = (dx / d) * Math.min(1, d / 10); inp._ty = (dy / d) * Math.min(1, d / 10); }
+            if (d < s.tol * 0.6 && s.tension < 0.55 && Math.random() < 0.3) inp._kA = true;
+          }
+        }
+      }
     }
     if (k === 'TiraAfloja') {
       if (s.truco) { alterna = 1 - alterna; inp._tx = alterna; }

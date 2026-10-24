@@ -1,7 +1,7 @@
-// Juego 2: La galleta (dalgona). Se elige una fila sin saber la figura. Hay que raspar la orilla con la aguja:
-// mantener A (presión) y empujar la palanca en la dirección de la línea. Raspar sin parar calienta la galleta, y
-// empujar para otro lado la calienta mucho más. A veces suena un "¡crac!": hay que soltar A ya, o se rompe.
-// B: lamer (pocas veces): ablanda el caramelo un rato.
+// Juego 2: La galleta (dalgona). Se elige una fila sin saber la figura. Con la palanca mueves la aguja por la
+// galleta, y con A le das un golpecito donde está. Si el golpe cae sobre la línea, raspa ese pedazo; si cae afuera,
+// la galleta se raja. Cada golpe calienta el caramelo (se enfría solo si esperas un poco). Las esquinas son
+// delicadas. B: lamer (pocas veces): ablanda el caramelo un rato.
 
 import Phaser from 'phaser';
 import { Juego } from '../core/juego.js';
@@ -94,11 +94,13 @@ export class Galleta extends Juego {
     this.tension = 0;
     this.lamida = 0;
     this.lamiendo = 0;
-    this.s = 0;
     this.tVecino = 6;
-    this.crac = 0;           // segundos para soltar A cuando suena el crac
-    this.tCrac = 6 + Math.random() * 5;
-    this.fallosCrac = 0;
+    this.frio = 0;           // el tiempo mínimo entre golpecitos
+    this.fallos = 0;
+    // qué tan cerca de la línea tiene que caer el golpe, y cuánto raspa cada golpe
+    this.tol = dif(7.5, 6, 4.5);
+    this.radio = dif(10, 8, 6.5);
+    this.tolVista = this.add.graphics().setDepth(14);
     this.actualizarLamidas();
   }
 
@@ -128,8 +130,8 @@ export class Galleta extends Juego {
     this.armarFigura();
     await cartel(this, NOMBRE_FIG[this.figura], this.figura === 'paraguas' ? '¡la más difícil!' : this.figura === 'circulo' ? '¡la más fácil!' : '', { ms: 1400, color: 0xf7c948 });
     const lineas = {
-      circulo: [['rick', 'feliz', '¡El círculo! Pero ojo: si aprietas sin seguir la línea, se raja igual.']],
-      triangulo: [['steph', 'neutral', 'El triángulo. En cada esquina, suelta y cambia de dirección.']],
+      circulo: [['rick', 'feliz', '¡El círculo! Pero ojo: un golpe afuera de la línea y se raja igual.']],
+      triangulo: [['steph', 'neutral', 'El triángulo. En las esquinas, golpecitos suaves y con calma.']],
       estrella: [['sophie', 'susto', 'La estrella tiene diez puntas... ¡despacito en cada una!']],
       paraguas: [['alana', 'susto', '¡El paraguas! Ese es el más difícil de todos.'], ['steph', 'neutral', 'Lame la galleta cuando esté muy caliente. El caramelo se ablanda.']],
     }[this.figura];
@@ -157,7 +159,82 @@ export class Galleta extends Juego {
     g.beginPath(); g.moveTo(this.camino[0][0], this.camino[0][1]);
     this.camino.forEach(([x, y]) => g.lineTo(x, y));
     g.strokePath();
-    this.velRaspe = dif(24, 19, 15) * Math.max(1, this.largo / 340);
+    this.raspado = new Uint8Array(this.camino.length);
+    this.nRaspado = 0;
+    this.punta = { x: this.camino[0][0], y: this.camino[0][1] - 18 };
+  }
+
+  /** el punto de la línea más cercano a (x, y): índice y distancia */
+  masCerca(x, y) {
+    let mi = 0, md = 1e9;
+    for (let k = 0; k < this.camino.length; k++) { const d = Math.hypot(this.camino[k][0] - x, this.camino[k][1] - y); if (d < md) { md = d; mi = k; } }
+    return { i: mi, d: md };
+  }
+
+  /** el pedazo sin raspar más cercano a la aguja (para la flechita guía) */
+  pendienteCerca(x, y) {
+    let mi = -1, md = 1e9;
+    for (let k = 0; k < this.camino.length; k += 2) { if (this.raspado[k]) continue; const d = Math.hypot(this.camino[k][0] - x, this.camino[k][1] - y); if (d < md) { md = d; mi = k; } }
+    return mi;
+  }
+
+  /** un golpecito de la aguja donde está la punta */
+  picar() {
+    const { x, y } = this.punta;
+    const { i, d } = this.masCerca(x, y);
+    const esquina = this.esquinas.some((e) => Math.abs(e - i) < 6);
+    const blando = this.lamida > 0 ? 0.55 : 1;
+    // la aguja baja y sube
+    this.golpeT = 0.12;
+    if (d <= this.tol) {
+      const r = this.radio * (esquina ? 0.6 : 1);
+      let nuevos = 0;
+      for (let k = 0; k < this.camino.length; k++) {
+        if (this.raspado[k]) continue;
+        if (Math.hypot(this.camino[k][0] - x, this.camino[k][1] - y) <= r) { this.raspado[k] = 1; nuevos++; }
+      }
+      this.nRaspado += nuevos;
+      const preciso = d <= this.tol * 0.45;
+      this.tension += dif(0.045, 0.06, 0.08) * (esquina ? 1.6 : 1) * (preciso ? 0.7 : 1) * blando;
+      tono(preciso ? 2200 : 1800, 0.02, 'cuadrada', 0.04);
+      chorro(this, x, y, nuevos ? 5 : 2, [0xf6d080, 0xc4842c], 30, { g: 120, vida: 300, prof: 16 });
+      if (nuevos) this.pintarSurco();
+      if (preciso && nuevos) this.mensaje('¡Justo!', COLOR.verde);
+    } else {
+      // afuera de la línea: la galleta se raja un poquito
+      this.fallos++;
+      this.tension += dif(0.14, 0.2, 0.27) * blando;
+      sfx(this, 'romper', 0.25);
+      sacudir(this, 90, 0.004);
+      this.grieta(x, y, 2 + Math.min(4, Math.floor(this.tension * 5)));
+      this.mensaje('¡Afuera de la línea!', COLOR.rojo);
+    }
+  }
+
+  mensaje(t, color) {
+    if (this.lamiendo > 0) return;
+    this.aviso.setText(t).setColor(color);
+    if (this.tMsj) this.tMsj.remove();
+    this.tMsj = this.time.delayedCall(700, () => this.lamiendo <= 0 && this.aviso.setText(''));
+  }
+
+  /** una rajadura que sale de donde cayó el golpe */
+  grieta(x, y, largo) {
+    const g = this.grietas;
+    g.lineStyle(1, 0x6a3a10, 0.9);
+    let a = Math.random() * Math.PI * 2;
+    g.beginPath(); g.moveTo(x, y);
+    for (let j = 0; j < largo; j++) { a += (Math.random() - 0.5) * 1.1; x += Math.cos(a) * 4; y += Math.sin(a) * 4; g.lineTo(x, y); }
+    g.strokePath();
+  }
+
+  pintarSurco() {
+    const g = this.surco;
+    g.clear();
+    g.lineStyle(3, 0x3a2208, 1);
+    for (let k = 1; k < this.camino.length; k++) {
+      if (this.raspado[k] && this.raspado[k - 1]) g.lineBetween(this.camino[k - 1][0], this.camino[k - 1][1], this.camino[k][0], this.camino[k][1]);
+    }
   }
 
   /** la dirección de la línea en un punto del camino (unitaria) */
@@ -175,8 +252,8 @@ export class Galleta extends Juego {
 
   reglas() {
     return {
-      objetivo: ['Saca la figura de la galleta sin romperla.', 'Mantén A y empuja en la dirección de la línea (te guía la flechita).', 'Si suena ¡CRAC!, suelta A al instante. B: lamer para ablandar.'],
-      controles: [['palanca', 'Dirección'], ['a', 'Raspar (mantener)'], ['b', 'Lamer']],
+      objetivo: ['Saca la figura de la galleta sin romperla.', 'Con la palanca pon la aguja sobre la línea y dale golpecitos con A. La flechita te muestra lo que falta.', 'Golpe afuera de la línea: se raja. Muchos golpes seguidos: se calienta. Las esquinas, despacito. B: lamer.'],
+      controles: [['palanca', 'Mover la aguja'], ['a', 'Picar'], ['b', 'Lamer']],
       frase: ['guardia_cuadrado', 'neutral', 'Juego 2. Diez minutos... bueno, menos. Si la figura se rompe, quedan eliminados.'],
     };
   }
@@ -204,7 +281,7 @@ export class Galleta extends Juego {
     } else if (this.inp.tomarB()) {
       if (this.lamidas > 0) {
         this.lamidas--; this.actualizarLamidas();
-        this.lamiendo = 1.6; this.crac = 0;
+        this.lamiendo = 1.6;
         this.aviso.setText('Lamiendo... el caramelo se ablanda').setColor(COLOR.azul);
         tono(330, 0.3, 'flauta', 0.08);
         this.cara.setFrame('g_cerrado');
@@ -212,76 +289,68 @@ export class Galleta extends Juego {
     }
     if (this.lamida > 0) this.lamida -= dt;
 
-    const i = Math.floor(this.s);
-    const [tx, ty] = this.tangente(i);
-    const mag = Math.hypot(this.inp.x, this.inp.y);
-    const ix = mag > 0.3 ? this.inp.x / mag : 0, iy = mag > 0.3 ? this.inp.y / mag : 0;
-    const acuerdo = ix * tx + iy * ty; // 1 = justo en la línea
-    const raspando = this.inp.a && this.lamiendo <= 0;
-    const cerca = this.esquinas.some((e) => Math.abs(e - i) < 6);
+    // la aguja: se mueve con la palanca y, cerca de la línea, se le pega un poquito (ayuda)
+    const p = this.punta, vel = dif(85, 74, 64);
+    if (this.lamiendo <= 0) { p.x += this.inp.x * vel * dt; p.y += this.inp.y * vel * dt; }
+    const dc = Math.hypot(p.x - CX, p.y - CY);
+    if (dc > 92) { p.x = CX + ((p.x - CX) / dc) * 92; p.y = CY + ((p.y - CY) / dc) * 92; }
+    const cerca = this.masCerca(p.x, p.y);
+    if (cerca.d < this.tol * 2.2 && cerca.d > 0.5) {
+      const [lx, ly] = this.camino[cerca.i], iman = dif(26, 16, 7) * dt;
+      p.x += ((lx - p.x) / cerca.d) * Math.min(iman, cerca.d); p.y += ((ly - p.y) / cerca.d) * Math.min(iman, cerca.d);
+    }
+    const sobreLinea = cerca.d <= this.tol;
+    const esquina = this.esquinas.some((e) => Math.abs(e - cerca.i) < 6);
 
-    // el crac sorpresa: hay que soltar A rápido
-    this.tCrac -= dt * (raspando ? 1 : 0.4);
-    if (this.tCrac <= 0 && this.crac <= 0 && this.lamiendo <= 0 && this.s > 10) {
-      this.crac = dif(0.95, 0.7, 0.5);
-      this.tCrac = dif(9, 7, 5) + Math.random() * 5;
-      this.aviso.setText('¡CRAC! ¡SUELTA!').setColor(COLOR.rojo);
-      sfx(this, 'romper', 0.4);
-      sacudir(this, 120, 0.004);
+    // el golpecito
+    this.frio -= dt;
+    if (this.inp.tomarA() && this.lamiendo <= 0) {
+      if (this.frio <= 0) { this.frio = 0.09; this.picar(); }
     }
-    if (this.crac > 0) {
-      if (!this.inp.a) { this.crac = 0; this.aviso.setText('¡Uf! A tiempo').setColor(COLOR.verde); this.time.delayedCall(700, () => this.crac <= 0 && this.lamiendo <= 0 && this.aviso.setText('')); }
-      else { this.crac -= dt; if (this.crac <= 0) { this.fallosCrac++; this.romper('¡SE RAJÓ!'); return; } }
-    }
-
-    if (raspando) {
-      let sube = dif(0.14, 0.2, 0.27) * (cerca ? 2.4 : 1);
-      if (acuerdo > 0.6) {
-        this.s = Math.min(this.largo, this.s + this.velRaspe * dt * (cerca ? 0.7 : 1) * Math.min(1, acuerdo + 0.2));
-        if (Math.random() < dt * 14) tono(1800 + Math.random() * 600, 0.015, 'cuadrada', 0.02);
-      } else {
-        // apretar sin seguir la línea: la aguja se clava y calienta mucho
-        sube *= acuerdo < -0.2 ? 4.5 : 3;
-        if (Math.random() < dt * 6) tono(260, 0.03, 'cuadrada', 0.04);
-      }
-      if (this.lamida > 0) sube *= 0.5;
-      this.tension += sube * dt;
-    } else {
-      this.tension = Math.max(0, this.tension - dt * 0.42);
-    }
-    if (this.tension > 0.72) {
+    // el caramelo se enfría solo si uno espera
+    this.tension = Math.max(0, this.tension - dt * dif(0.34, 0.27, 0.21));
+    if (this.tension > 0.75) {
       this.galleta.setPosition((Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2);
       if (Math.random() < dt * 3) sfx(this, 'romper', 0.12);
+      if (!this.avisoCaliente && this.lamiendo <= 0) { this.avisoCaliente = true; this.mensaje('¡Espera! Se está calentando', COLOR.oro); this.time.delayedCall(1500, () => (this.avisoCaliente = false)); }
     } else this.galleta.setPosition(0, 0);
     if (this.tension >= 1) { this.romper('¡SE ROMPIÓ!'); return; }
 
-    // dibujar el surco, la aguja y la flechita guía
-    this.surco.clear();
-    this.surco.lineStyle(3, 0x3a2208, 1);
-    this.surco.beginPath();
-    this.surco.moveTo(this.camino[0][0], this.camino[0][1]);
-    for (let k = 1; k <= Math.floor(this.s); k++) this.surco.lineTo(this.camino[k][0], this.camino[k][1]);
-    this.surco.strokePath();
-    const [ax, ay] = this.camino[i];
-    this.aguja.clear();
-    this.aguja.lineStyle(2, 0x8a929c); this.aguja.lineBetween(ax + 1, ay + 1, ax + 25, ay - 35);
-    this.aguja.lineStyle(2, 0xe8eef4); this.aguja.lineBetween(ax, ay, ax + 24, ay - 36);
-    this.aguja.fillStyle(0xffffff); this.aguja.fillCircle(ax, ay, 2);
-    const verGuia = E.dificultad < 2 || cerca;
-    this.guia.setVisible(verGuia).setPosition(ax + tx * 16, ay + ty * 16).setRotation(Math.atan2(ty, tx) + Math.PI / 2);
-    this.guia.setTint(acuerdo > 0.6 ? 0x7fffe0 : 0xff8fb5);
+    // la aguja, el círculo de tolerancia y la flechita hacia lo que falta
+    if (this.golpeT > 0) this.golpeT -= dt;
+    const baja = this.golpeT > 0 ? 0 : 6;
+    const a = this.aguja;
+    a.clear();
+    a.lineStyle(2, 0x8a929c); a.lineBetween(p.x + 1 + baja * 0.6, p.y + 1 - baja, p.x + 25 + baja * 0.6, p.y - 35 - baja);
+    a.lineStyle(2, 0xe8eef4); a.lineBetween(p.x + baja * 0.6, p.y - baja, p.x + 24 + baja * 0.6, p.y - 36 - baja);
+    a.fillStyle(0xffffff); a.fillCircle(p.x + baja * 0.6, p.y - baja, 1.5);
+    const tv = this.tolVista;
+    tv.clear();
+    tv.lineStyle(1, sobreLinea ? (esquina ? 0xf7c948 : 0x7fffe0) : 0xff8fb5, 0.9);
+    tv.strokeCircle(p.x, p.y, this.tol);
+    tv.fillStyle(sobreLinea ? 0x7fffe0 : 0xff8fb5, 1); tv.fillRect(Math.round(p.x) - 1, Math.round(p.y) - 1, 2, 2);
+    const k = this.pendienteCerca(p.x, p.y);
+    if (k >= 0) {
+      const [gx, gy] = this.camino[k];
+      const dg = Math.hypot(gx - p.x, gy - p.y);
+      const verGuia = E.dificultad < 2 || dg < 40;
+      const pulso = 0.5 + Math.sin(this.time.now / 160) * 0.12;
+      this.guia.setVisible(verGuia).setPosition(gx, gy - 12).setRotation(Math.PI).setScale(pulso).setTint(0x7fffe0);
+    } else this.guia.setVisible(false);
+
     const t = Phaser.Math.Clamp(this.tension, 0, 1);
     this.barra.width = 150 * t;
     this.barra.fillColor = t < 0.5 ? 0x2fd4b4 : t < 0.75 ? 0xf7c948 : 0xff3355;
-    this.barraAv.width = 150 * (this.s / this.largo);
-    if (this.lamiendo <= 0) this.cara.setFrame(this.crac > 0 ? 'g_susto' : t > 0.75 ? 'g_susto' : t > 0.45 ? 'g_dolor' : 'g_neutral');
+    this.barraAv.width = 150 * (this.nRaspado / this.camino.length);
+    if (this.lamiendo <= 0) this.cara.setFrame(t > 0.75 ? 'g_susto' : t > 0.45 ? 'g_dolor' : 'g_neutral');
 
-    if (this.s >= this.largo) this.terminarFigura();
+    if (this.nRaspado >= this.camino.length) this.terminarFigura();
   }
 
   estrellas() {
     const sobra = this.tiempo / this.tiempoTotal;
-    return (sobra > 0.4 ? 3 : sobra > 0.2 ? 2 : 1) - Math.max(0, this.vidasInicio - E.vidas);
+    // tres estrellas: con tiempo de sobra y casi sin golpes afuera de la línea
+    return (sobra > 0.35 && this.fallos <= 2 ? 3 : sobra > 0.15 ? 2 : 1) - Math.max(0, this.vidasInicio - E.vidas);
   }
 
   terminarFigura() {
@@ -305,7 +374,7 @@ export class Galleta extends Juego {
     sacudir(this, 200, 0.012);
     this.cara.setFrame('g_susto');
     this.guia.setVisible(false);
-    const [ax, ay] = this.camino[Math.floor(this.s)];
+    const ax = this.punta ? this.punta.x : CX, ay = this.punta ? this.punta.y : CY;
     this.grietas.lineStyle(2, 0x3a2208);
     for (let k = 0; k < 7; k++) {
       let x = ax, y = ay, a = Math.random() * Math.PI * 2;

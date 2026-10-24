@@ -173,7 +173,10 @@ export function elegir(scene, inp, opciones, { titulo = '', ancho = null, x = nu
     const porCol = Math.ceil(opciones.length / columnas);
     const medidas = opciones.map((o) => { const t = texto(scene, 0, 0, o, { tam }); const w = t.width; t.destroy(); return w; });
     const colW = Math.max(150, Math.max(...medidas) + 52, detalles ? 300 : 0);
-    const anchoT = ancho || Math.min(W - 24, colW * columnas + 20);
+    // la caja crece para que el título nunca se salga
+    let anchoTitulo = 0;
+    if (titulo) { const t = texto(scene, 0, 0, titulo, { tam: 17, negrita: true }); anchoTitulo = t.width + 48; t.destroy(); }
+    const anchoT = Math.min(W - 24, Math.max(ancho || colW * columnas + 20, anchoTitulo));
     const alto = porCol * filaH + (titulo ? 44 : 18);
     // con volver, abajo queda lugar para el botón
     const abajo = cancelar ? 40 : 4;
