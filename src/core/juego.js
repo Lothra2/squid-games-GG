@@ -82,21 +82,23 @@ export class Juego extends Phaser.Scene {
       const objs = [];
       const fijo = (o) => { o.setScrollFactor(0).setDepth(prof); objs.push(o); return o; };
       fijo(this.add.rectangle(0, 0, W, H, 0x07060c, 0.84).setOrigin(0));
-      fijo(panel(this, 60, 34, W - 120, H - 68, prof));
-      fijo(this.add.bitmapText(W / 2, 62, 'fuente_titulo', `JUEGO ${n}`).setOrigin(0.5).setTint(0xff4d8d).setScale(1.5));
-      fijo(texto(this, W / 2, 92, j.titulo, { tam: 22, negrita: true, origen: [0.5, 0.5] }));
-      ['circulo', 'triangulo', 'cuadrado'].forEach((s, i) => fijo(this.add.image(W / 2 - 30 + i * 30, 118, s).setTint(0xff4d8d).setScale(0.7).setAlpha(0.8)));
-      let y = 142;
-      for (const l of objetivo) { const t = fijo(texto(this, W / 2, y, l, { tam: 15, ancho: W - 180, alinear: 'center', origen: [0.5, 0] })); y += t.height + 6; }
-      ayudas(this, W / 2, Math.max(y + 18, 228), controles, { prof: prof + 1 }).forEach((o) => objs.push(o));
+      fijo(panel(this, 56, 16, W - 112, H - 32, prof));
+      fijo(this.add.bitmapText(W / 2, 44, 'fuente_titulo', `JUEGO ${n}`).setOrigin(0.5).setTint(0xff4d8d).setScale(1.5));
+      fijo(texto(this, W / 2, 72, j.titulo, { tam: 22, negrita: true, origen: [0.5, 0.5] }));
+      ['circulo', 'triangulo', 'cuadrado'].forEach((s, i) => fijo(this.add.image(W / 2 - 30 + i * 30, 96, s).setTint(0xff4d8d).setScale(0.7).setAlpha(0.8)));
+      let y = 114;
+      for (const l of objetivo) { const t = fijo(texto(this, W / 2, y, l, { tam: 14, ancho: W - 170, alinear: 'center', origen: [0.5, 0] })); y += t.height + 5; }
+      // todo lo de abajo se acomoda según cuánto ocupó el objetivo
+      const yc = Math.max(y + 16, 212), yp = Math.max(yc + 34, 254);
+      ayudas(this, W / 2, yc, controles, { prof: prof + 1 }).forEach((o) => objs.push(o));
       // quién juega (el relevo de la familia)
       const vidas = this.practica ? 'práctica' : `${E.vidas} ${E.vidas === 1 ? 'vida' : 'vidas'}`;
-      fijo(this.add.image(W / 2 - 120, 276, 'ret_' + E.perfil, 'c_feliz'));
-      fijo(texto(this, W / 2 - 94, 268, `Juega: ${nombre(E.perfil)}  ·  ${NUMEROS[E.perfil]}`, { tam: 14, negrita: true, color: COLOR.verde, origen: [0, 0.5] }));
-      fijo(texto(this, W / 2 - 94, 286, `${vidas}${NINAS.includes(E.perfil) && E.sangreManual === null ? '  ·  sin sangre' : ''}${this.bonusReloj ? '  ·  +15 s' : ''}`, { tam: 12, color: COLOR.apagado, origen: [0, 0.5] }));
-      const cambiar = fijo(texto(this, W / 2 + 150, 277, 'B: cambiar', { tam: 12, color: COLOR.apagado, origen: [0.5, 0.5] }));
+      fijo(this.add.image(W / 2 - 120, yp + 8, 'ret_' + E.perfil, 'c_feliz'));
+      fijo(texto(this, W / 2 - 94, yp, `Juega: ${nombre(E.perfil)}  ·  ${NUMEROS[E.perfil]}`, { tam: 14, negrita: true, color: COLOR.verde, origen: [0, 0.5] }));
+      fijo(texto(this, W / 2 - 94, yp + 18, `${vidas}${NINAS.includes(E.perfil) && E.sangreManual === null ? '  ·  sin sangre' : ''}${this.bonusReloj ? '  ·  +15 s' : ''}`, { tam: 12, color: COLOR.apagado, origen: [0, 0.5] }));
+      const cambiar = fijo(texto(this, W / 2 + 150, yp + 9, 'B: cambiar', { tam: 12, color: COLOR.apagado, origen: [0.5, 0.5] }));
       cambiar.setInteractive({ useHandCursor: true }).on('pointerdown', () => { this._cambiar = true; });
-      const pie = fijo(texto(this, W / 2, 312, this.inp.esTactil ? 'Toca para empezar' : 'A (Espacio): ¡a jugar!', { tam: 15, negrita: true, color: COLOR.oro, origen: [0.5, 0.5] }));
+      const pie = fijo(texto(this, W / 2, Math.min(H - 34, yp + 44), this.inp.esTactil ? 'Toca para empezar' : 'A (Espacio): ¡a jugar!', { tam: 15, negrita: true, color: COLOR.oro, origen: [0.5, 0.5] }));
       this.tweens.add({ targets: pie, alpha: 0.35, duration: 520, yoyo: true, repeat: -1 });
       let cuadros = 0;
       const f = () => {
