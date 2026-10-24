@@ -51,6 +51,38 @@ export function encolarKit(scene) {
   for (const id of FONDOS_IDS) L.image(id, FONDOS + id + '.png');
 }
 
+/**
+ * Los retratos grandes (96 x 96) en pixel puro, como el sprite de PixelForja. El retrato grande que trae el kit está
+ * agrandado con Scale3x y un contorno fino: se ve "suavecito", con pixeles de tamaños distintos. Aquí se arma de
+ * nuevo desde el retrato chico (40 x 40, el personaje a celda 64 pixel a pixel): cabeza y hombros, 32 x 32, cada
+ * pixel convertido en un bloque de 3 x 3 exacto. Los chicos (c_) quedan igual.
+ */
+const LADO_PURO = 32, ESCALA_PURA = 3;
+function retratosPuros(scene, id, expresiones) {
+  const key = `ret_${id}`;
+  const fuente = scene.textures.get(key).getSourceImage();
+  const W = fuente.width, H = fuente.height;
+  const lienzo = document.createElement('canvas');
+  lienzo.width = W; lienzo.height = Math.max(H, 40 + LADO_PURO * ESCALA_PURA);
+  const ctx = lienzo.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(fuente, 0, 0);
+  // la primera fila con pixeles en el retrato neutral: desde ahí (el borde del pelo) se recorta, igual para todas
+  const datos = ctx.getImageData(0, 0, 40, 40).data;
+  let arriba = 0;
+  while (arriba < 39 && ![...Array(40).keys()].some((x) => datos[(arriba * 40 + x) * 4 + 3] > 0)) arriba++;
+  const y0 = Math.min(arriba, 40 - LADO_PURO), x0 = (40 - LADO_PURO) / 2, lado = LADO_PURO * ESCALA_PURA;
+  ctx.clearRect(0, 40, W, lienzo.height - 40);
+  expresiones.forEach((_, i) => ctx.drawImage(fuente, i * 40 + x0, y0, LADO_PURO, LADO_PURO, i * lado, 40, lado, lado));
+  scene.textures.remove(key);
+  const t = scene.textures.addCanvas(key, lienzo);
+  t.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  expresiones.forEach((ex, i) => {
+    t.add(`c_${ex}`, 0, i * 40, 0, 40, 40);
+    t.add(`g_${ex}`, 0, i * lado, 40, lado, lado);
+  });
+}
+
 /** Arma las animaciones y los cuadros de los retratos. Una vez por juego. */
 export function armarAnimaciones(scene) {
   const A = scene.anims;
@@ -68,13 +100,7 @@ export function armarAnimaciones(scene) {
         }
       }
     }
-    if (a.retratos) {
-      const t = scene.textures.get(`ret_${id}`);
-      a.retratos.expresiones.forEach((ex, i) => {
-        t.add(`c_${ex}`, 0, i * 40, 0, 40, 40);
-        t.add(`g_${ex}`, 0, i * 96, 40, 96, 96);
-      });
-    }
+    if (a.retratos) retratosPuros(scene, id, a.retratos.expresiones);
   }
   for (const [id, a] of Object.entries(M.animales)) {
     for (const [anim, d] of Object.entries(a.anims)) {

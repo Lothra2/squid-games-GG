@@ -25,6 +25,17 @@ const P = () => E.perfil;
 const ninas = () => !sangre();
 const FAM = ['rick', 'steph', 'sophie', 'alana'];
 
+// El dormitorio (fondos/dormitorio.png): literas a los dos lados y el pasillo de piso al centro, en perspectiva. El
+// piso va de x 240 a 400 contra la pared del fondo (y 168) y se abre hacia adelante. Solo ahí se para la gente, y
+// siempre a escala 1 (el sprite de PixelForja pixel a pixel): por eso la gente va en la mitad de adelante, donde ese
+// tamaño cuadra con las literas.
+const DORM = { fondo: 168, cx: 320, medio0: 80, abre: 0.714 };
+/** el ancho del pasillo a esa altura: [x izquierda, x derecha], con margen para que nadie pise una litera */
+function pasillo(y, margen = 14) {
+  const m = DORM.medio0 + DORM.abre * Math.max(0, y - DORM.fondo) - margen;
+  return [DORM.cx - m, DORM.cx + m];
+}
+
 /** escena de historia con ayudas para armar tomas */
 class Historia extends Phaser.Scene {
   init(data) { this.datos = data || {}; }
@@ -598,11 +609,17 @@ export class Llegada extends Historia {
     musica('danubio');
     this.fondo('dormitorio');
     const ids = jugadoresNPC();
-    for (let i = 0; i < 16; i++) {
-      const x = 53 + (i % 8) * 75 + (Math.random() * 12 - 6), y = 250 + Math.floor(i / 8) * 52 + Math.random() * 8;
-      const n = this.actor(ids[i % ids.length], x, y, i % 3 ? 'up' : 'down');
-      n.anim(i % 4 ? 'idle' : 'sad');
-    }
+    // los otros jugadores, regados por el pasillo (nunca encima de las literas)
+    const filas = [[226, 3], [252, 4], [280, 5]];
+    let k = 0;
+    filas.forEach(([y, n]) => {
+      const [x0, x1] = pasillo(y);
+      for (let i = 0; i < n; i++, k++) {
+        const x = x0 + (x1 - x0) * (n === 1 ? 0.5 : i / (n - 1)) + (Math.random() * 8 - 4), yy = y + Math.random() * 6;
+        const a = this.actor(ids[k % ids.length], x, yy, k % 3 ? 'up' : 'down');
+        a.anim(k % 4 ? 'idle' : 'sad');
+      }
+    });
     const fam = FAM.map((id, i) => this.actor(id, 266 + i * 36, 334, 'up'));
     fam.forEach((x) => x.anim('knockout'));
     await this.pausa(1200);
@@ -616,9 +633,10 @@ export class Llegada extends Historia {
     ]);
     if (this.saltar) return;
     // los guardias y las reglas
-    this.actor('guardia_cuadrado', 320, 226, 'down');
-    this.actor('guardia_circulo', 200, 230, 'down');
-    this.actor('guardia_triangulo', 440, 230, 'down');
+    // los guardias entran por la puerta del fondo y se paran en el pasillo, frente a todos
+    this.actor('guardia_cuadrado', 320, 204, 'down');
+    this.actor('guardia_circulo', 278, 206, 'down');
+    this.actor('guardia_triangulo', 362, 206, 'down');
     sfx(this, 'pitazo_largo', 0.5);
     await this.decir([
       ['guardia_cuadrado', 'neutral', 'Bienvenidos, jugadores. Tienen 11 juegos por delante.'],
@@ -764,6 +782,11 @@ export class Noche extends Historia {
     this.fondo('votacion');
     const W = this.scale.width;
     const total = Math.max(3, 456 - Math.round(E.pozo / 100_000_000));
+    // todos de espaldas, mirando el podio de los botones: otros jugadores al fondo y la familia adelante, en la alfombra
+    const ids = jugadoresNPC();
+    [[176, 284], [214, 270], [430, 270], [468, 286], [196, 318], [450, 320], [236, 300], [408, 300]]
+      .forEach(([x, y], i) => this.actor(ids[(i * 3 + n) % ids.length], x, y, 'up'));
+    FAM.forEach((id, i) => this.actor(id, 266 + i * 36, 338 - (i % 2) * 4, 'up'));
     await this.decir([
       ['guardia_cuadrado', 'neutral', 'Según la regla 3, se votará. O: seguir jugando. X: terminar el juego y repartir el dinero.'],
       ['steph', 'neutral', 'Rick... ¿votamos para irnos?'],
@@ -771,7 +794,7 @@ export class Noche extends Historia {
       [P() === 'steph' ? 'rick' : 'steph', 'neutral', 'Tú decides, ' + nombre(P()) + '. Nosotros votamos contigo.'],
     ]);
     if (this.saltar) return;
-    const r = await elegir(this, this.inp, ['O  ·  Seguir jugando', 'X  ·  Terminar el juego'], { titulo: 'TU VOTO', y: 250 });
+    const r = await elegir(this, this.inp, ['O  ·  Seguir jugando', 'X  ·  Terminar el juego'], { titulo: 'TU VOTO', y: 214 });
     // el conteo: siempre termina en O por un voto, como en la serie
     const mitad = Math.floor(total / 2);
     const o = mitad + 1, x = total - o;
@@ -803,18 +826,22 @@ export class Noche extends Historia {
     this.fondo('dormitorio');
     this.capa.push(this.add.rectangle(W / 2, 180, W, 360, 0x081028, 0.5).setDepth(-60));
     maquinaRosada(this);
-    const maq = this.img('maquina_rosada', 560, 330).setOrigin(0.5, 1).setScale(1.5).setDepth(320);
-    const brillo = this.luz(560, 270, 2.6, 0xff6fae, 0.4, 319);
-    this.tweens.add({ targets: brillo, alpha: 0.2, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-    FAM.forEach((id, i) => this.actor(id, 410 + i * 30, 326 - (i % 2) * 6, 'right'));
-    void maq;
-    await this.decir([[null, null, 'En la esquina del dormitorio hay una máquina rosada que brilla. Acepta los premios de la familia.']]);
+    // la máquina, en el pasillo contra la punta de una fila de literas, del tamaño de una máquina de verdad
+    const MX = 470, MY = 300;
+    this.img('maquina_rosada', MX, MY).setOrigin(0.5, 1).setDepth(MY);
+    this.capa.push(this.add.ellipse(MX, MY, 38, 6, 0x000000, 0.35).setDepth(MY - 1));
+    const brillo = this.luz(MX, MY - 30, 1.4, 0xff6fae, 0.35, MY + 1);
+    this.tweens.add({ targets: brillo, alpha: 0.15, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    // la familia en fila frente a la máquina
+    // la familia en grupito frente a la máquina (a la derecha del menú, para que se vean mientras eligen)
+    [[430, 316], [396, 324], [444, 344], [406, 350]].forEach(([x, y], i) => this.actor(FAM[i], x, y, 'right'));
+    await this.decir([[null, null, 'En el pasillo, pegada a las literas, hay una máquina rosada que brilla. Acepta los premios de la familia.']]);
     for (;;) {
       if (this.saltar) return;
       const ops = TIENDA.map((t) => `${t.nombre}  ·  ${millones(t.precio)}${E.compras[t.id] ? '  (ya lo tienes)' : ''}`);
       ops.push('Listo, a dormir');
       const det = TIENDA.map((t) => t.detalle).concat(['Lo que no gastes queda guardado']);
-      const r = await elegir(this, this.inp, ops, { titulo: 'LA MÁQUINA  ·  tienes ' + millones(E.billetera), detalles: det, x: 214, y: 196, cancelar: true });
+      const r = await elegir(this, this.inp, ops, { titulo: 'LA MÁQUINA  ·  tienes ' + millones(E.billetera), detalles: det, x: 192, y: 190, cancelar: true });
       if (r < 0 || r === TIENDA.length) return;
       const t = TIENDA[r];
       if (E.compras[t.id]) { await cartel(this, 'YA LO TIENES', 'se usa en el próximo juego', { ms: 900, color: 0x9a96a8 }); continue; }

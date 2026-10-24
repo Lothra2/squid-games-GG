@@ -518,28 +518,29 @@ export function caballito(scene) {
   }, 91);
 }
 
-/** la máquina rosada del dormitorio: vitrina con los premios, ranura de billetes y luces */
+/** la máquina rosada del dormitorio: vitrina con los premios, ranura de billetes y luces. 32 x 56, del alto de una
+ *  máquina de verdad al lado de los personajes (que miden unos 48), para usarla a escala 1, pixel a pixel */
 export function maquinaRosada(scene) {
-  return lienzo(scene, 'maquina_rosada', 44, 76, (P) => {
-    P.r(0, 0, 44, 76, '#2a0e1c');
-    P.r(1, 1, 42, 74, '#e0457b'); P.r(1, 1, 42, 2, '#ff8fb5'); P.r(1, 1, 2, 74, '#ff8fb5'); P.r(41, 1, 2, 74, '#a82a5a');
+  return lienzo(scene, 'maquina_rosada', 32, 56, (P) => {
+    P.r(0, 0, 32, 56, '#2a0e1c');
+    P.r(1, 1, 30, 54, '#e0457b'); P.r(1, 1, 30, 1, '#ff8fb5'); P.r(1, 1, 1, 54, '#ff8fb5'); P.r(30, 1, 1, 54, '#a82a5a');
     // el letrero de arriba con ○△□
-    P.r(5, 5, 34, 10, '#120e18');
-    P.elip(13, 10, 3, 3, '#ff8fb5'); P.elip(13, 10, 2, 2, '#120e18');
-    P.lin(22, 7, 19, 13, '#ff8fb5'); P.lin(22, 7, 25, 13, '#ff8fb5'); P.lin(19, 13, 25, 13, '#ff8fb5');
-    P.r(28, 7, 7, 1, '#ff8fb5'); P.r(28, 13, 7, 1, '#ff8fb5'); P.r(28, 7, 1, 7, '#ff8fb5'); P.r(34, 7, 1, 7, '#ff8fb5');
+    P.r(3, 3, 26, 7, '#120e18');
+    P.r(6, 5, 3, 3, '#ff8fb5'); P.p(7, 6, '#120e18');
+    P.p(15, 4, '#ff8fb5'); P.r(14, 5, 3, 1, '#ff8fb5'); P.r(13, 7, 5, 1, '#ff8fb5'); P.p(14, 6, '#ff8fb5'); P.p(16, 6, '#ff8fb5');
+    P.r(22, 5, 3, 3, '#ff8fb5'); P.p(23, 6, '#120e18');
     // la vitrina con tres premios: corazón (vida), reloj de arena, lupa (pista)
-    P.r(5, 18, 26, 36, '#3a1a3a'); P.r(6, 19, 24, 34, '#5a2a5a');
-    for (let k = 0; k < 3; k++) P.r(6, 29 + k * 11, 24, 1, '#c86a9a');
-    P.r(10, 22, 3, 3, '#ff4d6d'); P.r(13, 22, 3, 3, '#ff4d6d'); P.r(11, 25, 4, 2, '#ff4d6d'); P.r(12, 27, 2, 1, '#ff4d6d');
-    P.r(10, 33, 6, 1, '#f7c948'); P.r(11, 34, 4, 2, '#e8d8a0'); P.r(12, 36, 2, 1, '#f7c948'); P.r(11, 37, 4, 2, '#f7c948'); P.r(10, 39, 6, 1, '#f7c948');
-    P.elip(13, 45, 3, 3, '#9ad8f0'); P.elip(13, 45, 2, 2, '#3a1a3a'); P.lin(15, 47, 18, 50, '#c8c8d0');
-    P.r(20, 22, 7, 5, '#2fd4b4'); P.r(20, 33, 7, 5, '#2fd4b4'); P.r(20, 44, 7, 5, '#2fd4b4');
-    P.r(6, 19, 24, 2, '#ffffff'); P.trama(6, 19, 10, 34, '#ffffff', 0.08);
+    P.r(3, 12, 19, 27, '#3a1a3a'); P.r(4, 13, 17, 25, '#5a2a5a');
+    P.r(4, 21, 17, 1, '#c86a9a'); P.r(4, 29, 17, 1, '#c86a9a');
+    P.p(7, 15, '#ff4d6d'); P.p(9, 15, '#ff4d6d'); P.r(6, 16, 5, 1, '#ff4d6d'); P.r(7, 17, 3, 1, '#ff4d6d'); P.p(8, 18, '#ff4d6d');
+    P.r(6, 23, 5, 1, '#f7c948'); P.r(7, 24, 3, 1, '#e8d8a0'); P.p(8, 25, '#f7c948'); P.r(7, 26, 3, 1, '#f7c948'); P.r(6, 27, 5, 1, '#f7c948');
+    P.r(6, 31, 3, 3, '#9ad8f0'); P.p(7, 32, '#3a1a3a'); P.p(9, 34, '#c8c8d0'); P.p(10, 35, '#c8c8d0');
+    P.r(14, 15, 5, 3, '#2fd4b4'); P.r(14, 23, 5, 3, '#2fd4b4'); P.r(14, 31, 5, 3, '#2fd4b4');
+    P.r(4, 13, 17, 1, '#ffffff'); P.p(5, 14, '#ffffff'); P.p(5, 15, '#ffffff');
     // el panel de la derecha: ranura de billetes y botones
-    P.r(33, 18, 7, 36, '#a82a5a'); P.r(34, 21, 5, 2, '#120e18'); P.r(35, 26, 3, 3, '#f7c948'); P.r(35, 31, 3, 3, '#2fd4b4'); P.r(35, 36, 3, 3, '#6aa8ff');
-    // la bandeja de abajo
-    P.r(5, 58, 34, 10, '#120e18'); P.r(7, 60, 30, 6, '#2a1a2a'); P.r(7, 60, 30, 1, '#5a3a5a');
-    P.r(4, 72, 6, 4, '#120e18'); P.r(34, 72, 6, 4, '#120e18');
+    P.r(24, 12, 5, 27, '#a82a5a'); P.r(25, 14, 3, 1, '#120e18'); P.r(25, 18, 3, 2, '#f7c948'); P.r(25, 22, 3, 2, '#2fd4b4'); P.r(25, 26, 3, 2, '#6aa8ff');
+    // la bandeja de abajo y las patas
+    P.r(3, 42, 26, 7, '#120e18'); P.r(5, 44, 22, 3, '#2a1a2a'); P.r(5, 44, 22, 1, '#5a3a5a');
+    P.r(3, 52, 4, 4, '#120e18'); P.r(25, 52, 4, 4, '#120e18');
   }, 501);
 }

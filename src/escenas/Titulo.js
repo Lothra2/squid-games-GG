@@ -179,7 +179,7 @@ export class Titulo extends Phaser.Scene {
     const cursor = this.add.image(0, 0, 'triangulo').setTint(0xff4d8d).setAngle(180);
     capa.add(cursor);
     const pintar = () => {
-      actores.forEach((a, i) => { a.ret.setAlpha(i === sel ? 1 : 0.45); a.marco.setAlpha(i === sel ? 1 : 0.45); a.ret.setFrame(i === sel ? 'g_feliz' : 'g_neutral'); });
+      actores.forEach((a, i) => { a.ret.setAlpha(i === sel ? 1 : 0.72); a.marco.setAlpha(i === sel ? 1 : 0.72); a.ret.setFrame('g_feliz'); });
       cursor.setPosition(86 + sel * 156, 68);
     };
     pintar();

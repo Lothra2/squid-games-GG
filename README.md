@@ -80,6 +80,9 @@ npm run build      # sale en dist/, listo para Netlify (netlify.toml ya está)
   `public/assets/kit/` con `forja/kit.config.json` (familia, guardias, Front Man, abuelo y reclutador, en celda de
   64 px, con retratos de 8 expresiones, voces, efectos y sonidos) y `public/assets/kit_gente/` con
   `forja/kit_gente.config.json` (los otros 19 jugadores).
+  Después de armar el kit: `python3 herramientas/arreglar_thor.py` (Thor sentado de perfil apoya la cadera en el
+  piso). Los retratos grandes de diálogos y selección se arman al cargar en pixel puro: cabeza y hombros del retrato
+  de 40 px, cada pixel en un bloque exacto de 3 x 3 (`src/core/kit.js`).
 - **Intro, historia y final:** pintados con código pixel por pixel en `src/escenas/pintura.js` (metro, tren, casa,
   cielo, olas, lancha, muelle, tarjeta y chanchito).
 - **Escenarios de los juegos:** imágenes de Higgsfield en `arte/higgsfield/`, pasadas a pixel de 640 x 360 con
