@@ -49,7 +49,7 @@ export function nitidez(game) {
     if (!ok) return;
     try {
       const r = fuente.getBoundingClientRect();
-      if (vista.parentElement !== fuente.parentElement || Math.abs(r.width - parseFloat(vista.style.width)) > 0.5 || Math.abs(r.left - parseFloat(vista.style.left)) > 0.5) ajustar();
+      if (vista.parentElement !== fuente.parentElement || Math.abs(r.width - parseFloat(vista.style.width)) > 0.5 || Math.abs(r.height - parseFloat(vista.style.height)) > 0.5 || Math.abs(r.left - parseFloat(vista.style.left)) > 0.5 || Math.abs(r.top - parseFloat(vista.style.top)) > 0.5) ajustar();
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(fuente, 0, 0, vista.width, vista.height);
     } catch {

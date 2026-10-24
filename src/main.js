@@ -15,8 +15,12 @@ import { Cielo } from './juegos/Cielo.js';
 import { Calamar } from './juegos/Calamar.js';
 import { E } from './core/estado.js';
 import { nitidez } from './core/nitidez.js';
+import { encajar, seguirPantalla } from './core/pantalla.js';
 
 const juegos = [LuzRoja, Galleta, TiraAfloja, Canicas, Pentatlon, Mingle, Puente, Escondite, Cuerda, Cielo, Calamar];
+
+// el contenedor se ajusta a lo visible antes de crear el juego, para que nazca del tamaño correcto
+encajar(document.getElementById('juego'))();
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -31,7 +35,10 @@ const game = new Phaser.Game({
   scene: [Boot, Carga, Titulo, Intro, Ddakji, Llegada, Noche, GameOver, Final, ...juegos],
 });
 
-game.events.once('ready', () => nitidez(game));
+game.events.once('ready', () => {
+  seguirPantalla(game, document.getElementById('juego'));
+  nitidez(game);
+});
 
 // para las pruebas automáticas
 window.__juego = game;
