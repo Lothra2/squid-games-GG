@@ -24,6 +24,9 @@ Al empezar se elige **quién juega** y la **dificultad** (fácil, normal, difíc
 - **Plata:** cada juego ganado da de 1 a 3 estrellas y un premio en wones para la **billetera de la familia**. Más
   estrellas y más dificultad, más plata. En cada noche está **la máquina del dormitorio**: vida extra (empiezas con
   4), reloj de arena (+15 s) o pista del vidriero (una pista más en el puente, la galleta o el escondite).
+- **Pantalla:** en Opciones, **Pixel exacto** (lo normal) agranda el juego un número entero de veces (x3 en el iPad y
+  el iPhone), así cada pixel es un cuadrito idéntico. **Llenar todo** lo hace más grande, con pixeles un poquito
+  desparejos.
 - **Práctica:** desde el menú se juega cualquiera de los 11 juegos, con tus estrellas y récords. Al terminar:
   jugar otra vez, elegir otro juego o salir al menú.
 

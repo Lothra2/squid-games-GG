@@ -119,7 +119,7 @@ export class Cielo extends Juego {
     this.crearFamilia([[123, 240, 'right'], [115, 264, 'right'], [149, 277, 'right']]);
     const ids = jugadoresNPC();
     const lugares = [[320, 181], [291, 171], [349, 192], [483, 251], [453, 237], [512, 264], [483, 277]];
-    this.rivales = lugares.slice(0, dif(4, 5, 7)).map(([x, y], i) => {
+    this.rivales = lugares.slice(0, dif(3, 5, 7)).map(([x, y], i) => {
       const r = new Actor(this, ids[(i * 3 + 1) % ids.length], x, y, { dir: 'left' });
       // los rivales llevan su número en rojo, para distinguirlos de la familia
       r.ponerNumero(String(100 + ((i * 137) % 800)).padStart(3, '0'), 0xff4d6d);
@@ -131,10 +131,10 @@ export class Cielo extends Juego {
     this.gLuchas = this.add.graphics().setDepth(8500);
     this.aviso = texto(this, 0, 0, '', { tam: 12, negrita: true, color: COLOR.oro, origen: [0.5, 1] }).setDepth(8501);
     this.avisoA = icono(this, 0, 0, 'a', 18).setDepth(8501).setVisible(false);
-    this.agarres = dif(3, 3, 2);
+    this.agarres = dif(4, 3, 2);
     this.seguro = { x: this.jugador.x, y: this.jugador.y };
     this.pausaGolpe = 0;
-    this.tiempo = dif(115, 100, 80);
+    this.tiempo = dif(130, 100, 80);
     this.tiempoTotal = this.tiempo;
   }
 
@@ -162,7 +162,7 @@ export class Cielo extends Juego {
 
   reglas() {
     return {
-      objetivo: ['Tres pilares sobre las nubes. Bota a todos los rivales al vacío antes de que acabe el tiempo.', 'A: embestida. B: agarrar al que esté cerca, y en el forcejeo machaca A para lanzarlo.', `El que se pone rojo va a embestir: esquívalo o atrápalo con B justo a tiempo. Si te tumban, te agarras del borde (${dif(3, 3, 2)} veces).`],
+      objetivo: ['Tres pilares sobre las nubes. Bota a todos los rivales al vacío antes de que acabe el tiempo.', 'A: embestida. B: agarrar al que esté cerca, y en el forcejeo machaca A para lanzarlo.', `El que se pone rojo va a embestir: esquívalo o atrápalo con B justo a tiempo. Si te tumban, te agarras del borde (${dif(4, 3, 2)} veces).`],
       controles: [['palanca', 'Moverse'], ['a', 'Embestir / machacar'], ['b', 'Agarrar']],
       frase: ['rick', 'enojo', '¡Vienen por nosotros! ¡Familia, espalda con espalda!'],
     };
@@ -211,12 +211,12 @@ export class Cielo extends Juego {
         if (r.carga <= 0) { r.sprite.clearTint(); this.embestir(r, dx, dy); }
         continue;
       }
-      const v = dif(43, 53, 64);
+      const v = dif(36, 53, 64);
       r.vx = (dx / d) * v; r.vy = (dy / d) * v * 0.7;
       if (!pisa(r.x + r.vx * 0.3, r.y + r.vy * 0.3)) { if (pisa(r.x + r.vx * 0.3, r.y)) r.vy = 0; else if (pisa(r.x, r.y + r.vy * 0.3)) r.vx = 0; else { r.vx = 0; r.vy = 0; } }
       if (r.cd <= 0 && d < 46) {
-        if (d < 26 && !blanco.lucha && blanco.inmune <= 0 && Math.random() < dif(0.35, 0.45, 0.55)) this.agarrar(r, blanco);
-        else { r.carga = dif(0.55, 0.42, 0.3); r.sprite.setTint(0xff7a7a); fxSobre(this, r, 'exclamacion'); tono(520, 0.06, 'cuadrada', 0.05); }
+        if (d < 26 && !blanco.lucha && blanco.inmune <= 0 && Math.random() < dif(0.25, 0.45, 0.55)) this.agarrar(r, blanco);
+        else { r.carga = dif(0.7, 0.42, 0.3); r.sprite.setTint(0xff7a7a); fxSobre(this, r, 'exclamacion'); tono(520, 0.06, 'cuadrada', 0.05); }
         r.cd = 0.5;
       }
     }
@@ -265,8 +265,8 @@ export class Cielo extends Juego {
       if (delJugador) {
         mia = L;
         // machacar A empuja; el rival empuja parejo, con arranques
-        if (this.inp.tomarA()) { L.v += delJugador * dif(0.2, 0.16, 0.13); sfx(this, 'golpe_1', 0.25); this.sacudirPar(L); }
-        const fuerza = dif(0.26, 0.32, 0.42) * (Math.sin(L.t * 3.1) > 0.7 ? 1.8 : 1);
+        if (this.inp.tomarA()) { L.v += delJugador * dif(0.24, 0.16, 0.13); sfx(this, 'golpe_1', 0.25); this.sacudirPar(L); }
+        const fuerza = dif(0.22, 0.32, 0.42) * (Math.sin(L.t * 3.1) > 0.7 ? 1.8 : 1);
         L.v -= delJugador * fuerza * dt;
       } else {
         // familia contra rival: se empujan solos, la familia un poco más fuerte
@@ -328,9 +328,9 @@ export class Cielo extends Juego {
 
   embestir(a, dx, dy) {
     const d = Math.hypot(dx, dy) || 1;
-    const v = this.rivales.includes(a) ? dif(160, 187, 213) : 240;
+    const v = this.rivales.includes(a) ? dif(150, 187, 213) : 240;
     a.vx = (dx / d) * v; a.vy = (dy / d) * v * 0.75;
-    a.dash = 0.32; a.cd = this.rivales.includes(a) ? dif(2.4, 1.8, 1.3) : 0.55;
+    a.dash = 0.32; a.cd = this.rivales.includes(a) ? dif(2.8, 1.8, 1.3) : 0.55;
     a.mirar(dx, dy);
     a.anim('dash', null, true);
     sfx(this, 'esquiva', 0.3);
@@ -384,7 +384,7 @@ export class Cielo extends Juego {
           }
           if (b.lucha) this.soltar(b.lucha);
           const d = Math.hypot(a.vx, a.vy) || 1;
-          const k = this.familia.includes(b) ? 0.4 : a === this.jugador ? 1.45 : b === this.jugador ? dif(0.48, 0.56, 0.75) : 1;
+          const k = this.familia.includes(b) ? 0.4 : a === this.jugador ? 1.45 : b === this.jugador ? dif(0.4, 0.56, 0.75) : 1;
           b.vx = (a.vx / d) * 210 * k; b.vy = (a.vy / d) * 155 * k;
           b.aturdido = 0.45; b.golpeadoPor = a;
           this.time.delayedCall(400, () => (b.golpeadoPor = null));

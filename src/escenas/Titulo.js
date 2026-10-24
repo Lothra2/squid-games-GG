@@ -9,6 +9,7 @@ import { nuevaPartida, irAPaso, JUEGOS, SECUENCIA } from '../core/flujo.js';
 import { texto, COLOR, atmosfera, cadaCuadro, botonVolver } from '../core/ui.js';
 import { texturasLuz } from './pintura.js';
 import { altavoz } from '../core/voz.js';
+import { rehacerPantalla } from '../core/pantalla.js';
 
 const CORTOS = ['Luz roja, luz verde', 'La galleta', 'Tira y afloja', 'Las canicas', 'Pentatlón', 'Mingle', 'Puente de cristal', 'El escondite', 'La cuerda', 'Calamar en el cielo', 'Juego del calamar'];
 
@@ -223,6 +224,7 @@ export class Titulo extends Phaser.Scene {
         `Sangre: ${s}`,
         `Volumen: ${Math.round(E.volumen * 10)}`,
         `Voz del altavoz: ${E.voz ? 'Sí' : 'No'}`,
+        `Pantalla: ${E.pantalla === 'llena' ? 'Llenar todo' : 'Pixel exacto'}`,
         `Billetera de la familia: ${millones(E.billetera)} W`,
         'Volver',
       ], { titulo: 'OPCIONES', cancelar: true, y: 200 });
@@ -230,8 +232,9 @@ export class Titulo extends Phaser.Scene {
       if (r === 1) E.sangreManual = E.sangreManual === null ? true : E.sangreManual ? false : null;
       if (r === 2) volumen(E.volumen >= 1 ? 0.2 : Math.round((E.volumen + 0.2) * 10) / 10);
       if (r === 3) { E.voz = !E.voz; if (E.voz) altavoz('Voz del altavoz activada.'); }
+      if (r === 4) { E.pantalla = E.pantalla === 'llena' ? 'exacta' : 'llena'; rehacerPantalla(); }
       guardar();
-      if (r === 5 || r < 0) break;
+      if (r === 6 || r < 0) break;
     }
     this.menu();
   }

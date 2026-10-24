@@ -40,6 +40,12 @@ function pincel(c, semilla) {
       c.fillStyle = col;
       for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) if (umbral(x + xx, y + yy) < dens) c.fillRect(x + xx, y + yy, 1, 1);
     },
+    /** oscurece (o tiñe) un área multiplicando cada pixel por un color: tono parejo, sin puntitos */
+    oscurecer(x, y, w, h, mult) {
+      const img = c.getImageData(x, y, w, h), d = img.data, [mr, mg, mb] = rgb(mult);
+      for (let k = 0; k < d.length; k += 4) { d[k] = (d[k] * mr) / 255; d[k + 1] = (d[k + 1] * mg) / 255; d[k + 2] = (d[k + 2] * mb) / 255; }
+      c.putImageData(img, x, y);
+    },
     ruido(x, y, w, h, col, n) { c.fillStyle = col; for (let i = 0; i < n; i++) c.fillRect(Math.floor(x + rnd() * w), Math.floor(y + rnd() * h), 1, 1); },
     lin(x0, y0, x1, y1, col) {
       c.fillStyle = col;
@@ -312,7 +318,8 @@ export function casa(scene, dia = false) {
     P.elip(320, 316, 136, 20, dia ? '#c84a5a' : '#7e2a3e');
     for (let x = 200; x < 440; x += 16) P.r(x, 314, 6, 4, dia ? '#f7c948' : '#a88a3a');
     P.elip(600, 300, 14, 5, '#c8303a'); P.elip(600, 298, 10, 3, '#8a5a2a');
-    if (!dia) P.trama(0, 0, 640, 360, '#000010', 0.12);
+    // de noche todo un poco más oscuro y azul, parejo (antes era una rejilla de puntitos negros encima)
+    if (!dia) P.oscurecer(0, 0, 640, 360, '#d6d8f0');
   }, dia ? 21 : 22);
 }
 

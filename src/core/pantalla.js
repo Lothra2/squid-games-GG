@@ -2,6 +2,14 @@
 // barras (y en horizontal están el notch y la rayita de inicio). Un contenedor "fixed, inset 0" mide la pantalla
 // entera, barras incluidas, y el juego se cortaba arriba y abajo. Aquí se mide el área visible (visualViewport),
 // se le restan las zonas seguras y el contenedor del juego se ajusta a eso cada vez que algo cambia.
+//
+// Pixel exacto (lo normal): el juego de 640 x 360 se agranda un número entero de veces en pixeles reales de la
+// pantalla (x3 en el iPad y el iPhone), así cada pixel del juego es un cuadrito idéntico a los demás. Con "llenar"
+// ocupa todo lo que se pueda, pero con un tamaño no entero algunos pixeles salen un poquito más anchos que otros.
+
+import { E } from './estado.js';
+
+const ANCHO = 640, ALTO = 360;
 
 export function encajar(cont) {
   // las zonas seguras solo se leen por CSS: una sonda invisible con env(safe-area-inset-*) de relleno
@@ -20,9 +28,15 @@ export function encajar(cont) {
     const x = vv ? vv.offsetLeft : 0, y = vv ? vv.offsetTop : 0;
     const cs = getComputedStyle(sonda);
     const [t, r, b, l] = ['Top', 'Right', 'Bottom', 'Left'].map((k) => parseFloat(cs['padding' + k]) || 0);
+    const aw = Math.max(1, w - l - r), ah = Math.max(1, h - t - b), dpr = window.devicePixelRatio || 1;
+    let cw = aw, ch = ah;
+    const k = Math.floor(Math.min((aw * dpr) / ANCHO, (ah * dpr) / ALTO));
+    if (E.pantalla !== 'llena' && k >= 1) { cw = (ANCHO * k) / dpr; ch = (ALTO * k) / dpr; }
+    // centrado y alineado a pixeles reales, para que ningún pixel del juego caiga entre dos de la pantalla
+    const px = (v) => Math.round(v * dpr) / dpr;
     Object.assign(cont.style, {
-      inset: 'auto', left: `${x + l}px`, top: `${y + t}px`,
-      width: `${Math.max(1, w - l - r)}px`, height: `${Math.max(1, h - t - b)}px`,
+      inset: 'auto', left: `${px(x + l + (aw - cw) / 2)}px`, top: `${px(y + t + (ah - ch) / 2)}px`,
+      width: `${cw}px`, height: `${ch}px`,
     });
   };
 }
@@ -30,7 +44,8 @@ export function encajar(cont) {
 /** ajusta ahora y cada vez que la pantalla cambia (barras de Safari, giro, zoom, pantalla completa) */
 export function seguirPantalla(game, cont) {
   const medir = encajar(cont);
-  const rehacer = () => { medir(); game.scale.refresh(); };
+  // Phaser solo vuelve a medir el contenedor cada medio segundo: se le pide que lo mida ya, y después refresca
+  const rehacer = () => { medir(); game.scale.getParentBounds(); game.scale.refresh(); };
   const tarde = () => { rehacer(); setTimeout(rehacer, 150); setTimeout(rehacer, 500); };
   window.addEventListener('resize', rehacer);
   window.addEventListener('orientationchange', tarde);
@@ -40,5 +55,9 @@ export function seguirPantalla(game, cont) {
   }
   ['fullscreenchange', 'webkitfullscreenchange'].forEach((ev) => document.addEventListener(ev, tarde));
   medir();
+  rehacerPantalla = rehacer;
   return rehacer;
 }
+
+/** para cuando se cambia el modo de pantalla en Opciones */
+export let rehacerPantalla = () => {};

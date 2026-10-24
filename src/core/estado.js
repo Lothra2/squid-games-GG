@@ -37,6 +37,8 @@ export const E = {
   volumen: 0.8,
   /** la voz del altavoz (síntesis de voz del navegador) */
   voz: true,
+  /** exacta: el juego se agranda un número entero de veces (todos los pixeles iguales). llena: ocupa toda la pantalla */
+  pantalla: 'exacta',
 };
 
 export function sangre() {
