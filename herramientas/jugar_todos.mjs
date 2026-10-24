@@ -17,9 +17,12 @@ const res = {};
 for (const k of JUEGOS) {
   await p.evaluate(([k, dif]) => {
     clearInterval(window.__bot);
-    const s = window.__juego.scene.getScenes(true)[0];
+    window.__res = null;
     if (window.__E) window.__E.dificultad = +dif;
-    s.scene.start(k, { practica: true, dificultad: +dif });
+    // todas las escenas activas se paran: el juego anterior no deja nada corriendo
+    const g = window.__juego;
+    g.scene.getScenes(true).forEach((s) => g.scene.stop(s.scene.key));
+    g.scene.start(k, { practica: true, dificultad: +dif });
   }, [k, dif]);
   await p.waitForTimeout(1500);
   await p.evaluate(bots);
