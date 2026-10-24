@@ -5,6 +5,8 @@ import { precargarManifiesto, encolarKit, armarAnimaciones } from '../core/kit.j
 import { texturas } from '../core/efectos.js';
 import { iniciarAudio } from '../core/sonido.js';
 import { cargar } from '../core/estado.js';
+import { texturasCielo } from '../juegos/Cielo.js';
+import { caballito, texturasLuz, metro, pilarMetro, tren } from './pintura.js';
 
 export class Boot extends Phaser.Scene {
   constructor() { super('Boot'); }
@@ -29,7 +31,7 @@ export class Carga extends Phaser.Scene {
     g.strokeRect(W / 2 + 38, H / 2 - 42, 32, 32);
     const barra = this.add.rectangle(W / 2 - 130, H / 2 + 26, 0, 5, 0xe0457b).setOrigin(0, 0.5);
     this.add.rectangle(W / 2, H / 2 + 26, 262, 8).setStrokeStyle(1, 0x555566);
-    const txt = this.add.text(W / 2, H / 2 + 48, 'Cargando la isla...', { fontFamily: '"Pixelify Sans", monospace', fontSize: '14px', color: '#b8b8c8' }).setOrigin(0.5).setResolution(3);
+    const txt = this.txt = this.add.text(W / 2, H / 2 + 48, 'Cargando la isla...', { fontFamily: '"Pixelify Sans", monospace', fontSize: '14px', color: '#b8b8c8' }).setOrigin(0.5).setResolution(3);
     this.load.on('progress', (v) => { barra.width = 260 * v; txt.setText(`Cargando la isla... ${Math.round(v * 100)}%`); });
     encolarKit(this);
   }
@@ -37,6 +39,11 @@ export class Carga extends Phaser.Scene {
     texturas(this);
     armarAnimaciones(this);
     iniciarAudio(this);
-    this.scene.start('Titulo');
+    // los escenarios pintados con código más pesados se preparan aquí, no en medio de un juego
+    this.txt.setText('Preparando los escenarios...');
+    this.time.delayedCall(30, () => {
+      texturasLuz(this); texturasCielo(this); caballito(this); metro(this); pilarMetro(this); tren(this);
+      this.scene.start('Titulo');
+    });
   }
 }

@@ -42,7 +42,7 @@ class Historia extends Phaser.Scene {
     texturasLuz(this);
     atmosfera(this, { vineta: 0.5, motas: 0 });
     // B (o tocar el botón) salta la escena entera, para quien ya la vio
-    this.ayuda = texto(this, W - 12, 10, this.inp.esTactil ? 'SALTAR  >>' : 'B  ·  SALTAR  >>', { tam: 12, color: COLOR.apagado, origen: [1, 0] }).setDepth(9999).setScrollFactor(0);
+    this.ayuda = texto(this, W - 12, 2, this.inp.esTactil ? 'SALTAR  >>' : 'B  ·  SALTAR  >>', { tam: 12, color: COLOR.apagado, origen: [1, 0] }).setDepth(9999).setScrollFactor(0);
     this.ayuda.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.pedirSalto());
     this.cameras.main.fadeIn(500);
     this.correr();

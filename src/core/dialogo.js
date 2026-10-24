@@ -9,6 +9,8 @@ import { blip, tono } from './sonido.js';
 import { texto, panel, COLOR, icono, cadaCuadro, botonVolver } from './ui.js';
 
 const COLOR_NOMBRE = { rick: '#6aa8ff', steph: '#ff8fb5', sophie: '#9ed08a', alana: '#f7c948', front_man: '#c8c8d8', reclutador: '#e0d6c0', j_abuelo: '#f7c948' };
+/** el color de cada personaje para la placa y el fondo del retrato */
+const colorDe = (q) => Phaser.Display.Color.HexStringToColor(COLOR_NOMBRE[q] || (q && q.startsWith('guardia') ? '#ff4d8d' : '#f7c948')).color;
 
 function nombreLinea(q) {
   if (!q) return '';
@@ -22,22 +24,50 @@ function nombreLinea(q) {
   return (nombre(q) + (n ? '  ·  ' + n : '')).toUpperCase();
 }
 
-/** Muestra las líneas una tras otra. Devuelve una promesa que se cumple al cerrar. */
+/**
+ * Muestra las líneas una tras otra. Devuelve una promesa que se cumple al cerrar.
+ * La caja: fondo oscuro con borde rosado, el retrato completo adentro (sobre el color del personaje),
+ * el nombre en una placa encima del borde y el texto que se escribe solo.
+ */
 export function hablar(scene, inp, lineas, { arriba = false } = {}) {
   return new Promise((ok) => {
     const W = scene.scale.width, H = scene.scale.height;
     const prof = 9500;
-    const altoCaja = 82;
-    const y0 = arriba ? 6 : H - altoCaja - 6;
-    const caja = panel(scene, 6, y0, W - 12, altoCaja, prof);
-    // el retrato grande, sale un poco de la caja (hacia arriba o hacia abajo)
-    const ry = arriba ? y0 + 2 : y0 + altoCaja - 110;
-    const marco = scene.add.image(10, ry, 'marco_retrato_96').setOrigin(0).setScrollFactor(0).setDepth(prof + 1);
-    const ret = scene.add.image(16, ry + 6, 'pix').setOrigin(0).setScrollFactor(0).setDepth(prof + 2);
-    const nom = texto(scene, 132, y0 + 9, '', { tam: 13, negrita: true }).setScrollFactor(0).setDepth(prof + 2);
-    const txt = texto(scene, 132, y0 + 28, '', { tam: 15, ancho: W - 132 - 28 }).setScrollFactor(0).setDepth(prof + 2);
-    const flecha = scene.add.sprite(W - 22, y0 + altoCaja - 12, 'dialogo_flecha').setScrollFactor(0).setDepth(prof + 2).play('dialogo_flecha');
-    const todo = [caja, marco, ret, nom, txt, flecha];
+    const altoCaja = 106, x0 = 8, ancho = W - 16;
+    const y0 = arriba ? 18 : H - altoCaja - 6;
+    const fijo = (o, d = 0) => o.setScrollFactor(0).setDepth(prof + d);
+    // la caja: sombra, fondo, borde rosado y una línea fina adentro
+    const caja = fijo(scene.add.graphics());
+    const pintarCaja = (color, conCara) => {
+      caja.clear();
+      caja.fillStyle(0x000000, 0.45); caja.fillRect(x0 + 3, y0 + 4, ancho, altoCaja);
+      caja.fillStyle(0x0b0912, 0.96); caja.fillRect(x0, y0, ancho, altoCaja);
+      caja.fillStyle(0x1a1626, 0.9); caja.fillRect(x0, y0, ancho, 3);
+      if (conCara) {
+        // el panel del retrato, teñido con el color del personaje
+        caja.fillStyle(color, 0.16); caja.fillRect(x0 + 5, y0 + 5, 96, 96);
+        caja.fillStyle(color, 0.1); caja.fillRect(x0 + 5, y0 + 53, 96, 48);
+        caja.lineStyle(1, color, 0.7); caja.strokeRect(x0 + 4.5, y0 + 4.5, 97, 97);
+        caja.fillStyle(0xff4d8d, 0.5); caja.fillRect(x0 + 107, y0 + 12, 1, altoCaja - 24);
+      }
+      caja.lineStyle(2, 0xff4d8d, 1); caja.strokeRect(x0 + 1, y0 + 1, ancho - 2, altoCaja - 2);
+      caja.lineStyle(1, 0xff4d8d, 0.25); caja.strokeRect(x0 + 3.5, y0 + 3.5, ancho - 7, altoCaja - 7);
+      // las esquinas: el círculo, el triángulo y el cuadrado, chiquitos
+      caja.lineStyle(1, 0xff4d8d, 0.8);
+      caja.strokeCircle(x0 + ancho - 40, y0 + altoCaja - 10, 3);
+      caja.strokeTriangle(x0 + ancho - 28, y0 + altoCaja - 13, x0 + ancho - 31, y0 + altoCaja - 7, x0 + ancho - 25, y0 + altoCaja - 7);
+      caja.strokeRect(x0 + ancho - 20, y0 + altoCaja - 13, 6, 6);
+    };
+    const ret = fijo(scene.add.image(x0 + 5, y0 + 5, 'pix').setOrigin(0), 1);
+    // la placa del nombre, montada sobre el borde de arriba
+    const placa = fijo(scene.add.graphics(), 2);
+    const nom = fijo(texto(scene, 0, y0 - 1, '', { tam: 13, negrita: true, color: '#120e18', borde: 0, origen: [0, 0.5] }), 3);
+    const txt = fijo(texto(scene, 0, y0 + 18, '', { tam: 16, ancho: 100 }), 2);
+    const flecha = fijo(scene.add.sprite(x0 + ancho - 56, y0 + altoCaja - 11, 'dialogo_flecha').play('dialogo_flecha'), 2);
+    const todo = [caja, ret, placa, nom, txt, flecha];
+    // entra deslizándose
+    todo.forEach((o) => { o.y += arriba ? -12 : 12; o.setAlpha(0); });
+    scene.tweens.add({ targets: todo, y: `${arriba ? '+' : '-'}=12`, alpha: 1, duration: 160, ease: 'Quad.easeOut' });
     let i = -1, completo = '', pos = 0, acc = 0, quien = null;
 
     const siguiente = () => {
@@ -48,17 +78,36 @@ export function hablar(scene, inp, lineas, { arriba = false } = {}) {
       completo = t.replace(/\{numero\}/g, NUMEROS[E.perfil]).replace(/\{nombre\}/g, nombre(E.perfil));
       pos = 0; acc = 0;
       txt.setText('');
-      const conCara = q && scene.textures.exists('ret_' + q);
-      marco.setVisible(!!conCara); ret.setVisible(!!conCara);
-      if (conCara) ret.setTexture('ret_' + q, 'g_' + (ex || 'neutral'));
-      const x = conCara ? 132 : 22;
-      nom.setX(x).setText(nombreLinea(q)).setColor(COLOR_NOMBRE[q] || (q && q.startsWith('guardia') ? '#ff4d8d' : '#f7c948'));
-      txt.setX(x).setWordWrapWidth(W - x - 30).setY(q ? y0 + 28 : y0 + 16);
+      const conCara = !!(q && scene.textures.exists('ret_' + q));
+      const color = colorDe(q);
+      pintarCaja(color, conCara);
+      ret.setVisible(conCara);
+      if (conCara) {
+        ret.setTexture('ret_' + q, 'g_' + (ex || 'neutral'));
+        // un saltito del retrato cuando empieza a hablar
+        ret.y = y0 + 9; scene.tweens.add({ targets: ret, y: y0 + 5, duration: 140, ease: 'Back.easeOut' });
+      }
+      const tx = conCara ? x0 + 118 : x0 + 22;
+      txt.setX(tx).setWordWrapWidth(x0 + ancho - tx - 22).setY(y0 + (conCara ? 18 : 16)).setColor(q ? COLOR.texto : '#d8d0e8');
+      // la placa con el nombre
+      placa.clear();
+      const n = nombreLinea(q);
+      nom.setText(n).setVisible(!!n);
+      if (n) {
+        const px = conCara ? x0 + 116 : x0 + 16, w = nom.width + 20;
+        placa.fillStyle(0x000000, 0.5); placa.fillRect(px + 2, y0 - 9, w, 18);
+        placa.fillStyle(color, 1); placa.fillRect(px, y0 - 11, w, 18);
+        placa.fillStyle(0xffffff, 0.35); placa.fillRect(px, y0 - 11, w, 2);
+        placa.fillStyle(0x120e18, 1); placa.fillRect(px + w - 6, y0 - 11, 6, 18);
+        placa.fillStyle(color, 1); placa.fillTriangle(px + w - 6, y0 - 11, px + w, y0 - 11, px + w - 6, y0 + 7);
+        nom.setX(px + 8);
+        if (conCara) txt.setY(y0 + 20);
+      }
       flecha.setVisible(false);
     };
     const cerrar = () => {
       scene.events.off('update', tick);
-      todo.forEach((o) => o.destroy());
+      scene.tweens.add({ targets: todo, alpha: 0, duration: 110, onComplete: () => todo.forEach((o) => o.destroy()) });
       ok();
     };
     const tick = (_, dt) => {
@@ -69,6 +118,8 @@ export function hablar(scene, inp, lineas, { arriba = false } = {}) {
           acc -= vel; pos++;
           const ch = completo[pos - 1];
           if (pos % 3 === 1 && /\S/.test(ch)) quien ? blip(scene, quien) : tono(660, 0.02, 'cuadrada', 0.03);
+          // una pausita en los puntos y las comas, como cuando uno habla
+          if (/[.!?…]/.test(ch)) acc -= 120; else if (ch === ',') acc -= 50;
         }
         txt.setText(completo.slice(0, pos));
         if (pos >= completo.length) flecha.setVisible(true);

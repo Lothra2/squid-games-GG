@@ -33,6 +33,8 @@ for (const k of JUEGOS) {
   await p.waitForTimeout(1200);
   await p.screenshot({ path: `${out}/${k}.png` });
   res[k] = r || 'SIN TERMINAR';
+  const causas = await p.evaluate(() => { const c = window.__causas || []; window.__causas = []; return c; });
+  if (causas.length) console.log('  caídas:', causas.join(', '));
   console.log(k, '->', res[k], Math.round((Date.now() - t0) / 1000) + 's');
 }
 console.log(errores.length ? errores.join('\n') : 'sin errores');

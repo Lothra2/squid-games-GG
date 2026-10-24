@@ -61,6 +61,18 @@ function pincel(c, semilla) {
         c.fillRect(Math.round(cx - k), Math.round(cy + yy), Math.max(1, Math.round(k * 2)), 1);
       }
     },
+    /** pinta pixel por pixel directo en la memoria del lienzo (mucho más rápido en el teléfono) */
+    pixeles(fn) {
+      const w = c.canvas.width, h = c.canvas.height, img = c.getImageData(0, 0, w, h), d = img.data, cache = {};
+      const set = (x, y, col) => {
+        x = Math.round(x); y = Math.round(y);
+        if (x < 0 || y < 0 || x >= w || y >= h) return;
+        const r = cache[col] || (cache[col] = rgb(col)), k = (y * w + x) * 4;
+        d[k] = r[0]; d[k + 1] = r[1]; d[k + 2] = r[2]; d[k + 3] = 255;
+      };
+      fn(set);
+      c.putImageData(img, 0, 0);
+    },
     /** una forma por columnas: de arriba(x) a abajo(x) */
     columnas(x0, x1, arriba, abajo, col) {
       c.fillStyle = col;

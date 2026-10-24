@@ -7,6 +7,7 @@ import { Actor } from '../core/actor.js';
 import { E, dif } from '../core/estado.js';
 import { cancionMuneca, sfx, tono, musica } from '../core/sonido.js';
 import { eliminar, fxSobre, sacudir } from '../core/efectos.js';
+import { lienzo } from '../escenas/pintura.js';
 import { texto, COLOR } from '../core/ui.js';
 import { cantoCoreano } from '../core/voz.js';
 import { pajaros, rayos as rayosLuz } from '../core/vivo.js';
@@ -27,9 +28,11 @@ export class LuzRoja extends Juego {
     // las rayas de salida y de meta
     this.add.rectangle(SALIDA, (PISO_Y0 + PISO_Y1) / 2, 4, PISO_Y1 - PISO_Y0 + 20, 0xf4f0e8, 0.7).setDepth(-10);
     this.add.rectangle(META, (PISO_Y0 + PISO_Y1) / 2, 6, PISO_Y1 - PISO_Y0 + 20, 0xe0457b).setDepth(-10);
-    texto(this, META + 10, PISO_Y0 - 8, 'META', { tam: 13, negrita: true, color: COLOR.rosa }).setDepth(-9);
+    // el letrero de la meta: un poste con su tablero, arriba de la raya
+    this.texturasCampo();
+    this.add.image(META, PISO_Y0 + 2, 'lr_letrero').setOrigin(0.5, 1).setDepth(PISO_Y0 + 2);
     // el árbol y la muñeca al final
-    this.arbol(2250, 206);
+    this.add.image(2262, 212, 'lr_arbol').setOrigin(0.5, 1).setDepth(200);
     this.muneca = this.add.image(2170, 282, 'muneca_espalda').setOrigin(0.5, 1).setDepth(282);
     this.add.image(2170, 282, 'sombra').setScale(2.6, 2.2).setAlpha(0.35).setDepth(270);
     // los guardias con sus rifles
@@ -51,11 +54,12 @@ export class LuzRoja extends Juego {
     this.familia.forEach((f, i) => { f.vel = 70 + i * 5; f.listo = false; });
     this.cameras.main.startFollow(this.jugador.sprite, true, 0.12, 0.12, -120, 0);
     // la ventanita de la muñeca (se ve siempre aunque esté lejos) y el ojo que se llena si te mueves en rojo
-    this.ventana = this.add.rectangle(W - 40, 92, 58, 98, 0x0b0a10, 0.8).setStrokeStyle(3, 0x2fd4b4).setScrollFactor(0).setDepth(8700);
+    this.ventana = this.add.rectangle(W - 40, 106, 62, 126, 0x0b0a10, 0.85).setStrokeStyle(3, 0x2fd4b4).setScrollFactor(0).setDepth(8700);
+    texto(this, W - 40, 157, 'OJO', { tam: 11, negrita: true, color: COLOR.apagado, origen: [0.5, 0.5] }).setScrollFactor(0).setDepth(8701);
     this.mini = this.add.image(W - 40, 136, 'muneca_espalda').setOrigin(0.5, 1).setScale(0.48).setScrollFactor(0).setDepth(8701);
-    this.luzTxt = texto(this, W - 40, 150, 'VERDE', { tam: 14, negrita: true, color: COLOR.verde, origen: [0.5, 0.5] }).setScrollFactor(0).setDepth(8701);
-    this.ojoFondo = this.add.rectangle(W - 40, 168, 50, 8, 0x2a2632).setScrollFactor(0).setDepth(8701);
-    this.ojo = this.add.rectangle(W - 65, 168, 0, 8, 0xff3355).setOrigin(0, 0.5).setScrollFactor(0).setDepth(8702);
+    this.luzTxt = texto(this, W - 40, 144, 'VERDE', { tam: 14, negrita: true, color: COLOR.verde, origen: [0.5, 0.5] }).setScrollFactor(0).setDepth(8701);
+    this.ojoFondo = this.add.rectangle(W - 40, 166, 50, 6, 0x2a2632).setStrokeStyle(1, 0x5a5666).setScrollFactor(0).setDepth(8701);
+    this.ojo = this.add.rectangle(W - 65, 166, 0, 6, 0xff3355).setOrigin(0, 0.5).setScrollFactor(0).setDepth(8702);
     // el barrido de los ojos (luz roja)
     this.barrido = this.add.rectangle(0, 270, 34, 180, 0xff1a3d, 0).setScrollFactor(0).setDepth(7000);
     this.velo = this.add.rectangle(W / 2, 180, W, 360, 0xff1a3d, 0).setScrollFactor(0).setDepth(6999);
@@ -92,13 +96,34 @@ export class LuzRoja extends Juego {
     return key;
   }
 
-  arbol(x, y) {
-    const g = this.add.graphics().setDepth(200);
-    g.fillStyle(0x4a2e1a); g.fillRect(x - 6, y - 54, 12, 60);
-    g.fillStyle(0x6a4428); g.fillRect(x - 6, y - 54, 4, 60);
-    g.fillStyle(0x2f5a24); g.fillCircle(x, y - 72, 30); g.fillCircle(x - 22, y - 56, 19); g.fillCircle(x + 22, y - 56, 19);
-    g.fillStyle(0x4a8a36); g.fillCircle(x - 8, y - 80, 17); g.fillCircle(x + 14, y - 68, 12);
-    g.fillStyle(0x6fb04c); g.fillCircle(x - 12, y - 86, 7);
+  /** el árbol de la muñeca y el letrero de la meta, en pixel art */
+  texturasCampo() {
+    lienzo(this, 'lr_arbol', 120, 120, (P) => {
+      // el tronco con corteza y raíces
+      P.columnas(50, 70, (x) => 60 - Math.abs(x - 60) * 0.2, () => 118, '#3a2414');
+      P.columnas(52, 68, (x) => 60, () => 117, '#5a3a20');
+      for (let y = 64; y < 116; y += 5) P.r(54 + (y % 3), y, 3, 1, '#3a2414');
+      P.r(52, 62, 4, 54, '#6e4a2a');
+      P.columnas(42, 78, () => 112, (x) => 118 + (Math.abs(x - 60) > 10 ? 0 : 0), '#3a2414');
+      P.r(44, 112, 6, 4, '#5a3a20'); P.r(70, 112, 6, 4, '#5a3a20');
+      // ramas
+      P.lin(56, 70, 38, 52, '#3a2414'); P.lin(57, 70, 39, 52, '#5a3a20');
+      P.lin(64, 66, 84, 50, '#3a2414'); P.lin(64, 67, 84, 51, '#5a3a20');
+      // la copa: racimos de hojas con sombra abajo y luz arriba a la izquierda
+      const racimos = [[60, 30, 30, 22], [34, 44, 22, 17], [86, 44, 22, 17], [46, 22, 18, 14], [74, 22, 18, 14], [60, 52, 26, 12]];
+      for (const [x, y, rx, ry] of racimos) P.elip(x, y + 2, rx + 1, ry + 1, '#1e3a18');
+      for (const [x, y, rx, ry] of racimos) P.elip(x, y, rx, ry, '#2f5a24');
+      for (const [x, y, rx, ry] of racimos) P.elip(x - rx * 0.2, y - ry * 0.25, rx * 0.7, ry * 0.6, '#3e7a2e');
+      for (const [x, y, rx, ry] of racimos) P.elip(x - rx * 0.35, y - ry * 0.45, rx * 0.35, ry * 0.3, '#5a9a3e');
+      for (let i = 0; i < 60; i++) { const x = 16 + P.rnd() * 90, y = 8 + P.rnd() * 56; P.p(x, y, P.rnd() < 0.5 ? '#78b850' : '#244a1c'); }
+    }, 401);
+    lienzo(this, 'lr_letrero', 44, 46, (P) => {
+      P.r(20, 18, 4, 28, '#3a3a44'); P.r(20, 18, 1, 28, '#6a6a78');
+      P.r(0, 0, 44, 20, '#120e18'); P.r(1, 1, 42, 18, '#e0457b'); P.r(1, 1, 42, 2, '#ff8fb5'); P.r(1, 17, 42, 2, '#a02a5a');
+      // M E T A en pixel
+      const L = { M: ['10001', '11011', '10101', '10001', '10001'], E: ['11111', '10000', '11110', '10000', '11111'], T: ['11111', '00100', '00100', '00100', '00100'], A: ['01110', '10001', '11111', '10001', '10001'] };
+      'META'.split('').forEach((ch, k) => L[ch].forEach((fila, y) => fila.split('').forEach((b, x) => { if (b === '1') P.r(5 + k * 9 + x, 7 + y, 1, 1, '#ffffff'); })));
+    }, 402);
   }
 
   decorar() {
@@ -205,7 +230,14 @@ export class LuzRoja extends Juego {
       if (this.luz === 'roja' && g.tardanza > 0) { g.tardanza -= dt; mueve = true; if (this.gracia <= 0 && Math.random() < 0.08) { this.disparar(g); return; } }
       if (mueve) g.mover(g.vel, (Math.random() - 0.5) * 26, dt);
       else g.mover(0, 0, dt);
-      if (g.x >= META) { g.listo = true; g.anim('idle', 'right'); }
+      if (g.x >= META) { g.listo = true; g.destino = { x: META + 24 + Math.random() * 110, y: Phaser.Math.Clamp(g.y + (Math.random() - 0.5) * 40, PISO_Y0 + 6, PISO_Y1) }; }
+    });
+    // los que ya cruzaron no se quedan en la raya: caminan un poco más y se quedan aliviados
+    this.gente.forEach((g) => {
+      if (!g.vivo || !g.listo || !g.destino) return;
+      const dx = g.destino.x - g.x, dy = g.destino.y - g.y, d = Math.hypot(dx, dy);
+      if (d > 3) g.mover((dx / d) * 60, (dy / d) * 40, dt, { correr: false });
+      else { g.mover(0, 0, dt); if (!g.alivio) { g.alivio = true; g.anim(Math.random() < 0.35 ? 'celebrate' : Math.random() < 0.5 ? 'sad' : 'idle', Math.random() < 0.5 ? 'left' : 'right'); } }
     });
 
     if (j.listo && this.familia.every((f) => f.listo || f.x > META - 80)) {

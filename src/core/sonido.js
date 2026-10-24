@@ -54,7 +54,42 @@ function env(g, t, at, dur, pico, rel = 0.08) {
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur + rel);
 }
 
+/** onda de pulso (como las consolas de 8 bits): duty de 0 a 1 */
+const pulsos = {};
+function pulso(duty) {
+  if (pulsos[duty]) return pulsos[duty];
+  const n = 48, re = new Float32Array(n), im = new Float32Array(n);
+  for (let k = 1; k < n; k++) re[k] = (2 / (k * Math.PI)) * Math.sin(k * Math.PI * duty);
+  return (pulsos[duty] = ctx.createPeriodicWave(re, im));
+}
+
 const INST = {
+  // el lead de 8 bits: pulso de 25 % con un vibrato que entra tarde
+  chip(t, f, dur, dest, vol = 0.1) {
+    const o = ctx.createOscillator(), g = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain();
+    o.setPeriodicWave(pulso(0.25)); o.frequency.value = f;
+    lfo.frequency.value = 6; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(0, t + 0.12); lg.gain.linearRampToValueAtTime(f * 0.015, t + 0.3);
+    lfo.connect(lg); lg.connect(o.frequency);
+    o.connect(g); g.connect(dest);
+    env(g, t, 0.005, dur * 0.92, vol, 0.03);
+    o.start(t); lfo.start(t); o.stop(t + dur + 0.08); lfo.stop(t + dur + 0.08);
+  },
+  // segunda voz: pulso fino de 12,5 %
+  chip2(t, f, dur, dest, vol = 0.06) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.setPeriodicWave(pulso(0.125)); o.frequency.value = f;
+    o.connect(g); g.connect(dest);
+    env(g, t, 0.005, dur * 0.85, vol, 0.03);
+    o.start(t); o.stop(t + dur + 0.08);
+  },
+  // arpegio cortito
+  arp(t, f, dur, dest, vol = 0.035) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.setPeriodicWave(pulso(0.5)); o.frequency.value = f;
+    o.connect(g); g.connect(dest);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.9);
+    o.start(t); o.stop(t + dur);
+  },
   flauta(t, f, dur, dest, vol = 0.22) {
     const o = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain();
     o.type = 'sine'; o2.type = 'triangle'; o.frequency.value = f; o2.frequency.value = f * 2;
@@ -149,9 +184,34 @@ function nz(t, dest, v, tipo, fr, dur) {
   s.connect(f); f.connect(g); g.connect(dest); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.02);
 }
 
+// ---------- la canción de la muñeca en 8 bits ----------
+// "Mu-gung-hwa kko-chi pi-eot-seum-ni-da", la canción del juego infantil coreano, en chiptune: la canción,
+// una respuesta, y otra vez una octava arriba con segunda voz. Bajo triangular, arpegios y batería de ruido.
+const CANTO = (o) => `G${o}:1 G${o}:1 E${o}:1 G${o}:0.5 G${o}:0.5 E${o}:0.5 A${o}:0.5 G${o}:0.5 E${o}:0.5 D${o}:1 r:1`;
+const RESPUESTA = (o) => `B${o}:1 B${o}:1 G${o}:1 B${o}:0.5 B${o}:0.5 G${o}:0.5 C${o + 1}:0.5 B${o}:0.5 G${o}:0.5 A${o}:1 r:1`;
+const CIERRE = (o) => `G${o}:1 G${o}:1 E${o}:1 G${o}:0.5 G${o}:0.5 E${o}:0.5 A${o}:0.5 G${o}:0.5 E${o}:0.5 G${o}:2`;
+const ACORDES = [['E', 'G', 'B'], ['C', 'E', 'G'], ['A', 'C', 'E'], ['D', 'F#', 'A']];
+const BAJOS = ['E', 'C', 'A', 'D'];
+const vueltas = (n, fn) => Array.from({ length: n }, (_, i) => fn(i)).join(' ');
+const CANCION_MUNECA = {
+  bpm: 138, pistas: [
+    // 12 compases de lead: canto x2, respuesta y cierre, canto arriba x2
+    ['chip', [CANTO(4), CANTO(4), RESPUESTA(4), CIERRE(4), CANTO(5), CANTO(5)].join(' ')],
+    // la segunda voz solo en la última parte (una tercera abajo)
+    ['chip2', `r:32 ${[CANTO(4), CANTO(4)].join(' ').replace(/\b([GEAD])4:/g, (_, n) => ({ G: 'E4:', E: 'C4:', A: 'F#4:', D: 'B3:' })[n])}`],
+    // bajo en octavas, de a corcheas: Em C Am D
+    ['bajo', vueltas(12, (i) => { const b = BAJOS[i % 4]; return `${b}2:0.5 ${b}3:0.5 ${b}2:0.5 ${b}3:0.5 ${b}2:0.5 ${b}3:0.5 ${b}2:0.5 ${b}3:0.5`; }), 0.24],
+    // arpegio de semicorcheas sobre el acorde de cada compás
+    ['arp', vueltas(12, (i) => { const [a, b, c] = ACORDES[i % 4]; return vueltas(4, () => `${a}5:0.25 ${b}5:0.25 ${c}5:0.25 ${b}5:0.25`); })],
+    // batería: tranquila, después más llena
+    ['perc', 'k.h.s.h.k.hks.h.'.repeat(2) + 'k.hks.hkk.hks.hs'.repeat(2) + 'kkhks.hkk.hksshs'.repeat(2)],
+  ],
+};
+
 // ---------- los temas ----------
 // pistas: [instrumento, notas] o ['perc', 'k.h.s.h.' (un carácter por paso de 1/2 tiempo, '.' es nada)]
 const TEMAS = {
+  muneca: CANCION_MUNECA,
   // la flauta del inicio: vals triste en re menor con palmas y castañuelas
   flauta: {
     bpm: 104, pistas: [
@@ -284,10 +344,11 @@ export function musicaActual() { return actual ? actual.nombre : null; }
 /** La canción de la muñeca: "mu-gung-hwa kko-chi pi-eot-seum-ni-da" repartida en `dur` segundos. */
 export function cancionMuneca(dur) {
   if (!ctx) return;
-  const notas = ['G4', 'G4', 'E4', 'G4', 'A4', 'G4', 'E4', 'D4', 'G4'];
+  // la misma melodía de la canción del menú: mu-gung-hwa kko-chi pi-eot-seum-ni-da
+  const notas = ['G4', 'G4', 'E4', 'G4', 'G4', 'E4', 'A4', 'G4', 'E4', 'D4'];
   const t0 = ctx.currentTime + 0.02;
   // las primeras sílabas lentas y la última frase de corrido, como en la serie
-  const pesos = [1.1, 1, 1.1, 1, 1, 0.9, 0.8, 0.8, 1.4];
+  const pesos = [1.1, 1, 1.1, 0.6, 0.6, 0.6, 0.55, 0.55, 0.6, 1.4];
   const total = pesos.reduce((a, b) => a + b, 0);
   let t = t0;
   notas.forEach((n, i) => {

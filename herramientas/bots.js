@@ -49,8 +49,15 @@
     }
     if (k === 'Cielo') {
       const j = s.jugador;
+      // en el forcejeo, machacar A (unas 8 veces por segundo, como una persona)
+      if (j.lucha) { if (Math.random() < 0.3) inp._kA = true; return; }
+      // si uno se puso rojo apuntándome, me hago a un lado (hacia el centro del pilar)
+      const rojo = s.rivales.find((r) => r.vivo && r.carga > 0 && cerca(r, j) < 60);
+      if (rojo) { inp._kB = Math.random() < 0.15; return; }
+      const viene = s.rivales.find((r) => r.vivo && r.dash > 0 && cerca(r, j) < 34);
+      if (viene) { inp._kB = true; return; }
       const r = s.masCerca(j, s.rivales);
-      if (r) { const d = ir(inp, j, r.x, r.y); if (d < 35) inp._kA = true; }
+      if (r) { const d = ir(inp, j, r.x, r.y); if (d < 28 && !r.lucha) { if (Math.random() < 0.5) inp._kB = true; else inp._kA = true; } }
     }
     if (k === 'Calamar') {
       const j = s.jugador;
