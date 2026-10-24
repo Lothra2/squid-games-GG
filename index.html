@@ -4,6 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Calamar GG" />
+  <link rel="apple-touch-icon" href="./icono.png" />
+  <link rel="manifest" href="./manifest.webmanifest" />
   <meta name="theme-color" content="#0b0a10" />
   <title>El Juego del Calamar GG</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -13,16 +18,16 @@
   <style>
     html, body { margin: 0; height: 100%; background: #0b0a10; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
     #juego { position: fixed; inset: 0; }
-    canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+    canvas { image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; image-rendering: pixelated; }
     #girar { display: none; position: fixed; inset: 0; z-index: 10; background: #0b0a10; color: #f4f0e8; font: 16px/1.5 monospace;
       align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 16px; }
     #girar b { color: #e0457b; font-size: 40px; }
-    @media (orientation: portrait) and (max-width: 820px) { #girar { display: flex; } }
+    @media (orientation: portrait) and (max-width: 1100px) { #girar { display: flex; } }
   </style>
 </head>
 <body>
   <div id="juego"></div>
-  <div id="girar"><b>○ △ □</b><p>Gira el teléfono para jugar</p></div>
+  <div id="girar"><b>○ △ □</b><p>Gira el teléfono o el iPad para jugar</p></div>
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>

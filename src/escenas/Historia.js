@@ -18,7 +18,7 @@ import { barra } from '../core/mini.js';
 import { logo } from './Titulo.js';
 import {
   metro, pilarMetro, tren, pisoCerca, tarjetas, casa, cielo, islaLejos, ola, OLAS, lancha, LANCHA, muelle,
-  texturasLuz, LAMPARAS_METRO, FAROLES_MUELLE, chanchitoGrande,
+  texturasLuz, LAMPARAS_METRO, FAROLES_MUELLE, chanchitoGrande, maquinaRosada,
 } from './pintura.js';
 
 const P = () => E.perfil;
@@ -796,13 +796,25 @@ export class Noche extends Historia {
   /** la máquina del dormitorio: lo que se gana con estrellas se gasta aquí, para el próximo juego */
   async maquina() {
     if (this.saltar) return;
+    // de vuelta al dormitorio (si se votó, la sala de votación queda atrás): la máquina rosada en la esquina
+    await this.fundido(400);
+    if (this.saltar) return;
+    const W = this.scale.width;
+    this.fondo('dormitorio');
+    this.capa.push(this.add.rectangle(W / 2, 180, W, 360, 0x081028, 0.5).setDepth(-60));
+    maquinaRosada(this);
+    const maq = this.img('maquina_rosada', 560, 330).setOrigin(0.5, 1).setScale(1.5).setDepth(320);
+    const brillo = this.luz(560, 270, 2.6, 0xff6fae, 0.4, 319);
+    this.tweens.add({ targets: brillo, alpha: 0.2, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    FAM.forEach((id, i) => this.actor(id, 410 + i * 30, 326 - (i % 2) * 6, 'right'));
+    void maq;
     await this.decir([[null, null, 'En la esquina del dormitorio hay una máquina rosada que brilla. Acepta los premios de la familia.']]);
     for (;;) {
       if (this.saltar) return;
       const ops = TIENDA.map((t) => `${t.nombre}  ·  ${millones(t.precio)}${E.compras[t.id] ? '  (ya lo tienes)' : ''}`);
       ops.push('Listo, a dormir');
       const det = TIENDA.map((t) => t.detalle).concat(['Lo que no gastes queda guardado']);
-      const r = await elegir(this, this.inp, ops, { titulo: 'LA MÁQUINA  ·  tienes ' + millones(E.billetera), detalles: det, y: 196, cancelar: true });
+      const r = await elegir(this, this.inp, ops, { titulo: 'LA MÁQUINA  ·  tienes ' + millones(E.billetera), detalles: det, x: 214, y: 196, cancelar: true });
       if (r < 0 || r === TIENDA.length) return;
       const t = TIENDA[r];
       if (E.compras[t.id]) { await cartel(this, 'YA LO TIENES', 'se usa en el próximo juego', { ms: 900, color: 0x9a96a8 }); continue; }

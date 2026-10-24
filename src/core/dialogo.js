@@ -65,9 +65,9 @@ export function hablar(scene, inp, lineas, { arriba = false } = {}) {
     const txt = fijo(texto(scene, 0, y0 + 18, '', { tam: 16, ancho: 100 }), 2);
     const flecha = fijo(scene.add.sprite(x0 + ancho - 56, y0 + altoCaja - 11, 'dialogo_flecha').play('dialogo_flecha'), 2);
     const todo = [caja, ret, placa, nom, txt, flecha];
-    // entra deslizándose
-    todo.forEach((o) => { o.y += arriba ? -12 : 12; o.setAlpha(0); });
-    scene.tweens.add({ targets: todo, y: `${arriba ? '+' : '-'}=12`, alpha: 1, duration: 160, ease: 'Quad.easeOut' });
+    // aparece con un fundido (sin moverse: todo queda exacto dentro de la caja)
+    todo.forEach((o) => o.setAlpha(0));
+    scene.tweens.add({ targets: todo, alpha: 1, duration: 140, ease: 'Quad.easeOut' });
     let i = -1, completo = '', pos = 0, acc = 0, quien = null;
 
     const siguiente = () => {
@@ -84,8 +84,8 @@ export function hablar(scene, inp, lineas, { arriba = false } = {}) {
       ret.setVisible(conCara);
       if (conCara) {
         ret.setTexture('ret_' + q, 'g_' + (ex || 'neutral'));
-        // un saltito del retrato cuando empieza a hablar
-        ret.y = y0 + 9; scene.tweens.add({ targets: ret, y: y0 + 5, duration: 140, ease: 'Back.easeOut' });
+        // el retrato siempre en su marco: 96 x 96 exactos, sin moverse
+        ret.setPosition(x0 + 5, y0 + 5).setDisplaySize(96, 96);
       }
       const tx = conCara ? x0 + 118 : x0 + 22;
       txt.setX(tx).setWordWrapWidth(x0 + ancho - tx - 22).setY(y0 + (conCara ? 18 : 16)).setColor(q ? COLOR.texto : '#d8d0e8');
@@ -103,6 +103,11 @@ export function hablar(scene, inp, lineas, { arriba = false } = {}) {
         nom.setX(px + 8);
         if (conCara) txt.setY(y0 + 20);
       }
+      // si el texto no cabe en la caja, la letra se achica (nunca se sale)
+      txt.setFontSize(16).setText(completo);
+      if (txt.height > altoCaja - 26) txt.setFontSize(14);
+      if (txt.height > altoCaja - 26) txt.setFontSize(12);
+      txt.setText('');
       flecha.setVisible(false);
     };
     const cerrar = () => {
@@ -172,12 +177,14 @@ export function elegir(scene, inp, opciones, { titulo = '', ancho = null, x = nu
     const filaH = detalles ? 40 : 30;
     const porCol = Math.ceil(opciones.length / columnas);
     const medidas = opciones.map((o) => { const t = texto(scene, 0, 0, o, { tam }); const w = t.width; t.destroy(); return w; });
-    const colW = Math.max(150, Math.max(...medidas) + 52, detalles ? 300 : 0);
+    // los detalles (texto chico) también miden: ninguno puede rozar el borde
+    const medidasD = (detalles || []).map((d) => { if (!d) return 0; const t = texto(scene, 0, 0, d, { tam: 11 }); const w = t.width; t.destroy(); return w; });
+    const colW = Math.max(150, Math.max(...medidas) + 52, detalles ? Math.max(300, ...medidasD.map((w) => w + 52)) : 0);
     // la caja crece para que el título nunca se salga
     let anchoTitulo = 0;
     if (titulo) { const t = texto(scene, 0, 0, titulo, { tam: 17, negrita: true }); anchoTitulo = t.width + 48; t.destroy(); }
     const anchoT = Math.min(W - 24, Math.max(ancho || colW * columnas + 20, anchoTitulo));
-    const alto = porCol * filaH + (titulo ? 44 : 18);
+    const alto = porCol * filaH + (titulo ? 44 : 18) + (detalles ? 8 : 0);
     // con volver, abajo queda lugar para el botón
     const abajo = cancelar ? 40 : 4;
     const x0 = (x ?? W / 2) - anchoT / 2, y0 = Math.max(4, Math.min(H - alto - abajo, (y ?? H / 2) - alto / 2));

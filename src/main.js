@@ -14,6 +14,7 @@ import { Cuerda } from './juegos/Cuerda.js';
 import { Cielo } from './juegos/Cielo.js';
 import { Calamar } from './juegos/Calamar.js';
 import { E } from './core/estado.js';
+import { nitidez } from './core/nitidez.js';
 
 const juegos = [LuzRoja, Galleta, TiraAfloja, Canicas, Pentatlon, Mingle, Puente, Escondite, Cuerda, Cielo, Calamar];
 
@@ -29,6 +30,8 @@ const game = new Phaser.Game({
   input: { gamepad: true, activePointers: 3 },
   scene: [Boot, Carga, Titulo, Intro, Ddakji, Llegada, Noche, GameOver, Final, ...juegos],
 });
+
+game.events.once('ready', () => nitidez(game));
 
 // para las pruebas automáticas
 window.__juego = game;

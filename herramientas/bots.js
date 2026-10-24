@@ -20,7 +20,7 @@
     if (s.__mini) {
       const m = s.__mini;
       if (m.tipo === 'barra' && Math.abs(m.v() - m.ideal) < m.ancho / 4) inp._kA = true;
-      if (m.tipo === 'atrapar' && m.p() > 1 - m.zona / 2 && m.p() < 1.02) inp._kA = true;
+      if (m.tipo === 'atrapar' && m.p() > 1 - m.zona * 0.7 && m.p() < 1.0) inp._kA = true;
       if (m.tipo === 'machacar') inp._kA = alterna = !alterna;
       return;
     }

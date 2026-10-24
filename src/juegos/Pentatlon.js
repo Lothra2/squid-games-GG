@@ -22,7 +22,7 @@ const ESTACIONES = [
   { id: 'piedra', titulo: 'PIEDRA VOLADORA', x: 318, y: 200, dir: 'left', ui: 480, cx: 270, cy: 172 },
   { id: 'gonggi', titulo: 'GONGGI', x: 398, y: 206, dir: 'up', ui: 150, cx: 400, cy: 168 },
   { id: 'trompo', titulo: 'TROMPO', x: 226, y: 300, dir: 'right', ui: 480, cx: 270, cy: 272 },
-  { id: 'jegi', titulo: 'JEGI', x: 530, y: 262, dir: 'down', ui: 160, cx: 530, cy: 222 },
+  { id: 'jegi', titulo: 'JEGI', x: 468, y: 298, dir: 'right', ui: 548, cx: 476, cy: 258 },
 ];
 const COLORES_GONGGI = ['#e0457b', '#2fd4b4', '#f7c948', '#6aa8ff', '#b58cff'];
 
@@ -140,7 +140,7 @@ export class Pentatlon extends Juego {
       // tú en la estación; los demás a un lado, nunca delante de ti (para que siempre se vea lo que haces)
       const lado = { left: [1, 0], right: [-1, 0], up: [1, 0], down: [-1, 0] }[est.dir];
       this.equipo.forEach((a, i) => {
-        const tx = i === 0 ? est.x : est.x + lado[0] * (14 + i * 17), ty = i === 0 ? est.y : est.y - 6 + (i % 2) * 8 + (est.dir === 'up' ? 4 : 0);
+        const tx = i === 0 ? est.x : est.x + lado[0] * (18 + i * 22), ty = i === 0 ? est.y : est.y - 6 + (i % 2) * 8 + (est.dir === 'up' ? 4 : 0);
         a.mirar(tx - a.x, ty - a.y); a.anim('walk');
         this.tweens.add({ targets: a, px: tx, py: ty, duration: dur, ease: 'Sine.easeInOut', onComplete: () => { if (i === 0) a.anim('idle', est.dir); else { a.mirar(est.x - a.x, 0); a.anim('idle'); } } });
       });
@@ -227,7 +227,8 @@ export class Pentatlon extends Juego {
     const rojo = this.add.image(est.x - 48, est.y - 2, 'pt5_rojo').setDepth(est.y - 3);
     const r = await barra(this, this.inp, { vel: dif(1.1, 1.5, 1.9), ideal: 0.85, ancho: dif(0.24, 0.18, 0.13), texto: 'FUERZA DEL TIRO', x: est.ui, y: 70 });
     j.anim('cap_pitch', 'left', true);
-    await esperar(this, 160);
+    // el sobre sale de la mano en el cuadro en que el brazo se estira
+    await esperar(this, 215);
     const azul = this.add.image(j.x - 8, j.y - 34, 'pt5_azul').setDepth(est.y + 10);
     sfx(this, 'lanzar', 0.4);
     await this.arco(azul, rojo.x + 2, rojo.y - 2, { alto: 34, dur: 340, giro: -540 });
@@ -257,7 +258,7 @@ export class Pentatlon extends Juego {
     const b1 = await barra(this, this.inp, { vel: dif(0.9, 1.2, 1.5), ideal: 0.5, ancho: dif(0.26, 0.2, 0.15), texto: 'APUNTA', x: est.ui, y: 70 });
     const b2 = await barra(this, this.inp, { vel: dif(1.1, 1.4, 1.7), ideal: 0.75, ancho: dif(0.26, 0.2, 0.15), texto: 'FUERZA', x: est.ui, y: 70 });
     j.anim('tejo_throw', 'left', true);
-    await esperar(this, 220);
+    await esperar(this, 415);
     const ok = b1.ok && b2.ok;
     const piedra = this.add.image(j.x - 10, j.y - 30, 'pt5_piedra').setDepth(est.y + 10);
     sfx(this, 'lanzar', 0.45);
@@ -296,7 +297,7 @@ export class Pentatlon extends Juego {
     };
     lanzar();
     const ok = await atrapar(this, this.inp, {
-      veces: dif(3, 4, 4), vel: dif(0.9, 1.15, 1.4), zona: dif(0.26, 0.2, 0.15), texto: 'ATRAPA', color: 0x5aa0ff, y: 70, x: est.ui,
+      veces: dif(3, 4, 4), vel: dif(0.9, 1.15, 1.4), zona: dif(0.26, 0.22, 0.16), texto: 'ATRAPA', color: 0x5aa0ff, y: 70, x: est.ui,
       alAcertar: () => {
         const p = piedras[1 + (n++ % 4)];
         if (p) this.arco(p, mano.x, mano.y, { alto: 16, dur: 220 }).then(() => p.setVisible(false));
@@ -333,9 +334,12 @@ export class Pentatlon extends Juego {
     if (!enrollado) { cuerda.destroy(); enMano.destroy(); return false; }
     const r = await barra(this, this.inp, { vel: dif(1, 1.4, 1.7), ideal: 0.7, ancho: dif(0.26, 0.2, 0.15), texto: '¡LANZA!', x: est.ui, y: 70 });
     cuerda.destroy();
+    // el brazo va atrás con el trompo y lo suelta cuando se estira (cuadro 3 del lanzamiento)
+    enMano.setVisible(false);
     j.anim('throw', 'right', true);
+    await esperar(this, 250);
     sfx(this, 'lanzar', 0.5);
-    enMano.setDepth(262);
+    enMano.setVisible(true).setPosition(j.x + 16, j.y - 32).setDepth(262).setAngle(0);
     await this.arco(enMano, 312, 262, { alto: 30, dur: 380, giro: 360 });
     enMano.setAngle(0);
     sfx(this, 'paso_tierra_0', 0.5);
@@ -364,32 +368,42 @@ export class Pentatlon extends Juego {
     return r.ok;
   }
 
-  /** JEGI: cada acierto es una patada y el jegi sube; si fallas, cae al piso */
+  /** JEGI: cada acierto es UNA patada (de perfil, se ve la pierna subir y el jegi saltar del pie); si fallas, se cae */
   async jegi(est) {
-    const j = this.jugador;
-    const jegi = this.add.image(j.x + 4, j.y - 6, 'pt5_jegi').setDepth(6000);
-    const patear = () => {
-      j.anim('kick', 'down', true);
-      sfx(this, 'golpe_1', 0.35);
-      this.tweens.killTweensOf(jegi);
-      jegi.setPosition(j.x + 4, j.y - 8);
-      this.tweens.add({ targets: jegi, y: j.y - 70, duration: 340, ease: 'Sine.easeOut', yoyo: true, hold: 60 });
-      this.tweens.add({ targets: jegi, angle: { from: -15, to: 15 }, duration: 200, yoyo: true, repeat: 1 });
+    const j = this.jugador, lado = 1; // de perfil hacia la derecha
+    // una patada: cuadro 0 es el pie que toca el jegi, 1-2 sube, 3 baja. Ahí se queda esperando la próxima
+    let pausa = null;
+    const patada = () => {
+      j.anim('shuttle_juggle', 'right', true);
+      if (pausa) pausa.remove();
+      pausa = this.time.delayedCall(260, () => { if (j.nombreAnim === 'shuttle_juggle') j.sprite.anims.pause(); });
     };
-    patear();
+    const destello = () => {
+      const x = j.x + 11 * lado, y = j.y - 13;
+      for (let i = 0; i < 6; i++) {
+        const c = this.add.rectangle(x, y, 1, 1, i % 2 ? 0xffffff : 0xf7c948).setDepth(6000);
+        this.tweens.add({ targets: c, x: x + (Math.random() - 0.5) * 18, y: y - 4 - Math.random() * 10, alpha: 0, duration: 300, onComplete: () => c.destroy() });
+      }
+    };
+    patada();
+    let n = 0;
     const ok = await atrapar(this, this.inp, {
       veces: dif(4, 5, 6), vel: dif(0.85, 1.05, 1.25), zona: dif(0.26, 0.2, 0.15), texto: 'PATEA', color: 0xe0457b, y: 70, x: est.ui,
-      alAcertar: patear,
+      alAcertar: () => { n++; patada(); sfx(this, 'golpe_1', 0.35); destello(); },
       alFallar: () => {
-        this.tweens.killTweensOf(jegi);
-        this.tweens.add({ targets: jegi, x: j.x + 22, y: j.y + 2, angle: 90, duration: 380, ease: 'Bounce.easeOut' });
+        // se le escapa: el jegi le pega mal en el pie y cae al piso
+        if (pausa) pausa.remove();
+        j.anim('sad', 'right', true);
+        const jegi = this.add.image(j.x + 11 * lado, j.y - 30, 'pt5_jegi').setDepth(6000);
+        this.tweens.add({ targets: jegi, x: j.x + 30 * lado, y: j.y + 2, angle: 100, duration: 520, ease: 'Bounce.easeOut', onComplete: () => this.tweens.add({ targets: jegi, alpha: 0, delay: 600, duration: 250, onComplete: () => jegi.destroy() }) });
         sfx(this, 'paso_tierra_1', 0.4);
       },
     });
-    await esperar(this, 700);
-    this.tweens.add({ targets: jegi, alpha: 0, duration: 250, onComplete: () => jegi.destroy() });
+    if (ok) j.anim('celebrate', null, true);
+    await esperar(this, 800);
     j.anim('idle', est.dir);
     void NUMEROS;
     return ok;
   }
+
 }

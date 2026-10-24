@@ -206,12 +206,12 @@ export class Canicas extends Juego {
     const ideal = 0.62;
     const r = await barra(this, this.inp, { vel: dif(0.9, 1.25, 1.6), ideal, ancho: 0.12, texto: 'A: TIRA LA CANICA', y: 120 });
     this.jugador.anim('throw', 'right', true);
-    await esperar(this, 180);
+    await esperar(this, 250);
     const mio = await this.rodar(this.jugador, (r.v - ideal) * 210);
     this.jugador.anim('idle', 'right');
     await esperar(this, 300);
     this.abuelo.anim('throw', 'left', true);
-    await esperar(this, 180);
+    await esperar(this, 250);
     const err = (Math.random() - 0.5) * dif(120, 80, 48);
     const suyo = await this.rodar(this.abuelo, err, true);
     this.abuelo.anim('idle', 'left');
@@ -227,7 +227,7 @@ export class Canicas extends Juego {
   rodar(quien, err, delAbuelo = false) {
     return new Promise((ok) => {
       const lado = delAbuelo ? -1 : 1;
-      const x0 = quien.x + 12 * lado, y0 = quien.y - 26;
+      const x0 = quien.x + 16 * lado, y0 = quien.y - 32;
       const c = this.add.image(x0, y0, 'cn_canica_' + (delAbuelo ? 2 : 3)).setDepth(300);
       const sombra = this.add.ellipse(x0, quien.y, 6, 2, 0x000000, 0.35).setDepth(299);
       const fx = HOYO[0] + err, fy = HOYO[1] + (Math.random() - 0.5) * 8;

@@ -64,7 +64,7 @@ export function atrapar(scene, inp, { veces = 3, vel = 1, zona = 0.14, texto: tx
       const p = t * t; // cae acelerando
       bola.setY(y + alto * Math.min(1, p));
       if (inp.tomarA()) {
-        if (p >= 1 - zona && p <= 1.04) {
+        if (p >= 1 - zona && p <= 1.06) {
           n++; tono(880 + n * 120, 0.06, 'campana', 0.1);
           cuenta.setText(`${n} / ${veces}`);
           if (alAcertar) alAcertar(n);

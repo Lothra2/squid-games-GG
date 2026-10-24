@@ -3,6 +3,9 @@
 Un juego 2D en pixel art, inspirado en *El Juego del Calamar*, hecho para la familia GG: Rick (456), Steph (067),
 Sophie (018) y Alana (222). Y Thor esperando en la casa.
 
+**Jugar ya:** https://lothra2.github.io/squid-games-GG/ (computador, iPad o teléfono acostado; en el iPad, "Agregar a
+pantalla de inicio" lo deja como app a pantalla completa).
+
 ## Cómo se juega
 
 - **Teclado:** flechas o WASD para moverse. **A** = Espacio, Z o Enter. **B** = X o Shift. **Pausa** = Esc o P.
