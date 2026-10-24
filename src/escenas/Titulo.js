@@ -40,11 +40,6 @@ export class Titulo extends Phaser.Scene {
     this.fondo = this.add.image(W / 2, H / 2, 'titulo').setScale(1.04);
     this.tweens.add({ targets: this.fondo, scale: 1.1, x: W / 2 + 8, y: H / 2 - 4, duration: 16000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.28);
-    // la muñeca que se voltea a mirarte en la luz roja, con los ojos encendidos
-    this.frente = this.add.image(320, 307, 'muneca_frente').setOrigin(0.5, 1).setScale(0, 1.08).setTint(0x6a0c30).setAlpha(0);
-    const yOjos = 307 - 176 * 1.08 + 22.5 * 1.08;
-    this.ojos = [-7.5, 7.5].map((dx) => this.add.image(320 + dx * 1.08, yOjos, 'brillo').setScale(0.22).setTint(0xff2040).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0));
-    this.barrido = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
     // el neón del triángulo y el cuadrado (titila como neón viejo) y los visores de los guardias
     this.neones = [[102, 140, 2.6], [540, 148, 2.6]].map(([x, y, e]) => this.add.image(x, y, 'brillo').setScale(e).setTint(0xff4d9d).setAlpha(0.3).setBlendMode(Phaser.BlendModes.ADD));
     this.visores = [[106, 227, 0.7], [533, 228, 0.7], [196, 262, 0.4], [442, 262, 0.4]].map(([x, y, e]) => this.add.image(x, y, 'brillo').setScale(e).setTint(0xff8fc0).setAlpha(0.5).setBlendMode(Phaser.BlendModes.ADD));
@@ -78,24 +73,19 @@ export class Titulo extends Phaser.Scene {
     if (this.datos.abrir || this.sys.game.__yaToco) { this.esperando = false; this.pie.destroy(); musica('muneca'); this.time.delayedCall(80, () => (this.datos.abrir === 'practica' ? this.practica() : this.menu())); }
   }
 
-  /** luz verde (la muñeca de espalda, el sol verde) y luz roja (se voltea, ojos rojos, barrido) */
+  /** luz verde (el sol verde) y luz roja (el sol rojo y la pantalla late) */
   cicloLuz(luz) {
     this.luz = luz;
     if (luz === 'verde') {
       this.estadoLuz.setText('●  LUZ VERDE').setColor(COLOR.verde);
-      this.tweens.add({ targets: this.frente, scaleX: 0, alpha: 0, duration: 260 });
-      this.ojos.forEach((o) => this.tweens.add({ targets: o, alpha: 0, duration: 200 }));
       this.sol.setTint(0x2fd4b4);
       this.time.delayedCall(4200 + Math.random() * 1800, () => this.cicloLuz('roja'));
     } else {
       this.estadoLuz.setText('●  LUZ ROJA').setColor(COLOR.rojo);
-      this.tweens.add({ targets: this.frente, scaleX: 1.08, alpha: 1, duration: 260, ease: 'Back.easeOut' });
-      this.ojos.forEach((o) => this.tweens.add({ targets: o, alpha: 0.95, scale: 0.3, duration: 300, delay: 200 }));
       this.sol.setTint(0xff2a4a);
       this.cameras.main.flash(180, 120, 0, 20);
       this.tweens.add({ targets: this.latido, alpha: 0.8, duration: 180, yoyo: true, repeat: 2, hold: 120 });
       if (!this.esperando) bloque(this, ['E3', 0.18, 'metal', 0.12], ['r', 0.06], ['E3', 0.3, 'metal', 0.1]);
-      this.tBarrido = 0;
       this.time.delayedCall(2600, () => this.cicloLuz('verde'));
     }
   }
@@ -110,7 +100,7 @@ export class Titulo extends Phaser.Scene {
     this.time.delayedCall(140, () => { c.x += 2; copias.forEach((o) => o.destroy()); });
   }
 
-  /** los focos, la neblina, las brasas y el barrido de los ojos */
+  /** los focos, la neblina y las brasas */
   vivo(dt) {
     const W = this.scale.width, H = this.scale.height, t = (this.tLuz += dt);
     const g = this.focos;
@@ -121,16 +111,6 @@ export class Titulo extends Phaser.Scene {
     });
     this.niebla.forEach((n, i) => { n.x += (8 + (i % 3) * 4) * dt; if (n.x > W + 120) n.x = -120; });
     this.brasas.forEach((b) => { b.y -= (14 + (b.width > 1 ? 10 : 0)) * dt; b.x += Math.sin(t * 2 + b.y * 0.05) * 6 * dt; b.setAlpha(Math.max(0, Math.min(0.9, (b.y - 120) / 160))); if (b.y < 120) { b.y = H + 10; b.x = Math.random() * W; } });
-    const bg = this.barrido;
-    bg.clear();
-    if (this.luz === 'roja') {
-      this.tBarrido += dt;
-      // los ojos barren el campo de lado a lado
-      const k = Math.sin(this.tBarrido * 2.4), xb = 320 + k * 280, y0 = this.ojos[0].y;
-      bg.fillStyle(0xff1a3d, 0.12); bg.fillTriangle(313, y0, 327, y0, xb, H);
-      bg.fillTriangle(313, y0, xb - 26, H, xb + 26, H);
-      bg.fillStyle(0xff1a3d, 0.18); bg.fillRect(xb - 30, H - 26, 60, 26);
-    }
   }
 
   update(_, dtms) {
