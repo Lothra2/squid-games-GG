@@ -11,6 +11,7 @@ import { chorro } from '../core/efectos.js';
 import { cartel, esperar } from '../core/dialogo.js';
 import { barra, atrapar, machacar } from '../core/mini.js';
 import { texturasDdakji } from '../core/efectos.js';
+import { luciernagas, rayos as rayosLuz } from '../core/vivo.js';
 
 // estación: dónde se para el equipo, quién juega y el nombre
 const ESTACIONES = [
@@ -49,6 +50,12 @@ export class Pentatlon extends Juego {
       const a = this.equipo[i], b = this.equipo[i + 1];
       g.lineBetween(a.x, a.y - 4, b.x, b.y - 4);
     }
+  }
+
+  decorar() {
+    // el sol entra por la ventana y se ve el polvito en el aire
+    rayosLuz(this, { x: 20, y: 20, angulo: 0.75, n: 3, largo: 300, ancho: 24, color: 0xfff2c8, alfa: 0.07 });
+    luciernagas(this, { n: 14, area: [40, 60, 300, 200], color: 0xfff0c0, tam: 1, prof: 3000 });
   }
 
   reglas() {

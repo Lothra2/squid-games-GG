@@ -481,3 +481,27 @@ export function chanchitoGrande(scene) {
     P.r(10, 12, 4, 1, claro); P.r(8, 14, 2, 4, claro);
   }, 81);
 }
+
+/** un caballito de carrusel: blanco, crin rosada, montura dorada (mira a la derecha), del alto de una persona */
+export function caballito(scene) {
+  return lienzo(scene, 'caballito', 44, 40, (P) => {
+    const borde = '#2e1a38', blanco = '#f6f0f8', medio = '#ddd0e8', sombra = '#b8a4c8', rosa = '#ff6fa8', rosaO = '#c8407a', oro = '#f2c230';
+    const pata = (x0, y0, x1, y1) => { P.lin(x0 - 1, y0, x1 - 1, y1, borde); P.lin(x0 + 2, y0, x1 + 2, y1, borde); P.lin(x0, y0, x1, y1, medio); P.lin(x0 + 1, y0, x1 + 1, y1, medio); P.r(x1 - 1, y1, 4, 2, borde); };
+    // las patas al galope (las de atrás más oscuras)
+    pata(12, 24, 6, 33); pata(17, 25, 15, 36); pata(28, 25, 33, 34); pata(32, 23, 39, 29);
+    // el cuerpo con su sombra
+    P.elip(22, 19, 13, 8, borde); P.elip(22, 19, 12, 7, blanco); P.elip(22, 22, 11, 4, medio); P.r(12, 24, 20, 1, sombra);
+    // el cuello y la cabeza
+    P.columnas(29, 37, (x) => 16 - (x - 29) * 1.4, (x) => 22 - (x - 29) * 0.6, borde);
+    P.columnas(30, 36, (x) => 16 - (x - 29) * 1.4, (x) => 21 - (x - 29) * 0.6, blanco);
+    P.elip(37, 7, 5, 4, borde); P.elip(37, 7, 4, 3, blanco); P.r(39, 7, 4, 4, borde); P.r(39, 8, 3, 2, medio);
+    P.r(35, 2, 2, 3, borde); P.p(38, 6, borde); P.p(42, 9, borde);
+    // la crin y la cola
+    for (let k = 0; k < 6; k++) P.r(28 + k, 3 + k * 2, 3, 3, k % 2 ? rosa : rosaO);
+    P.lin(9, 16, 4, 20, rosaO); P.lin(9, 17, 3, 23, rosa); P.lin(10, 17, 5, 26, rosa); P.lin(8, 18, 4, 25, rosaO);
+    // la montura y las riendas
+    P.elip(21, 12, 6, 3, '#8a5a10'); P.elip(21, 12, 5, 2, oro); P.r(17, 11, 8, 1, '#fff0a0');
+    P.r(20, 14, 3, 8, '#c8306a'); P.r(20, 21, 3, 2, oro);
+    P.lin(32, 12, 40, 10, oro);
+  }, 91);
+}

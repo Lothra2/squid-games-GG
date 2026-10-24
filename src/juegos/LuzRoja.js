@@ -9,6 +9,7 @@ import { cancionMuneca, sfx, tono, musica } from '../core/sonido.js';
 import { eliminar, fxSobre, sacudir } from '../core/efectos.js';
 import { texto, COLOR } from '../core/ui.js';
 import { cantoCoreano } from '../core/voz.js';
+import { pajaros, rayos as rayosLuz } from '../core/vivo.js';
 
 const LARGO = 2320, META = 2060, SALIDA = 250, PISO_Y0 = 204, PISO_Y1 = 346;
 
@@ -98,6 +99,12 @@ export class LuzRoja extends Juego {
     g.fillStyle(0x2f5a24); g.fillCircle(x, y - 72, 30); g.fillCircle(x - 22, y - 56, 19); g.fillCircle(x + 22, y - 56, 19);
     g.fillStyle(0x4a8a36); g.fillCircle(x - 8, y - 80, 17); g.fillCircle(x + 14, y - 68, 12);
     g.fillStyle(0x6fb04c); g.fillCircle(x - 12, y - 86, 7);
+  }
+
+  decorar() {
+    // pájaros sobre el muro pintado y el sol de mediodía
+    pajaros(this, { n: 5, y0: 40, y1: 100, color: 0x2a3a5a, prof: -95, par: 0.4 });
+    rayosLuz(this, { x: 40, y: 0, angulo: 0.35, n: 5, largo: 340, ancho: 30, color: 0xfff6d8, alfa: 0.05, par: 0 });
   }
 
   reglas() {

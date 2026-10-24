@@ -11,6 +11,7 @@ import { sfx, tono, musica } from '../core/sonido.js';
 import { eliminar, sacudir, chorro } from '../core/efectos.js';
 import { elegir, hablar, cartel } from '../core/dialogo.js';
 import { texto, COLOR, icono } from '../core/ui.js';
+import { luciernagas, rayos as rayosLuz } from '../core/vivo.js';
 
 const CX = 240, CY = 196, K = 1.4;
 
@@ -164,6 +165,12 @@ export class Galleta extends Juego {
     const a = this.camino[Math.max(0, i - 3)], b = this.camino[Math.min(this.largo, i + 3)];
     const dx = b[0] - a[0], dy = b[1] - a[1], d = Math.hypot(dx, dy) || 1;
     return [dx / d, dy / d];
+  }
+
+  decorar() {
+    // burbujas de jabón que flotan en el patio y la luz del sol
+    luciernagas(this, { n: 10, area: [0, 40, 640, 300], color: 0xcfeaff, tam: 3, prof: -10 });
+    rayosLuz(this, { x: 380, y: 0, angulo: -0.5, n: 4, largo: 300, ancho: 28, color: 0xfff6d0, alfa: 0.06 });
   }
 
   reglas() {

@@ -11,6 +11,7 @@ import { eliminar, sacudir, chorro, fxSobre } from '../core/efectos.js';
 import { cartel, esperar } from '../core/dialogo.js';
 import { COLOR } from '../core/ui.js';
 import { jugadoresNPC } from '../core/kit.js';
+import { lienzo, texturasLuz } from '../escenas/pintura.js';
 
 const PILARES = [{ x: 157, y: 251, rx: 109, ry: 45 }, { x: 320, y: 181, rx: 99, ry: 40 }, { x: 483, y: 251, rx: 109, ry: 45 }];
 const PUENTES = [[PILARES[0], PILARES[1]], [PILARES[1], PILARES[2]]];
@@ -35,27 +36,87 @@ export class Cielo extends Juego {
   armar() {
     const W = this.scale.width, H = this.scale.height;
     this.add.image(W / 2, H / 2, 'cielo').setDepth(-100);
-    const g = this.add.graphics().setDepth(-50);
-    // primero las columnas (la del medio va más atrás), después los puentes y encima las tapas de piedra
-    const orden = [PILARES[1], PILARES[0], PILARES[2]];
-    for (const p of orden) {
-      g.fillStyle(0x3a4258); g.fillRect(p.x - p.rx * 0.8, p.y, p.rx * 1.6, H - p.y);
-      g.fillStyle(0x2a3044); g.fillRect(p.x + p.rx * 0.3, p.y, p.rx * 0.5, H - p.y);
-      g.fillStyle(0x4a5470); for (let y = p.y + 14; y < H; y += 14) g.fillRect(p.x - p.rx * 0.8, y, p.rx * 1.6, 1);
-    }
+    // los pilares de piedra, pintados pixel por pixel: columna de bloques con luz de luna, tapa de baldosas
+    PILARES.forEach((p, k) => {
+      const w = Math.round(p.rx * 1.15), alto = H - p.y + 4;
+      lienzo(this, 'cl_col_' + k, w, alto, (P) => {
+        for (let y = 0; y < alto; y += 12) {
+          const off = (y / 12) % 2 ? 0 : 9;
+          for (let x = -off; x < w; x += 18) {
+            // la luz de la luna viene de la derecha: los bloques se aclaran hacia ese lado
+            const f = Math.min(1, Math.max(0, (x + 9) / w)), t = P.rnd() * 0.15;
+            const tonos = ['#2a3048', '#343c58', '#3e4766', '#4a5470', '#56607e', '#646e8e'];
+            P.r(x, y, 17, 11, tonos[Math.min(5, Math.floor((f + t) * 5.2))]);
+            P.r(x, y, 17, 1, tonos[Math.min(5, Math.floor((f + t) * 5.2) + 1)]);
+          }
+          P.r(0, y + 11, w, 1, '#2a3048');
+        }
+        // la luz de la luna desde la derecha y la sombra a la izquierda
+        P.r(0, 0, 2, alto, '#1a2034'); P.r(w - 2, 0, 2, alto, '#7a84a8');
+        // una enredadera
+        let vx = Math.round(w * (0.3 + 0.4 * P.rnd()));
+        for (let y = 0; y < 60; y++) { vx += Math.round(P.rnd() * 2 - 1); P.p(vx, y, '#3a6a4a'); if (y % 6 === 0) P.r(vx - 1, y, 3, 2, '#4a8a5a'); }
+        P.deg(0, alto - 40, w, 40, ['#3a4460', '#1a2034']);
+      }, 300 + k);
+      this.add.image(p.x, p.y, 'cl_col_' + k).setOrigin(0.5, 0).setDepth(k === 1 ? -52 : -50);
+      const tw = p.rx * 2 + 2, th = p.ry * 2 + 10;
+      lienzo(this, 'cl_tapa_' + k, tw, th, (P) => {
+        const cx = tw / 2, cy = p.ry + 1;
+        // el canto de la tapa (grosor)
+        P.elip(cx, cy + 6, p.rx, p.ry, '#3a4260');
+        P.elip(cx, cy + 4, p.rx, p.ry, '#59627c');
+        // la cara de arriba: anillos de baldosas
+        for (let y = -p.ry; y <= p.ry; y++) for (let x = -p.rx; x <= p.rx; x++) {
+          const d = (x / p.rx) ** 2 + (y / p.ry) ** 2;
+          if (d > 1) continue;
+          const r = Math.sqrt(d), a = Math.atan2(y / p.ry, x / p.rx);
+          const anillo = Math.floor(r * 4), seg = Math.floor(((a + Math.PI) / (Math.PI * 2)) * (8 + anillo * 6));
+          let col = (anillo + seg) % 2 ? '#8b93ab' : '#959db5';
+          if (Math.abs(r * 4 - Math.round(r * 4)) < 0.06 || r > 0.96) col = '#6e7690';
+          if (x > p.rx * 0.2 && y < 0) col = col === '#6e7690' ? '#7a82a0' : (anillo + seg) % 2 ? '#9aa2bc' : '#a4acc6';
+          P.p(cx + x, cy + y, col);
+        }
+        P.ruido(cx - p.rx * 0.7, cy - p.ry * 0.7, p.rx * 1.4, p.ry * 1.4, '#7a829c', 140);
+        // el borde iluminado de atrás
+        for (let a = Math.PI; a < Math.PI * 2; a += 0.01) P.p(cx + Math.cos(a) * (p.rx - 1), cy + Math.sin(a) * (p.ry - 1), '#c8cee0');
+        // las grietas
+        for (let k2 = 0; k2 < 3; k2++) { let x = cx + (P.rnd() - 0.5) * p.rx, y = cy + (P.rnd() - 0.5) * p.ry; for (let s = 0; s < 14; s++) { P.p(x, y, '#5a6280'); x += P.rnd() * 2 - 0.6; y += P.rnd() - 0.5; } }
+      }, 310 + k);
+      this.add.image(p.x, p.y - 1, 'cl_tapa_' + k).setOrigin(0.5, (p.ry + 1) / th).setDepth(-48);
+    });
+    // los puentes de tablas con soga
+    const g = this.add.graphics().setDepth(-49);
     for (const [a, b] of PUENTES) {
       const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L;
-      g.fillStyle(0x4a3828); g.fillPoints([{ x: a.x + nx * 15, y: a.y + ny * 15 + 4 }, { x: b.x + nx * 15, y: b.y + ny * 15 + 4 }, { x: b.x - nx * 15, y: b.y - ny * 15 + 4 }, { x: a.x - nx * 15, y: a.y - ny * 15 + 4 }], true);
-      g.fillStyle(0x9a7650); g.fillPoints([{ x: a.x + nx * 13, y: a.y + ny * 13 }, { x: b.x + nx * 13, y: b.y + ny * 13 }, { x: b.x - nx * 13, y: b.y - ny * 13 }, { x: a.x - nx * 13, y: a.y - ny * 13 }], true);
-      g.lineStyle(1, 0x6a5038); for (let t = 0.1; t < 1; t += 0.08) g.lineBetween(a.x + dx * t + nx * 13, a.y + dy * t + ny * 13, a.x + dx * t - nx * 13, a.y + dy * t - ny * 13);
+      g.fillStyle(0x2a2018); g.fillPoints([{ x: a.x + nx * 15, y: a.y + ny * 15 + 5 }, { x: b.x + nx * 15, y: b.y + ny * 15 + 5 }, { x: b.x - nx * 15, y: b.y - ny * 15 + 5 }, { x: a.x - nx * 15, y: a.y - ny * 15 + 5 }], true);
+      for (let t = 0; t < 1; t += 0.07) {
+        const t1 = Math.min(1, t + 0.06);
+        const c = [0x9a7650, 0x8a6844, 0xa8845a][Math.floor(t * 100) % 3];
+        g.fillStyle(c);
+        g.fillPoints([
+          { x: a.x + dx * t + nx * 13, y: a.y + dy * t + ny * 13 }, { x: a.x + dx * t1 + nx * 13, y: a.y + dy * t1 + ny * 13 },
+          { x: a.x + dx * t1 - nx * 13, y: a.y + dy * t1 - ny * 13 }, { x: a.x + dx * t - nx * 13, y: a.y + dy * t - ny * 13 },
+        ], true);
+      }
+      g.lineStyle(1, 0xd8c098); g.lineBetween(a.x + nx * 14, a.y + ny * 14 - 6, b.x + nx * 14, b.y + ny * 14 - 6); g.lineBetween(a.x - nx * 14, a.y - ny * 14 - 6, b.x - nx * 14, b.y - ny * 14 - 6);
+      for (let t = 0.1; t < 1; t += 0.2) { g.fillStyle(0x6a5038); g.fillRect(a.x + dx * t + nx * 14 - 1, a.y + dy * t + ny * 14 - 6, 2, 6); g.fillRect(a.x + dx * t - nx * 14 - 1, a.y + dy * t - ny * 14 - 6, 2, 6); }
     }
-    for (const p of orden) {
-      g.fillStyle(0x59627c); g.fillEllipse(p.x, p.y + 5, p.rx * 2, p.ry * 2);
-      g.fillStyle(0x8b93ab); g.fillEllipse(p.x, p.y, p.rx * 2, p.ry * 2);
-      g.lineStyle(1, 0xc8cee0, 0.7); g.strokeEllipse(p.x, p.y, p.rx * 2 - 6, p.ry * 2 - 4);
-    }
+    lienzo(this, 'cl_nube', 160, 40, (P, c) => {
+      for (let i = 0; i < 18; i++) {
+        const x = 20 + P.rnd() * 120, y = 14 + P.rnd() * 14, r = 10 + P.rnd() * 12;
+        const gr = c.createRadialGradient(x, y, 0, x, y, r);
+        gr.addColorStop(0, 'rgba(235,240,255,0.5)'); gr.addColorStop(1, 'rgba(235,240,255,0)');
+        c.fillStyle = gr; c.fillRect(x - r, y - r, r * 2, r * 2);
+      }
+    }, 320);
     // nubes que pasan por delante
-    this.nubes = [0, 1, 2].map((i) => this.add.ellipse(Math.random() * W, 328 + i * 13, 210, 20, 0xffffff, 0.16).setDepth(5000));
+    this.nubes = [0, 1, 2, 3].map((i) => this.add.image(Math.random() * W, 300 + i * 18, 'cl_nube').setAlpha(0.35 + i * 0.1).setScale(1 + i * 0.25).setDepth(i < 2 ? -45 : 5000));
+    // pájaros a lo lejos y la luna que brilla
+    this.pajaros = [0, 1, 2].map((i) => ({ x: -40 - i * 18, y: 70 + i * 7, f: i }));
+    this.gPajaros = this.add.graphics().setDepth(-90);
+    texturasLuz(this);
+    const luna = this.add.image(578, 50, 'brillo').setScale(3.4).setTint(0xcfe0ff).setAlpha(0.35).setBlendMode(Phaser.BlendModes.ADD).setDepth(-95);
+    this.tweens.add({ targets: luna, alpha: 0.22, duration: 2600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     this.crearJugador(173, 253, 'right');
     this.crearFamilia([[123, 240, 'right'], [115, 264, 'right'], [149, 277, 'right']]);
     const ids = jugadoresNPC();
@@ -86,7 +147,13 @@ export class Cielo extends Juego {
   paso(dt) {
     this.tiempo -= dt;
     this.hud.setTiempo(this.tiempo);
-    this.nubes.forEach((n, i) => { n.x += (8 + i * 5) * dt; if (n.x > 560) n.x = -80; });
+    this.nubes.forEach((n, i) => { n.x += (8 + i * 6) * dt; if (n.x > 760) n.x = -120; });
+    this.gPajaros.clear();
+    this.pajaros.forEach((p, i) => {
+      p.x += 22 * dt; if (p.x > 700) p.x = -60 - i * 20;
+      const ala = Math.sin(this.time.now / 140 + p.f * 2) * 3;
+      this.gPajaros.lineStyle(1, 0x1a2238); this.gPajaros.lineBetween(p.x - 4, p.y + ala, p.x, p.y); this.gPajaros.lineBetween(p.x, p.y, p.x + 4, p.y + ala);
+    });
     const j = this.jugador;
     const vivos = this.rivales.filter((r) => r.vivo);
     this.hud.setExtra(`RIVALES: ${vivos.length}   ·   AGARRES: ${this.agarres}`, 0xff8fb5);

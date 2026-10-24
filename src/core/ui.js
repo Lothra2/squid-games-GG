@@ -113,3 +113,19 @@ export function cadaCuadro(scene, f) {
   scene.events.once('shutdown', off);
   return off;
 }
+
+/**
+ * El botón de volver: una pastilla que se toca con el dedo (en el teléfono no hay botón B en los menús).
+ * Con teclado también vale B, X o Retroceso. Devuelve los objetos para destruirlos.
+ */
+export function botonVolver(scene, x, y, alTocar, { prof = 9600, teclado = true } = {}) {
+  const t = texto(scene, 0, 0, teclado ? '‹  VOLVER   (B)' : '‹  VOLVER', { tam: 14, negrita: true, origen: [0.5, 0.5] });
+  const w = Math.max(110, t.width + 34), h = 28;
+  const fondo = scene.add.nineslice(x, y, 'dialogo', undefined, w, h, 8, 8, 8, 8).setScrollFactor(0).setDepth(prof);
+  t.setPosition(x, y).setScrollFactor(0).setDepth(prof + 1);
+  const zona = scene.add.rectangle(x, y, w + 16, h + 16, 0xffffff, 0).setScrollFactor(0).setDepth(prof + 2).setInteractive({ useHandCursor: true });
+  zona.on('pointerover', () => t.setColor(COLOR.rosa));
+  zona.on('pointerout', () => t.setColor(COLOR.texto));
+  zona.on('pointerdown', () => { t.setColor(COLOR.rosa); alTocar(); });
+  return [fondo, t, zona];
+}

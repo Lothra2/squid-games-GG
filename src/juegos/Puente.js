@@ -12,6 +12,7 @@ import { eliminar, sacudir, chorro } from '../core/efectos.js';
 import { cartel, esperar, elegir } from '../core/dialogo.js';
 import { jugadoresNPC } from '../core/kit.js';
 import { texto, COLOR } from '../core/ui.js';
+import { lienzo, texturasLuz } from '../escenas/pintura.js';
 
 const X0 = 130, PASO = 46, Y_ARR = 158, Y_ABA = 216;
 
@@ -28,17 +29,25 @@ export class Puente extends Juego {
     this.cameras.main.setBounds(0, 0, this.largo, H);
     for (let x = 0; x < this.largo; x += W) this.add.image(x, 0, 'puente').setOrigin(0).setScrollFactor(0.5, 1).setDepth(-100).setFlipX((x / W) % 2 === 1);
     this.add.rectangle(this.largo / 2, H / 2, this.largo, H, 0x05040a, 0.25).setDepth(-99);
-    this.plataforma(0, X0 - 30);
-    this.plataforma(X0 + this.n * PASO - 8, this.largo);
-    // los cables del puente
-    const g = this.add.graphics().setDepth(1);
-    for (const y of [Y_ARR + 14, Y_ABA + 14]) { g.fillStyle(0x2a2836); g.fillRect(X0 - 30, y, this.n * PASO + 24, 4); g.fillStyle(0x4a4858); g.fillRect(X0 - 30, y, this.n * PASO + 24, 1); }
-    for (let i = 0; i <= this.n; i++) { g.fillStyle(0x3a3846); g.fillRect(X0 - PASO / 2 + i * PASO - 1, Y_ARR - 16, 2, Y_ABA - Y_ARR + 34); }
+    this.texturas();
+    // el vacío debajo del puente: oscuro hacia abajo, con neblina que pasa
+    this.add.image(0, Y_ABA + 26, 'pt_abismo').setOrigin(0).setDisplaySize(this.largo, H - Y_ABA - 26).setDepth(-60);
+    this.nieblas = [[Y_ABA + 60, 0.35, 14], [Y_ABA + 100, 0.5, 22]].map(([y, a, v]) => ({ ts: this.add.tileSprite(0, y, this.largo, 48, 'pt_niebla').setOrigin(0).setAlpha(a).setDepth(-55), v }));
+    // focos que barren el puente desde arriba
+    texturasLuz(this);
+    this.focos = this.add.graphics().setDepth(4000).setBlendMode(Phaser.BlendModes.ADD);
+    this.tLuz = 0;
+    this.plataforma(0, X0 - 30, false);
+    this.plataforma(X0 + this.n * PASO - 8, this.largo, true);
+    this.estructura();
     this.templado = Array.from({ length: this.n }, () => (Math.random() < 0.5 ? 0 : 1));
     this.rotos = Array.from({ length: this.n }, () => [false, false]);
     this.sabidos = Array.from({ length: this.n }, () => [false, false]);
-    this.vidrios = this.add.graphics().setDepth(5);
-    this.brillos = [];
+    // cada vidrio es una imagen, con un destello que recorre el puente
+    this.paneles = Array.from({ length: this.n }, (_, i) => [0, 1].map((f) => {
+      const x = X0 + i * PASO, y = f ? Y_ABA : Y_ARR;
+      return { img: this.add.image(x, y, 'pt_vidrio').setDepth(5), luz: this.add.image(x, y, 'pt_destello').setDepth(6).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0) };
+    }));
     this.pintarVidrios();
     this.pistas = dif(3, 1, 0) + this.pistasExtra;
     this.pistasUsadas = 0;
@@ -50,36 +59,139 @@ export class Puente extends Juego {
     this.txtPistas = texto(this, 12, 44, '', { tam: 13, color: COLOR.oro }).setScrollFactor(0).setDepth(8801);
   }
 
-  plataforma(x0, x1) {
-    const g = this.add.graphics().setDepth(0);
-    g.fillStyle(0x24222e); g.fillRect(x0, Y_ARR - 20, x1 - x0, Y_ABA - Y_ARR + 42);
-    g.fillStyle(0x3e3c4c); g.fillRect(x0, Y_ARR - 20, x1 - x0, 4);
-    g.fillStyle(0x16141e); g.fillRect(x0, Y_ABA + 22, x1 - x0, 50);
-    for (let x = x0 + 10; x < x1; x += 30) { g.fillStyle(0x2e2c3a); g.fillRect(x, Y_ARR - 12, 18, 2); }
+  /** las texturas del puente: vidrio, vidrio seguro, roto, el destello, la neblina, el abismo y el piso de acero */
+  texturas() {
+    lienzo(this, 'pt_vidrio', 40, 30, (P, c) => {
+      c.fillStyle = 'rgba(150,205,245,0.28)'; c.fillRect(1, 1, 38, 28);
+      c.fillStyle = 'rgba(255,255,255,0.12)'; c.fillRect(1, 1, 38, 9);
+      P.r(0, 0, 40, 1, '#e8f6ff'); P.r(0, 29, 40, 1, '#5a7a96'); P.r(0, 0, 1, 30, '#cfeaff'); P.r(39, 0, 1, 30, '#6a8aa6');
+      c.fillStyle = 'rgba(255,255,255,0.55)';
+      for (let k = 0; k < 7; k++) { c.fillRect(6 + k, 22 - k * 2, 1, 2); c.fillRect(11 + k, 25 - k * 2, 1, 2); }
+      c.fillStyle = 'rgba(255,255,255,0.8)'; c.fillRect(3, 3, 6, 1); c.fillRect(3, 5, 3, 1);
+    });
+    lienzo(this, 'pt_seguro', 40, 30, (P, c) => {
+      c.fillStyle = 'rgba(80,230,190,0.38)'; c.fillRect(1, 1, 38, 28);
+      c.fillStyle = 'rgba(255,255,255,0.14)'; c.fillRect(1, 1, 38, 9);
+      P.r(0, 0, 40, 1, '#c8fff0'); P.r(0, 29, 40, 1, '#1a8a72'); P.r(0, 0, 1, 30, '#9affe0'); P.r(39, 0, 1, 30, '#2a9a82');
+      c.fillStyle = 'rgba(255,255,255,0.5)';
+      for (let k = 0; k < 7; k++) c.fillRect(6 + k, 22 - k * 2, 1, 2);
+      P.elip(20, 16, 3, 3, '#2fd4b4'); P.elip(20, 16, 1, 1, '#d8fff4');
+    });
+    lienzo(this, 'pt_roto', 40, 30, (P, c) => {
+      P.r(0, 0, 40, 1, '#5a6a7a'); P.r(0, 29, 40, 1, '#3a4a5a'); P.r(0, 0, 1, 30, '#5a6a7a'); P.r(39, 0, 1, 30, '#3a4a5a');
+      c.fillStyle = 'rgba(160,215,255,0.55)';
+      c.beginPath(); c.moveTo(1, 1); c.lineTo(10, 1); c.lineTo(4, 8); c.lineTo(1, 12); c.fill();
+      c.beginPath(); c.moveTo(39, 29); c.lineTo(30, 29); c.lineTo(36, 22); c.lineTo(39, 18); c.fill();
+      c.beginPath(); c.moveTo(39, 1); c.lineTo(33, 1); c.lineTo(38, 6); c.fill();
+    });
+    lienzo(this, 'pt_destello', 40, 30, (P, c) => {
+      for (let k = 0; k < 30; k++) { c.fillStyle = `rgba(255,255,255,${0.5 - Math.abs(k - 15) / 32})`; c.fillRect(Math.max(1, 28 - k), k, 6, 1); }
+    });
+    lienzo(this, 'pt_niebla', 256, 48, (P, c) => {
+      const nube = (x, y, r) => {
+        const g = c.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, 'rgba(180,190,220,0.22)'); g.addColorStop(1, 'rgba(180,190,220,0)');
+        c.fillStyle = g; c.fillRect(x - r, y - r, r * 2, r * 2);
+      };
+      for (let i = 0; i < 40; i++) {
+        const x = P.rnd() * 256, y = 10 + P.rnd() * 28, r = 10 + P.rnd() * 18;
+        nube(x, y, r);
+        // repetida del otro lado para que la tira empalme sin corte
+        if (x < r) nube(x + 256, y, r);
+        if (x > 256 - r) nube(x - 256, y, r);
+      }
+    }, 31);
+    lienzo(this, 'pt_abismo', 4, 64, (P, c) => {
+      const g = c.createLinearGradient(0, 0, 0, 64);
+      g.addColorStop(0, 'rgba(4,3,10,0.15)'); g.addColorStop(1, 'rgba(4,3,10,0.92)');
+      c.fillStyle = g; c.fillRect(0, 0, 4, 64);
+    });
+    lienzo(this, 'pt_acero', 32, 32, (P) => {
+      P.r(0, 0, 32, 32, '#3a3a48');
+      for (let y = 2; y < 32; y += 8) for (let x = (y / 8) % 2 ? 6 : 2; x < 32; x += 8) { P.r(x, y, 3, 1, '#565668'); P.r(x + 1, y + 1, 1, 1, '#24242e'); }
+      P.ruido(0, 0, 32, 32, '#44445a', 30);
+    }, 7);
+  }
+
+  /** los rieles de acero con remaches, los travesaños y el reticulado de abajo (para que se sienta la altura) */
+  estructura() {
+    const g = this.add.graphics().setDepth(1);
+    const xa = X0 - 30, xb = X0 + this.n * PASO - 8;
+    // el reticulado debajo del puente
+    g.lineStyle(3, 0x1e1e28);
+    for (let x = xa; x < xb; x += PASO) { g.lineBetween(x, Y_ABA + 20, x + PASO / 2, Y_ABA + 46); g.lineBetween(x + PASO / 2, Y_ABA + 46, x + PASO, Y_ABA + 20); }
+    g.fillStyle(0x1e1e28); g.fillRect(xa, Y_ABA + 44, xb - xa, 4);
+    g.lineStyle(1, 0x3a3a4a);
+    for (let x = xa; x < xb; x += PASO) g.lineBetween(x, Y_ABA + 20, x + PASO / 2, Y_ABA + 46);
+    // los rieles de arriba, del medio y de abajo
+    const riel = (y, h) => {
+      g.fillStyle(0x24242e); g.fillRect(xa, y, xb - xa, h);
+      g.fillStyle(0x5a5a6c); g.fillRect(xa, y, xb - xa, 1);
+      g.fillStyle(0x14141a); g.fillRect(xa, y + h - 1, xb - xa, 1);
+      for (let x = xa + 4; x < xb; x += 8) { g.fillStyle(0x7a7a8c); g.fillRect(x, y + Math.floor(h / 2), 1, 1); }
+    };
+    riel(Y_ARR - 19, 5);
+    riel((Y_ARR + Y_ABA) / 2 - 3, 6);
+    riel(Y_ABA + 15, 6);
+    // los travesaños entre vidrios
+    for (let i = 0; i <= this.n; i++) {
+      const x = X0 - PASO / 2 + i * PASO;
+      g.fillStyle(0x24242e); g.fillRect(x - 2, Y_ARR - 16, 4, Y_ABA - Y_ARR + 34);
+      g.fillStyle(0x5a5a6c); g.fillRect(x - 2, Y_ARR - 16, 1, Y_ABA - Y_ARR + 34);
+    }
+  }
+
+  plataforma(x0, x1, final) {
+    const top = Y_ARR - 22, base = Y_ABA + 24;
+    this.add.tileSprite(x0, top, x1 - x0, base - top, 'pt_acero').setOrigin(0).setDepth(0);
+    const g = this.add.graphics().setDepth(0.5);
+    // el borde con rayas de peligro del lado del puente
+    const bx = final ? x0 : x1 - 8;
+    for (let y = top; y < base; y += 8) { g.fillStyle(0xf2c230); g.fillRect(bx, y, 8, 4); g.fillStyle(0x1a1a20); g.fillRect(bx, y + 4, 8, 4); }
+    g.fillStyle(0x5a5a6c); g.fillRect(x0, top, x1 - x0, 2);
+    // el frente de la plataforma (la caída)
+    g.fillStyle(0x16141e); g.fillRect(x0, base, x1 - x0, 40);
+    g.fillStyle(0x2a2836); g.fillRect(x0, base, x1 - x0, 3);
+    for (let x = x0 + 6; x < x1; x += 22) { g.fillStyle(0x0c0b12); g.fillRect(x, base + 8, 12, 30); }
+    // las barandas
+    for (let x = x0 + 8; x < x1 - 8; x += 26) { g.fillStyle(0x6a6a7c); g.fillRect(x, top - 14, 2, 14); }
+    g.fillStyle(0x8a8a9c); g.fillRect(x0, top - 15, x1 - x0, 2);
+    if (final) {
+      // la salida iluminada al final
+      const sx = x0 + 120;
+      g.fillStyle(0x0c0b12); g.fillRect(sx - 18, top - 46, 36, 50);
+      g.fillStyle(0xfff0c0); g.fillRect(sx - 14, top - 42, 28, 46);
+      g.fillStyle(0xffd870); g.fillRect(sx - 14, top - 10, 28, 14);
+      const luz = this.add.image(sx, top - 20, 'brillo').setScale(3).setTint(0xffe8a0).setAlpha(0.5).setBlendMode(Phaser.BlendModes.ADD).setDepth(0.6);
+      this.tweens.add({ targets: luz, alpha: 0.3, duration: 1200, yoyo: true, repeat: -1 });
+      texto(this, sx, top - 58, 'SALIDA', { tam: 14, negrita: true, color: '#7fffe0', origen: [0.5, 0.5] }).setDepth(0.7);
+    }
   }
 
   pintarVidrios() {
-    const g = this.vidrios;
-    g.clear();
-    for (let i = 0; i < this.n; i++) {
-      for (const f of [0, 1]) {
-        const x = X0 + i * PASO, y = f ? Y_ABA : Y_ARR;
-        if (this.rotos[i][f]) {
-          // el marco vacío con dos astillas colgando
-          g.lineStyle(1, 0x5a6a7a, 0.8); g.strokeRect(x - 19, y - 14, 38, 28);
-          g.fillStyle(0x9ad4ff, 0.5); g.fillTriangle(x - 19, y - 14, x - 12, y - 14, x - 19, y - 4); g.fillTriangle(x + 19, y + 14, x + 13, y + 14, x + 19, y + 6);
-          continue;
-        }
-        const seguro = this.sabidos[i][f];
-        g.fillStyle(seguro ? 0x7fe0c4 : 0x8ccaf0, seguro ? 0.5 : 0.3);
-        g.fillRect(x - 19, y - 14, 38, 28);
-        g.fillStyle(0xffffff, 0.16); g.fillRect(x - 19, y - 14, 38, 8);
-        g.lineStyle(2, seguro ? 0x2fd4b4 : 0xcfeaff, 0.85);
-        g.strokeRect(x - 19, y - 14, 38, 28);
-        g.lineStyle(1, 0xffffff, 0.55); g.lineBetween(x - 14, y - 10, x - 5, y - 10); g.lineBetween(x - 14, y - 7, x - 9, y - 7);
-        if (seguro) { g.fillStyle(0x2fd4b4, 0.7); g.fillCircle(x, y + 2, 3); }
-      }
+    for (let i = 0; i < this.n; i++) for (const f of [0, 1]) {
+      const p = this.paneles[i][f];
+      p.img.setTexture(this.rotos[i][f] ? 'pt_roto' : this.sabidos[i][f] ? 'pt_seguro' : 'pt_vidrio');
+      p.roto = this.rotos[i][f];
     }
+  }
+
+  /** lo que se mueve solo: el destello que recorre los vidrios, la neblina y los focos */
+  vivo(dt) {
+    this.tLuz += dt;
+    for (let i = 0; i < this.n; i++) for (const f of [0, 1]) {
+      const p = this.paneles[i][f];
+      const v = Math.sin(this.tLuz * 1.6 - i * 0.45 - f * 0.3);
+      p.luz.setAlpha(p.roto ? 0 : Math.max(0, v) ** 10 * 0.9);
+    }
+    this.nieblas.forEach((n) => (n.ts.tilePositionX += n.v * dt));
+    const g = this.focos, cam = this.cameras.main;
+    g.clear();
+    [0, 1, 2].forEach((k) => {
+      const x = cam.scrollX + 120 + k * 200 + Math.sin(this.tLuz * 0.5 + k * 2) * 90;
+      const xb = x + Math.sin(this.tLuz * 0.7 + k) * 60;
+      g.fillStyle(0xcfe4ff, 0.06); g.fillTriangle(x - 6, 0, x + 6, 0, xb + 50, 330); g.fillTriangle(x - 6, 0, xb - 50, 330, xb + 50, 330);
+    });
   }
 
   reglas() {
@@ -173,6 +285,11 @@ export class Puente extends Juego {
     await eliminar(this, a, { modo: 'caida', dy: 230 });
   }
 
+  update(t, dtms) {
+    super.update(t, dtms);
+    if (this.paneles) this.vivo(Math.min(dtms, 50) / 1000);
+  }
+
   paso(dt) {
     if (!this.miTurno) return;
     this.tiempo -= dt;
@@ -191,7 +308,7 @@ export class Puente extends Juego {
       if (this.pistas > 0) {
         this.pistas--; this.pistasUsadas++;
         const y = this.templado[c] ? Y_ABA : Y_ARR;
-        const brillo = this.add.rectangle(X0 + c * PASO, y, 38, 28, 0xffffff, 0.8).setDepth(7);
+        const brillo = this.add.rectangle(X0 + c * PASO, y, 38, 28, 0xffffff, 0.8).setDepth(7).setBlendMode(Phaser.BlendModes.ADD);
         this.tweens.add({ targets: brillo, alpha: 0, duration: 1100, onComplete: () => brillo.destroy() });
         tono(1568, 0.2, 'campana', 0.1);
       } else tono(200, 0.06, 'cuadrada', 0.05);

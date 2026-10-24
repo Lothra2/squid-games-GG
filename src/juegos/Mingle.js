@@ -9,9 +9,14 @@ import { sfx, tono, musica, pararMusica } from '../core/sonido.js';
 import { eliminar, fxSobre } from '../core/efectos.js';
 import { cartel, esperar } from '../core/dialogo.js';
 import { texto, COLOR } from '../core/ui.js';
+import { Carrusel } from './carrusel.js';
+import { texturasLuz } from '../escenas/pintura.js';
 
-const CARR = { x: 320, y: 224, rx: 149, ry: 64 };
-const PILAR = { x: 320, y: 200, rx: 48, ry: 29 };
+const CARR = { x: 320, y: 226, rx: 150, ry: 64 };
+// el anillo de los caballitos y la columna: ahí no se puede pisar
+const PILAR = { x: 320, y: 226, rx: 92, ry: 40 };
+// las lámparas de la pared (para la luz que titila)
+const LAMPARAS = [[10, 107], [92, 62], [245, 17], [395, 17], [550, 62], [632, 107], [65, 320], [575, 320]];
 const PISO = { x: 320, y: 229, rx: 304, ry: 131 };
 const PUERTAS = [[51, 131], [127, 109], [197, 93], [291, 80], [349, 80], [443, 93], [513, 109], [593, 131]];
 
@@ -24,6 +29,14 @@ export class Mingle extends Juego {
   armar() {
     const W = this.scale.width, H = this.scale.height;
     this.add.image(W / 2, H / 2, 'mingle').setDepth(-100);
+    texturasLuz(this);
+    this.carrusel = new Carrusel(this, { x: CARR.x, y: CARR.y });
+    this.carrusel.anillo = { rx: 78, ry: 78 * this.carrusel.k };
+    this.w = 0;
+    // las lámparas de la pared titilan y dos focos de colores barren el salón mientras suena la música
+    this.luces = LAMPARAS.map(([x, y]) => this.add.image(x, y, 'brillo').setScale(1.6).setTint(0xffc8f0).setAlpha(0.45).setBlendMode(Phaser.BlendModes.ADD).setDepth(-60));
+    this.focos = this.add.graphics().setDepth(4000).setBlendMode(Phaser.BlendModes.ADD);
+    this.tLuz = 0;
     this.crearJugador(CARR.x, CARR.y + 52, 'down');
     this.crearFamilia([[CARR.x - 40, CARR.y + 48], [CARR.x + 40, CARR.y + 48], [CARR.x + 14, CARR.y + 58]]);
     this.gente = this.crearGente(dif(16, 20, 24), (i) => {
@@ -37,8 +50,11 @@ export class Mingle extends Juego {
     this.tFase = 0;
     this.lazos = this.add.graphics().setDepth(5000);
     this.puertas = PUERTAS.map(([x, y], i) => ({ x, y, ocupada: false, i, marca: this.add.circle(x, y - 19, 6, 0x23b39c).setStrokeStyle(2, 0x120e18).setDepth(10).setVisible(false) }));
-    this.numero = this.add.bitmapText(W / 2, 150, 'fuente_titulo', '').setOrigin(0.5).setScale(5).setDepth(8000).setTint(0xf2c230);
+    this.numero = texto(this, W / 2, 112, '', { tam: 84, negrita: true, color: COLOR.oro, borde: 8, origen: [0.5, 0.5] }).setDepth(8000);
     this.cuenta = texto(this, 0, 0, '', { tam: 15, negrita: true, origen: [0.5, 1] }).setDepth(7000);
+    // la silueta del jugador cuando queda detrás del techo o la columna (para no perderse)
+    this.silueta = this.add.sprite(0, 0, this.jugador.sprite.texture.key).setOrigin(this.jugador.sprite.originX, this.jugador.sprite.originY)
+      .setTintFill(0x7fffe0).setAlpha(0.5).setDepth(4500).setVisible(false);
     this.angulo = 0;
     this.avisoP = false; this.avisoN = false;
   }
@@ -91,6 +107,12 @@ export class Mingle extends Juego {
   }
 
   paso(dt) {
+    // el carrusel arranca y frena suave
+    const meta = this.fase === 'gira' ? 0.45 : 0;
+    this.w += (meta - this.w) * Math.min(1, dt * 1.6);
+    this.carrusel.actualizar(dt, this.w);
+    this.pintarLuces(dt);
+    this.pintarSilueta();
     this.tFase -= dt;
     if (this.fase === 'busca') this.hud.setTiempo(this.tFase); else this.hud.reloj.setText('');
     if (this.fase === 'gira') this.pasoGira(dt);
@@ -99,8 +121,8 @@ export class Mingle extends Juego {
   }
 
   pasoGira(dt) {
-    // el piso gira: todos se mueven en círculo; el jugador puede caminar encima
-    const w = 0.35;
+    // el piso gira: todos se mueven en círculo con el carrusel; el jugador puede caminar encima
+    const w = this.w;
     this.angulo += w * dt;
     this.todos.forEach((a) => {
       if (!a.vivo) return;
@@ -116,6 +138,32 @@ export class Mingle extends Juego {
       }
     });
     if (this.tFase <= 0) this.parar();
+  }
+
+  pintarSilueta() {
+    const j = this.jugador, sp = j.sprite, si = this.silueta;
+    // detrás del carrusel: más atrás que el centro y dentro del ancho del techo
+    const tapado = j.vivo && sp.visible && j.y < CARR.y && Math.abs(j.x - CARR.x) < 122 && j.y - 50 < 190;
+    si.setVisible(tapado);
+    if (!tapado) return;
+    si.setTexture(sp.texture.key, sp.frame.name).setPosition(sp.x, sp.y).setFlipX(sp.flipX);
+  }
+
+  pintarLuces(dt) {
+    this.tLuz += dt;
+    this.luces.forEach((l, i) => l.setAlpha(0.38 + Math.sin(this.tLuz * 3 + i * 1.7) * 0.06 + (Math.random() < 0.01 ? -0.25 : 0)));
+    const g = this.focos;
+    g.clear();
+    const fuerza = Math.min(1, Math.abs(this.w) / 0.45);
+    if (fuerza < 0.05) return;
+    [[60, -10, 0xff6fb8], [580, -10, 0x6ab8ff]].forEach(([x, y, c], i) => {
+      const a = Math.PI / 2 + Math.sin(this.tLuz * 0.9 + i * Math.PI) * 0.55 + (i ? 0.25 : -0.25);
+      const L = 380, ab = 0.13;
+      g.fillStyle(c, 0.1 * fuerza);
+      g.fillTriangle(x, y, x + Math.cos(a - ab) * L, y + Math.sin(a - ab) * L, x + Math.cos(a + ab) * L, y + Math.sin(a + ab) * L);
+      g.fillStyle(c, 0.08 * fuerza);
+      g.fillEllipse(x + Math.cos(a) * L * 0.78, y + Math.sin(a) * L * 0.78, 90, 34);
+    });
   }
 
   contenerCarrusel(a) {

@@ -6,7 +6,7 @@ import { Entrada } from '../core/entrada.js';
 import { elegir } from '../core/dialogo.js';
 import { musica, despertar, tono, volumen, iniciarAudio } from '../core/sonido.js';
 import { nuevaPartida, irAPaso, JUEGOS, SECUENCIA } from '../core/flujo.js';
-import { texto, COLOR, atmosfera, cadaCuadro } from '../core/ui.js';
+import { texto, COLOR, atmosfera, cadaCuadro, botonVolver } from '../core/ui.js';
 import { altavoz } from '../core/voz.js';
 
 const CORTOS = ['Luz roja, luz verde', 'La galleta', 'Tira y afloja', 'Las canicas', 'Pentatlón', 'Mingle', 'Puente de cristal', 'El escondite', 'La cuerda', 'Calamar en el cielo', 'Juego del calamar'];
@@ -106,8 +106,9 @@ export class Titulo extends Phaser.Scene {
       capa.add(zona);
       actores.push({ marco, ret });
     });
-    capa.add(texto(this, W / 2, H - 30, this.inp.esTactil ? 'Toca a quien juega' : '← → elegir  ·  A: listo' + (cancelable ? '  ·  B: volver' : ''), { tam: 14, color: COLOR.apagado, origen: [0.5, 0.5] }));
-    let sel = Math.max(0, FAMILIA.indexOf(E.perfil)), listo = false, frio = 0, cancelado = false;
+    capa.add(texto(this, W / 2, H - 62, this.inp.esTactil ? 'Toca a quien juega' : '← → elegir  ·  A: listo', { tam: 14, color: COLOR.apagado, origen: [0.5, 0.5] }));
+    let sel = Math.max(0, FAMILIA.indexOf(E.perfil)), listo = false, frio = 0, cancelado = false, tocoVolver = false;
+    if (cancelable) capa.add(botonVolver(this, W / 2, H - 28, () => { tocoVolver = true; }, { prof: 0, teclado: !this.inp.esTactil }));
     const cursor = this.add.image(0, 0, 'triangulo').setTint(0xff4d8d).setAngle(180);
     capa.add(cursor);
     const pintar = () => {
@@ -120,7 +121,7 @@ export class Titulo extends Phaser.Scene {
         frio -= dt;
         if (frio <= 0 && Math.abs(this.inp.x) > 0.5) { sel = (sel + (this.inp.x > 0 ? 1 : -1) + 4) % 4; pintar(); tono(660, 0.03, 'cuadrada', 0.05); frio = 180; }
         if (Math.abs(this.inp.x) <= 0.5) frio = 0;
-        if (cancelable && this.inp.tomarB()) { cancelado = true; this.events.off('update', f); ok(); return; }
+        if (cancelable && (this.inp.tomarB() || this.inp.tomarPausa() || tocoVolver)) { cancelado = true; tono(660, 0.05, 'cuadrada', 0.06); this.events.off('update', f); ok(); return; }
         if (this.inp.aPulso) { const fisico = this.inp.aFisico; this.inp.tomarA(); if (fisico) listo = true; }
         if (listo) { this.events.off('update', f); ok(); }
       };

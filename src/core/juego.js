@@ -14,7 +14,7 @@ import { avanzar, perderVida, numeroJuego, JUEGOS } from './flujo.js';
 import { musica, pararMusica, fanfarria, despertar, tono, bloque } from './sonido.js';
 import { eliminar } from './efectos.js';
 import { jugadoresNPC } from './kit.js';
-import { texto, panel, ayudas, atmosfera, estrella, COLOR, cadaCuadro } from './ui.js';
+import { texto, panel, ayudas, atmosfera, estrella, COLOR, cadaCuadro, botonVolver } from './ui.js';
 import { altavoz, callarAltavoz } from './voz.js';
 
 export class Juego extends Phaser.Scene {
@@ -51,6 +51,8 @@ export class Juego extends Phaser.Scene {
     }
     this.inp = new Entrada(this, this.opcionesEntrada ? this.opcionesEntrada() : {});
     this.armar();
+    // lo vivo del escenario (luces, pájaros, lluvia...), si el juego lo tiene
+    if (this.decorar) this.decorar();
     if (typeof this.tiempo === 'number' && this.bonusReloj) this.tiempo += this.bonusReloj;
     this.hud = new Hud(this, { ...(this.opcionesHud ? this.opcionesHud() : {}), alPausar: () => { if (this.jugando && !this.pausado) this.pausar(); } });
     atmosfera(this, this.ambiente ? this.ambiente() : {});
@@ -100,9 +102,18 @@ export class Juego extends Phaser.Scene {
       cambiar.setInteractive({ useHandCursor: true }).on('pointerdown', () => { this._cambiar = true; });
       const pie = fijo(texto(this, W / 2, Math.min(H - 34, yp + 44), this.inp.esTactil ? 'Toca para empezar' : 'A (Espacio): ¡a jugar!', { tam: 15, negrita: true, color: COLOR.oro, origen: [0.5, 0.5] }));
       this.tweens.add({ targets: pie, alpha: 0.35, duration: 520, yoyo: true, repeat: -1 });
+      // en la práctica se puede volver a la lista de juegos
+      let volver = false;
+      if (this.practica) botonVolver(this, 128, 42, () => { volver = true; }, { prof: prof + 2, teclado: false }).forEach((o) => objs.push(o));
       let cuadros = 0;
       const f = () => {
         if (cuadros++ < 8) { this.inp.tomarA(); this.inp.tomarB(); return; }
+        if (volver || (this.practica && this.inp.tomarPausa())) {
+          this.events.off('update', f);
+          tono(660, 0.05, 'cuadrada', 0.06);
+          this.salirAlMenu('practica');
+          return;
+        }
         if (this.inp.tomarB() || this._cambiar) {
           // el relevo: le toca a otro de la familia (la escena se rearma con esa persona)
           this._cambiar = false;
@@ -147,14 +158,17 @@ export class Juego extends Phaser.Scene {
     this.time.paused = true;
     this.tweens.pauseAll();
     this.anims.pauseAll();
-    const ops = ['Seguir jugando', 'Reiniciar este juego', 'Salir al menú'];
-    const r = await elegir(this, this.inp, ops, { titulo: 'PAUSA', cancelar: true });
+    const ops = this.practica ? ['Seguir jugando', 'Reiniciar este juego', 'Elegir otro juego', 'Salir al menú'] : ['Seguir jugando', 'Reiniciar este juego', 'Salir al menú'];
+    const r0 = await elegir(this, this.inp, ops, { titulo: 'PAUSA', cancelar: true });
+    // las opciones de la práctica tienen una más: se traduce a 0 seguir, 1 reiniciar, 2 menú, 3 otro juego
+    const r = this.practica ? [0, 1, 3, 2][r0] ?? r0 : r0;
     this.time.paused = false;
     this.tweens.resumeAll();
     this.anims.resumeAll();
     this.pausado = false;
     if (r === 1) this.scene.restart({ ...this.datos, reintento: true, bonusReloj: this.bonusReloj, pistasExtra: this.pistasExtra });
     if (r === 2) this.salirAlMenu();
+    if (r === 3) this.salirAlMenu('practica');
   }
 
   /** con qué datos se rearma la escena al perder una vida (lo comprado se mantiene) */
@@ -162,10 +176,10 @@ export class Juego extends Phaser.Scene {
     return { ...this.datos, reintento: true, bonusReloj: this.bonusReloj, pistasExtra: this.pistasExtra };
   }
 
-  salirAlMenu() {
+  salirAlMenu(abrir = null) {
     pararMusica(); guardar(); callarAltavoz();
     this.cameras.main.fadeOut(300);
-    this.time.delayedCall(320, () => this.scene.start('Titulo'));
+    this.time.delayedCall(320, () => this.scene.start('Titulo', { abrir }));
   }
 
   // ---------- ayudas para armar ----------

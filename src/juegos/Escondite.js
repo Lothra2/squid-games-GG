@@ -11,10 +11,18 @@ import { eliminar, fxSobre, sacudir } from '../core/efectos.js';
 import { cartel, esperar } from '../core/dialogo.js';
 import { texto, COLOR } from '../core/ui.js';
 import { jugadoresNPC } from '../core/kit.js';
+import { lienzo, texturasLuz } from '../escenas/pintura.js';
 
 const T = 24; // tamaño del cuadro
 const FIGS = ['circulo', 'triangulo', 'cuadrado'];
 const COLOR_FIG = { circulo: 0xf2a6c3, triangulo: 0x9fe3cf, cuadrado: 0xf6e08a };
+// las zonas del laberinto: [arriba de la pared, frente, rayas del papel tapiz]
+const ZONAS = [
+  ['#f2b8d0', '#c87a9e', '#b86a8e'],
+  ['#a8e6d4', '#5aa898', '#4a9888'],
+  ['#f6e29a', '#c8a85a', '#b8984a'],
+  ['#cfc0f4', '#8a78c0', '#7a68b0'],
+];
 
 export class Escondite extends Juego {
   constructor() { super('Escondite'); this.usaPistas = true; }
@@ -26,18 +34,18 @@ export class Escondite extends Juego {
     this.mapa = this.laberinto(cw, ch);
     const W = this.TW * T, H = this.TH * T + 30;
     this.cameras.main.setBounds(0, -30, W, H);
-    this.add.rectangle(W / 2, H / 2 - 20, W + 40, H + 40, 0x241c38).setDepth(-200);
+    this.add.rectangle(W / 2, H / 2 - 20, W + 40, H + 40, 0x18122a).setDepth(-200);
     this.pintar();
     // la llave del jugador y las puertas
     this.llave = Phaser.Utils.Array.GetRandom(FIGS);
     const sinSalida = this.callejones();
     Phaser.Utils.Array.Shuffle(sinSalida);
-    const lejos = sinSalida.filter(([x, y]) => x + y > 10);
+    const lejos = sinSalida.filter(([x, y]) => x + y > 10 && this.pared(x, y - 1));
     const elegidas = lejos.slice(0, 6);
     this.puertas = elegidas.map(([x, y], i) => ({ x, y, fig: i < 2 ? this.llave : FIGS[(FIGS.indexOf(this.llave) + 1 + (i % 2)) % 3], salida: i === 0, abierta: false }));
     this.puertas.forEach((p) => this.dibujarPuerta(p));
     // los armarios
-    const libres = this.libres().filter(([x, y]) => x > 2 && !elegidas.some(([a, b]) => a === x && b === y));
+    const libres = this.libres().filter(([x, y]) => x > 2 && this.pared(x, y - 1) && !elegidas.some(([a, b]) => a === x && b === y));
     Phaser.Utils.Array.Shuffle(libres);
     this.armarios = libres.slice(0, 7).map(([x, y]) => ({ x, y, img: this.armario(x, y) }));
     // el jugador arriba a la izquierda
@@ -108,41 +116,105 @@ export class Escondite extends Juego {
     return best;
   }
 
+  /** el laberinto en pixel art: piso con baldosas y sombras, y cada fila de paredes en su propia capa (tapan a
+   * quien camina detrás). Las texturas se rehacen en cada partida porque el laberinto cambia. */
   pintar() {
-    const g = this.add.graphics().setDepth(-150);
-    const tonos = [0xf2a6c3, 0x9fe3cf, 0xf6e08a, 0xc9b6f2];
-    for (let y = 0; y < this.TH; y++) for (let x = 0; x < this.TW; x++) {
-      const px = x * T, py = y * T;
-      if (this.mapa[y][x] === 0) {
-        g.fillStyle((x + y) % 2 ? 0x3a3052 : 0x443a5e); g.fillRect(px, py, T, T);
-      } else {
-        const c = tonos[Math.floor(x / 6 + y / 5) % tonos.length];
-        g.fillStyle(Phaser.Display.Color.IntegerToColor(c).darken(30).color); g.fillRect(px, py, T, T);
-        g.fillStyle(c); g.fillRect(px, py - 10, T, T - 2);
-        g.fillStyle(0xffffff, 0.35); g.fillRect(px, py - 10, T, 2);
-        g.fillStyle(0x000000, 0.25); g.fillRect(px, py + T - 2, T, 2);
+    texturasLuz(this);
+    const TW = this.TW, TH = this.TH;
+    const zona = (x, y) => ZONAS[Math.floor(x / 7 + y / 5) % ZONAS.length];
+    for (const k of this.textures.getTextureKeys()) if (k.startsWith('esc_lab_')) this.textures.remove(k);
+    // el piso
+    lienzo(this, 'esc_lab_piso', TW * T, TH * T, (P) => {
+      P.r(0, 0, TW * T, TH * T, '#241c38');
+      for (let y = 0; y < TH; y++) for (let x = 0; x < TW; x++) {
+        if (this.pared(x, y)) continue;
+        const px = x * T, py = y * T;
+        P.r(px, py, T, T, '#4c4068');
+        for (let a = 0; a < 2; a++) for (let b = 0; b < 2; b++) if ((a + b + x + y) % 2) P.r(px + a * 12, py + b * 12, 12, 12, '#54486f');
+        P.r(px, py, T, 1, '#3e3458'); P.r(px, py, 1, T, '#3e3458');
+        P.ruido(px, py, T, T, '#5e527a', 6);
+        // la sombra de las paredes sobre el piso
+        if (this.pared(x, y - 1)) { P.trama(px, py, T, 4, '#1e1630', 0.7); P.trama(px, py + 4, T, 4, '#1e1630', 0.3); }
+        if (this.pared(x - 1, y)) P.trama(px, py, 3, T, '#1e1630', 0.45);
+        if (this.pared(x + 1, y)) P.trama(px + T - 3, py, 3, T, '#1e1630', 0.3);
       }
+    }, 5 + this.TW);
+    this.add.image(0, 0, 'esc_lab_piso').setOrigin(0).setDepth(-150);
+    // las paredes, fila por fila
+    this.lamparas = [];
+    for (let y = 0; y < TH; y++) {
+      if (!this.mapa[y].some((v) => v === 1)) continue;
+      const key = 'esc_lab_fila_' + y;
+      lienzo(this, key, TW * T, 34, (P) => {
+        for (let x = 0; x < TW; x++) {
+          if (!this.pared(x, y)) continue;
+          const [arriba, frente, raya] = zona(x, y), px = x * T;
+          // la cara de arriba, con moldura donde da al pasillo
+          P.r(px, 0, T, 24, arriba);
+          P.trama(px, 0, T, 24, '#ffffff', 0.08);
+          if (!this.pared(x, y - 1)) { P.r(px, 0, T, 1, '#ffffff'); P.r(px, 3, T, 1, frente); }
+          if (!this.pared(x - 1, y)) { P.r(px, 0, 1, 24, frente); P.r(px + 3, 3, 1, 18, frente); }
+          if (!this.pared(x + 1, y)) { P.r(px + T - 1, 0, 1, 24, frente); P.r(px + T - 4, 3, 1, 18, frente); }
+          // el frente: papel tapiz con rayas, zócalo blanco
+          if (!this.pared(x, y + 1)) {
+            P.r(px, 24, T, 10, frente);
+            for (let k = 2; k < T; k += 4) P.r(px + k, 25, 1, 7, raya);
+            P.r(px, 24, T, 1, '#ffffff');
+            P.r(px, 31, T, 3, '#efe6f6'); P.r(px, 33, T, 1, '#b8a8c8');
+            // a veces un cuadrito o una lámpara de pared
+            const r = (x * 7919 + y * 104729) % 23;
+            if (r === 3) { P.r(px + 8, 25, 8, 5, '#3a2a18'); P.r(px + 9, 26, 6, 3, ['#6ab8e8', '#e88ab8', '#f2c860'][x % 3]); }
+            if (r === 7 || r === 15) { P.r(px + 11, 26, 2, 3, '#b8862a'); P.r(px + 10, 25, 4, 2, '#fff2c8'); this.lamparas.push([px + 12, y * T + 15]); }
+          }
+        }
+      }, 100 + y);
+      this.add.image(0, y * T - 10, key).setOrigin(0).setDepth(y * T + 24);
     }
-    // las paredes tapan un poco a quien camina detrás (vista desde arriba con altura)
-    this.techos = this.add.graphics().setDepth(9000 - 1);
+    // la luz de las lamparitas titila
+    this.brillos = this.lamparas.map(([x, y]) => this.add.image(x, y, 'brillo').setScale(0.9).setTint(0xfff0c8).setAlpha(0.4).setBlendMode(Phaser.BlendModes.ADD).setDepth(9000 - 2));
+    this.time.addEvent({ delay: 120, loop: true, callback: () => this.brillos.forEach((b, i) => b.setAlpha(0.32 + Math.sin(this.time.now / 300 + i) * 0.06 + (Math.random() < 0.03 ? -0.25 : 0))) });
+    this.texturasMuebles();
+  }
+
+  /** las puertas (cerrada con su figura, abierta oscura, la salida con luz) y el armario */
+  texturasMuebles() {
+    const puerta = (key, fig, estado) => lienzo(this, key, 22, 32, (P) => {
+      const marco = '#' + COLOR_FIG[fig].toString(16).padStart(6, '0');
+      P.r(0, 0, 22, 32, '#2a1a10'); P.r(1, 1, 20, 31, marco); P.r(1, 1, 20, 1, '#ffffff');
+      if (estado === 'cerrada') {
+        P.r(3, 3, 16, 29, '#8a5a36'); P.r(3, 3, 16, 1, '#b07a4a');
+        P.r(5, 6, 5, 9, '#7a4a2a'); P.r(12, 6, 5, 9, '#7a4a2a'); P.r(5, 18, 5, 11, '#7a4a2a'); P.r(12, 18, 5, 11, '#7a4a2a');
+        P.r(16, 17, 2, 2, '#f2c230');
+        // la placa con la figura
+        P.elip(11, 11, 5, 5, '#f4f0e8'); P.elip(11, 11, 4, 4, marco);
+        const c = '#2a1a10';
+        if (fig === 'circulo') { P.elip(11, 11, 2, 2, c); P.elip(11, 11, 1, 1, marco); }
+        if (fig === 'triangulo') { P.lin(11, 8, 8, 13, c); P.lin(11, 8, 14, 13, c); P.lin(8, 13, 14, 13, c); }
+        if (fig === 'cuadrado') { P.r(9, 9, 5, 1, c); P.r(9, 13, 5, 1, c); P.r(9, 9, 1, 5, c); P.r(13, 9, 1, 5, c); }
+      } else if (estado === 'abierta') {
+        P.r(3, 3, 16, 29, '#0e0a14'); P.r(3, 3, 3, 29, '#5a3a22');
+      } else {
+        P.deg(3, 3, 16, 29, ['#fff6d0', '#ffe08a', '#f2c860']); P.r(3, 3, 3, 29, '#8a5a36');
+      }
+    });
+    for (const f of FIGS) { puerta('esc_puerta_' + f, f, 'cerrada'); puerta('esc_puerta_abierta_' + f, f, 'abierta'); puerta('esc_puerta_luz_' + f, f, 'luz'); }
+    lienzo(this, 'esc_armario', 22, 34, (P) => {
+      P.r(0, 0, 22, 34, '#3a2412'); P.r(1, 1, 20, 32, '#d8a868'); P.r(1, 1, 20, 3, '#e8c088'); P.r(1, 1, 20, 1, '#fff0d0');
+      P.r(10, 5, 2, 27, '#9a6a3a');
+      for (let k = 0; k < 5; k++) { P.r(4, 8 + k * 4, 4, 1, '#6a4422'); P.r(14, 8 + k * 4, 4, 1, '#6a4422'); }
+      P.r(8, 18, 2, 3, '#f2c230'); P.r(12, 18, 2, 3, '#f2c230');
+      P.r(2, 32, 3, 2, '#3a2412'); P.r(17, 32, 3, 2, '#3a2412');
+      P.trama(15, 4, 5, 28, '#a87848', 0.5);
+    });
   }
 
   dibujarPuerta(p) {
     const px = p.x * T, py = p.y * T;
-    p.img = this.add.rectangle(px + T / 2, py + T / 2 - 4, T - 2, T + 2, 0x1c1430).setStrokeStyle(2, COLOR_FIG[p.fig]).setDepth(py);
-    p.sim = this.add.image(px + T / 2, py + T / 2 - 4, p.fig).setTint(COLOR_FIG[p.fig]).setScale(0.7).setDepth(py + 1);
+    p.img = this.add.image(px + T / 2, py + 8, 'esc_puerta_' + p.fig).setOrigin(0.5, 1).setDepth(py + 8);
   }
 
   armario(x, y) {
-    // el armario: un mueble de madera clara con dos puertas y rendijas, más alto que una puerta
-    const g = this.add.graphics().setDepth(y * T + 2);
-    const px = x * T + 3, py = y * T - 12;
-    g.fillStyle(0x3a2412); g.fillRect(px - 1, py - 1, T - 4, T + 10);
-    g.fillStyle(0xd8a868); g.fillRect(px, py, T - 6, T + 8);
-    g.fillStyle(0xb8884a); g.fillRect(px + (T - 6) / 2, py, 1, T + 8);
-    for (let k = 0; k < 5; k++) { g.fillStyle(0x6a4422); g.fillRect(px + 3, py + 4 + k * 4, 5, 1); g.fillRect(px + T - 14, py + 4 + k * 4, 5, 1); }
-    g.fillStyle(0x3a2412); g.fillRect(px + (T - 6) / 2 - 4, py + 19, 3, 3); g.fillRect(px + (T - 6) / 2 + 2, py + 19, 3, 3);
-    return g;
+    return this.add.image(x * T + T / 2, y * T + 12, 'esc_armario').setOrigin(0.5, 1).setDepth(y * T + 12);
   }
 
   reglas() {
@@ -326,9 +398,11 @@ export class Escondite extends Juego {
   async abrir(p) {
     p.abierta = true;
     sfx(this, 'golpe', 0.5);
-    p.img.setFillStyle(0x1a1028);
+    p.img.setTexture('esc_puerta_abierta_' + p.fig);
     if (p.salida) {
-      p.img.setFillStyle(0xfff4c2);
+      p.img.setTexture('esc_puerta_luz_' + p.fig);
+      const luz = this.add.image(p.img.x, p.img.y - 14, 'brillo').setScale(2).setTint(0xffe8a0).setBlendMode(Phaser.BlendModes.ADD).setDepth(9000);
+      this.tweens.add({ targets: luz, scale: 3, alpha: 0.5, duration: 600, yoyo: true, repeat: -1 });
       tono(1568, 0.3, 'campana', 0.15);
       this.jugando = false;
       await cartel(this, '¡LA SALIDA!', 'vuelve por la familia...', { ms: 1300, color: 0x23b39c });

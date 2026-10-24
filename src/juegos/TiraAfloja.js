@@ -12,6 +12,7 @@ import { eliminar, sacudir, fxSobre } from '../core/efectos.js';
 import { cartel, esperar } from '../core/dialogo.js';
 import { jugadoresNPC } from '../core/kit.js';
 import { texto, COLOR, icono, cadaCuadro } from '../core/ui.js';
+import { rayos as rayosLuz, chispas, vapor, lampara } from '../core/vivo.js';
 
 const PISO = 171, CENTRO = 320;
 const CARRIL = { x0: 130, x1: 560, y: 300 }; // el círculo está en x0
@@ -73,6 +74,16 @@ export class TiraAfloja extends Juego {
     g.lineStyle(1, 0xc8a46a); g.lineBetween(x0, PISO - 30, x1, PISO - 30);
     g.fillStyle(0xe0457b); g.fillRect(CENTRO - d - 3, PISO - 35, 6, 12);
     this.marca.x = this.scale.width / 2 - this.r * 138;
+  }
+
+  decorar() {
+    // los focos del techo titilan con su cono de luz, la polea echa chispas y del vacío sube vapor
+    lampara(this, { x: 130, y: 28, escala: 1.6, color: 0xdfe8ff, alfa: 0.5, prof: -80, falla: 0.03 });
+    lampara(this, { x: 525, y: 28, escala: 1.6, color: 0xdfe8ff, alfa: 0.5, prof: -80, falla: 0.02 });
+    rayosLuz(this, { x: 112, y: 30, angulo: 0, n: 1, largo: 160, ancho: 36, color: 0xdfe8ff, alfa: 0.06, prof: -70 });
+    rayosLuz(this, { x: 507, y: 30, angulo: 0, n: 1, largo: 160, ancho: 36, color: 0xdfe8ff, alfa: 0.06, prof: -70 });
+    chispas(this, { x: 320, y: 96, cada: 2200, prof: -60 });
+    vapor(this, { x: 320, y: 300, color: 0x8a90a8, cada: 500, prof: -75, alfa: 0.14 });
   }
 
   reglas() {

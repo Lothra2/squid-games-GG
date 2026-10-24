@@ -10,6 +10,7 @@ import { sfx, tono, musica, cancionMuneca } from '../core/sonido.js';
 import { eliminar, sacudir } from '../core/efectos.js';
 import { cartel, esperar } from '../core/dialogo.js';
 import { COLOR } from '../core/ui.js';
+import { luciernagas, rayos as rayosLuz, vapor } from '../core/vivo.js';
 
 const PISO = 213, X_INI = 53, X_FIN = 573, HUECO = [301, 336];
 const MANO_I = [69, 149], MANO_D = [560, 139];
@@ -22,10 +23,21 @@ export class Cuerda extends Juego {
     const W = this.scale.width, H = this.scale.height;
     this.add.image(W / 2, H / 2, 'cuerda').setDepth(-100);
     // el hueco del puente
+    // se ve el abismo a través del hueco: un pedazo del mismo fondo, de más abajo, tapa las tablas
+    const ancho = HUECO[1] - HUECO[0];
+    this.add.image(0, -37, 'cuerda').setOrigin(0).setCrop(HUECO[0], PISO + 25, ancho, 25).setDepth(-51);
     const g = this.add.graphics().setDepth(-50);
-    g.fillStyle(0x0d0c1c); g.fillRect(HUECO[0], PISO - 11, HUECO[1] - HUECO[0], 19);
-    g.fillStyle(0x6a4a5a); g.fillRect(HUECO[0] - 3, PISO - 11, 3, 24); g.fillRect(HUECO[1], PISO - 11, 3, 18);
-    g.fillStyle(0x8a6a5a); g.fillRect(HUECO[0] - 10, PISO + 6, 8, 3); g.fillRect(HUECO[1] + 2, PISO + 4, 9, 3);
+    // las puntas astilladas de las tablas
+    const madera = 0xc890a8, oscura = 0x7a4a62;
+    [[HUECO[0], 1], [HUECO[1], -1]].forEach(([x, d]) => {
+      for (let k = 0; k < 6; k++) {
+        const y = PISO - 10 + k * 3, largo = 2 + ((k * 7) % 5);
+        g.fillStyle(k % 2 ? madera : oscura); g.fillRect(d > 0 ? x : x - largo, y, largo, 3);
+      }
+    });
+    // una tabla suelta que cuelga de la soga y se mece
+    this.tabla = this.add.rectangle(HUECO[0] + 4, PISO - 8, 4, 22, madera).setOrigin(0.5, 0).setStrokeStyle(1, oscura).setDepth(-49);
+    this.tweens.add({ targets: this.tabla, angle: { from: -14, to: 14 }, duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     // la muñeca a la derecha y un guardia a la izquierda con la otra punta
     this.muneca = this.add.image(603, 200, 'muneca_frente').setOrigin(0.5, 1).setScale(0.62).setDepth(190);
     this.guardia = new Actor(this, 'guardia_triangulo', 56, 200, { dir: 'right' });
@@ -43,6 +55,14 @@ export class Cuerda extends Juego {
     this.tiempoTotal = this.tiempo;
     this.j = { vz: 0 };
     this.vueltas = 0;
+  }
+
+  decorar() {
+    // los haces de luz de la caverna respiran, luciérnagas en los acantilados y neblina en el abismo
+    [160, 320, 480].forEach((x, i) => rayosLuz(this, { x: x - 30, y: 0, angulo: 0.05 * (i - 1), n: 1, largo: 300, ancho: 40, color: 0xbfd0ff, alfa: 0.05, prof: -70 }));
+    luciernagas(this, { n: 10, area: [0, 120, 130, 200], color: 0xc8ffb0, prof: -60 });
+    luciernagas(this, { n: 10, area: [510, 120, 130, 200], color: 0xc8ffb0, prof: -60 });
+    vapor(this, { x: 320, y: 360, color: 0x8a8ac8, cada: 400, prof: -65, alfa: 0.12 });
   }
 
   reglas() {

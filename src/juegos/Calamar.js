@@ -11,6 +11,7 @@ import { sfx, tono, musica, pararMusica } from '../core/sonido.js';
 import { eliminar, sacudir, lluvia, relampago, chorro, fxSobre } from '../core/efectos.js';
 import { cartel, esperar, hablar } from '../core/dialogo.js';
 import { texto, COLOR } from '../core/ui.js';
+import { ondas, lampara } from '../core/vivo.js';
 
 const CABEZA = { x: 320, y: 100, r: 33 };
 const TRI = { ax: 320, ay: 129, bx: 271, by: 193, cx: 369, cy: 193 };
@@ -56,6 +57,14 @@ export class Calamar extends Juego {
     for (let i = 0; i < this.aguante; i++) this.corazones.push(this.add.image(84 + i * 17, 44, 'vida_on').setScrollFactor(0).setDepth(8801));
     this.add.rectangle(CABEZA.x, CABEZA.y - 45, 58, 8, 0x1a1622).setStrokeStyle(1, 0x5a5666).setDepth(7999);
     this.barraCabeza = this.add.rectangle(CABEZA.x - 27, CABEZA.y - 45, 0, 5, 0xf2c230).setOrigin(0, 0.5).setDepth(8000);
+  }
+
+  decorar() {
+    // la lluvia salpica en el barro y las lámparas del muro titilan
+    ondas(this, { area: [60, 80, 520, 250], cada: 70, prof: -40 });
+    lampara(this, { x: 320, y: 322, escala: 1.4, color: 0xffd890, alfa: 0.45, prof: -30, falla: 0.04 });
+    lampara(this, { x: 45, y: 28, escala: 1.2, color: 0xffd890, alfa: 0.35, prof: -30 });
+    lampara(this, { x: 595, y: 28, escala: 1.2, color: 0xffd890, alfa: 0.35, prof: -30, falla: 0.05 });
   }
 
   reglas() {

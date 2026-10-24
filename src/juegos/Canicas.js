@@ -10,6 +10,7 @@ import { zzz } from '../core/efectos.js';
 import { hablar, cartel, esperar, elegir } from '../core/dialogo.js';
 import { barra } from '../core/mini.js';
 import { texto, COLOR, panel } from '../core/ui.js';
+import { pajaros, luciernagas, rayos as rayosLuz } from '../core/vivo.js';
 
 const HOYO = [387, 280];
 const COLORES = [0xe0457b, 0x23b39c, 0xf2c230, 0x5aa0ff, 0xffffff, 0xb58cff];
@@ -59,6 +60,13 @@ export class Canicas extends Juego {
     };
     dib(this.bolsaMia, 30, this.mias);
     dib(this.bolsaSuya, W - 170, this.suyas);
+  }
+
+  decorar() {
+    // el sol de la tarde entre las casas, pájaros volviendo a casa y polvo dorado en el aire
+    rayosLuz(this, { x: 470, y: 0, angulo: -0.55, n: 5, largo: 360, ancho: 26, color: 0xffc070, alfa: 0.07 });
+    pajaros(this, { n: 6, y0: 8, y1: 40, color: 0x3a1a10, prof: -95, par: 0 });
+    luciernagas(this, { n: 16, area: [60, 120, 520, 220], color: 0xffd890, tam: 1, prof: 3000 });
   }
 
   reglas() {

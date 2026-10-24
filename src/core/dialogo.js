@@ -6,7 +6,7 @@ import Phaser from 'phaser';
 import { M } from './kit.js';
 import { nombre, NUMEROS, E } from './estado.js';
 import { blip, tono } from './sonido.js';
-import { texto, panel, COLOR, icono, cadaCuadro } from './ui.js';
+import { texto, panel, COLOR, icono, cadaCuadro, botonVolver } from './ui.js';
 
 const COLOR_NOMBRE = { rick: '#6aa8ff', steph: '#ff8fb5', sophie: '#9ed08a', alana: '#f7c948', front_man: '#c8c8d8', reclutador: '#e0d6c0', j_abuelo: '#f7c948' };
 
@@ -123,8 +123,10 @@ export function elegir(scene, inp, opciones, { titulo = '', ancho = null, x = nu
     const medidas = opciones.map((o) => { const t = texto(scene, 0, 0, o, { tam }); const w = t.width; t.destroy(); return w; });
     const colW = Math.max(150, Math.max(...medidas) + 52, detalles ? 300 : 0);
     const anchoT = ancho || Math.min(W - 24, colW * columnas + 20);
-    const alto = porCol * filaH + (titulo ? 44 : 18) + (cancelar ? 22 : 0);
-    const x0 = (x ?? W / 2) - anchoT / 2, y0 = Math.max(4, Math.min(H - alto - 4, (y ?? H / 2) - alto / 2));
+    const alto = porCol * filaH + (titulo ? 44 : 18);
+    // con volver, abajo queda lugar para el botón
+    const abajo = cancelar ? 40 : 4;
+    const x0 = (x ?? W / 2) - anchoT / 2, y0 = Math.max(4, Math.min(H - alto - abajo, (y ?? H / 2) - alto / 2));
     const objs = [panel(scene, x0, y0, anchoT, alto, prof)];
     let top = y0 + 12;
     if (titulo) { objs.push(texto(scene, x0 + anchoT / 2, top + 4, titulo, { tam: 17, negrita: true, color: COLOR.oro, origen: [0.5, 0] }).setScrollFactor(0).setDepth(prof + 1)); top += 32; }
@@ -141,7 +143,7 @@ export function elegir(scene, inp, opciones, { titulo = '', ancho = null, x = nu
       objs.push(fondo, t); if (d) objs.push(d);
       return { fondo, t, d };
     });
-    if (cancelar) objs.push(texto(scene, x0 + anchoT / 2, y0 + alto - 16, 'B: volver', { tam: 11, color: COLOR.apagado, origen: [0.5, 0.5] }).setScrollFactor(0).setDepth(prof + 2));
+    if (cancelar) botonVolver(scene, x0 + anchoT / 2, y0 + alto + 20, () => fin(-1), { prof: prof + 1, teclado: !inp.esTactil }).forEach((o) => objs.push(o));
     const cursor = scene.add.image(0, 0, 'triangulo').setTint(0xff4d8d).setAngle(90).setScale(0.8).setScrollFactor(0).setDepth(prof + 3);
     objs.push(cursor);
     scene.tweens.add({ targets: cursor, scaleX: 0.6, duration: 300, yoyo: true, repeat: -1 });
@@ -173,7 +175,7 @@ export function elegir(scene, inp, opciones, { titulo = '', ancho = null, x = nu
         pintar(); tono(660, 0.03, 'cuadrada', 0.05); frio = 180;
       }
       if (Math.abs(dy) <= 0.5 && Math.abs(dx) <= 0.5) frio = 0;
-      if (cancelar && inp.tomarB()) { fin(-1); return; }
+      if (cancelar && (inp.tomarB() || inp.tomarPausa())) { fin(-1); return; }
       // con teclado o control, A elige; con el dedo se toca la opción (un toque suelto no elige)
       if (inp.aPulso) { const fisico = inp.aFisico; inp.tomarA(); if (fisico) fin(); }
     };
