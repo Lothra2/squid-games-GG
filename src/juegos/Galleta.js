@@ -63,8 +63,11 @@ export class Galleta extends Juego {
     // la gente sentada alrededor, de fondo
     this.gente = this.crearGente(10, (i) => [26 + (i % 2) * 42, 110 + Math.floor(i / 2) * 50 + (i % 2) * 18, 'right']);
     this.gente.forEach((g) => g.anim('eat'));
-    this.crearFamilia([[420, 312, 'left'], [462, 322, 'left'], [504, 312, 'left']]);
+    this.crearFamilia([[452, 316, 'left'], [494, 326, 'left'], [536, 316, 'left']]);
     this.familia.forEach((f) => f.anim('eat'));
+    // tú también estás ahí, con tu galleta (la lata grande es lo que ves de cerca)
+    this.crearJugador(404, 322, 'left');
+    this.jugador.anim('eat', 'left');
     // la lata y la galleta
     this.add.circle(CX, CY, 132, 0x6f7884).setDepth(9);
     this.add.circle(CX, CY, 128, 0x9aa3ae).setStrokeStyle(4, 0x4a5058).setDepth(10);
@@ -195,6 +198,7 @@ export class Galleta extends Juego {
       }
       this.nRaspado += nuevos;
       const preciso = d <= this.tol * 0.45;
+      this.jugador.anim('eat', 'left', true);
       this.tension += dif(0.045, 0.06, 0.08) * (esquina ? 1.6 : 1) * (preciso ? 0.7 : 1) * blando;
       tono(preciso ? 2200 : 1800, 0.02, 'cuadrada', 0.04);
       chorro(this, x, y, nuevos ? 5 : 2, [0xf6d080, 0xc4842c], 30, { g: 120, vida: 300, prof: 16 });
@@ -203,6 +207,8 @@ export class Galleta extends Juego {
     } else {
       // afuera de la línea: la galleta se raja un poquito
       this.fallos++;
+      this.jugador.anim('hit', 'left', true);
+      this.time.delayedCall(400, () => this.jugador.vivo && this.jugador.anim('eat', 'left'));
       this.tension += dif(0.14, 0.2, 0.27) * blando;
       sfx(this, 'romper', 0.25);
       sacudir(this, 90, 0.004);
@@ -383,7 +389,6 @@ export class Galleta extends Juego {
       this.grietas.strokePath();
     }
     chorro(this, ax, ay, 20, [0xd99a3a, 0xe8b04e, 0x8a5a1c], 90, { g: 260 });
-    if (!this.jugador) this.jugador = new Actor(this, E.perfil, 400, 318, { dir: 'left' });
     this.perder(motivo);
     void icono;
   }

@@ -285,6 +285,31 @@ export class Juego extends Phaser.Scene {
     this.time.delayedCall(320, () => this.scene.start('Titulo', { abrir: r === 1 ? 'practica' : null }));
   }
 
+  /**
+   * Una segunda cámara solo para la interfaz (todo lo que tiene scrollFactor 0): así la cámara del mundo se puede
+   * acercar sin agrandar ni mover los botones, los menús ni los diálogos. Los fundidos se aplican a las dos.
+   */
+  camaraUI() {
+    if (this.camUI) return this.camUI;
+    const W = this.scale.width, H = this.scale.height, main = this.cameras.main;
+    this.camUI = this.cameras.add(0, 0, W, H).setName('ui');
+    this.events.on(Phaser.Scenes.Events.PRE_RENDER, () => {
+      for (const o of this.children.list) o.cameraFilter = o.scrollFactorX === 0 ? main.id : this.camUI.id;
+    });
+    main.on(Phaser.Cameras.Scene2D.Events.FADE_OUT_START, (_, __, dur, r, g, b) => this.camUI.fadeOut(dur, r, g, b));
+    main.on(Phaser.Cameras.Scene2D.Events.FADE_IN_START, (_, __, dur, r, g, b) => this.camUI.fadeIn(dur, r, g, b));
+    return this.camUI;
+  }
+
+  /** acerca la cámara del mundo a un punto (zoom 1 = vuelve a la vista completa) */
+  acercar(x, y, zoom = 2, ms = 500) {
+    const cam = this.cameras.main;
+    this.camaraUI();
+    cam.setBounds(0, 0, this.scale.width, this.scale.height);
+    cam.pan(zoom === 1 ? this.scale.width / 2 : x, zoom === 1 ? this.scale.height / 2 : y, ms, 'Sine.easeInOut');
+    cam.zoomTo(zoom, ms, 'Sine.easeInOut');
+  }
+
   /** cámara lenta, acercamiento y gris cuando eliminan al jugador */
   camaraLenta(actor, activar = true) {
     const cam = this.cameras.main;

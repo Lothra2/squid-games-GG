@@ -347,7 +347,7 @@ export class Escondite extends Juego {
 
     if (this.escondido) {
       this.hud.setExtra('ESCONDIDO · A: salir', 0x9fe3cf);
-      if (this.inp.tomarA()) { this.escondido = null; j.setVisible(true); tono(440, 0.06); }
+      if (this.inp.tomarA()) { const a = this.escondido; this.escondido = null; j.setVisible(true); j.anim('idle', 'down', true); this.tweens.add({ targets: a.img, angle: { from: 3, to: -3 }, duration: 60, yoyo: true, repeat: 1, onComplete: () => a.img.setAngle(0) }); tono(440, 0.06); }
     } else {
       this.moverCon(j, this.inp.x * 96, this.inp.y * 96, dt);
       // puertas y armarios
@@ -358,12 +358,16 @@ export class Escondite extends Juego {
       else if (armario) this.hud.setExtra('A: esconderte en el armario', 0x9fe3cf);
       else this.hud.setExtra('');
       if (this.inp.tomarA()) {
-        if (puerta && puerta.fig === this.llave) this.abrir(puerta);
-        else if (puerta) tono(200, 0.08, 'cuadrada', 0.06);
+        if (puerta && puerta.fig === this.llave) { j.mirar((puerta.x + 0.5) * T - j.x, (puerta.y + 0.5) * T - j.y); j.anim('grab_hold', null, true); this.abrir(puerta); }
+        else if (puerta) { tono(200, 0.08, 'cuadrada', 0.06); j.anim('grab_hold', null, true); this.tweens.add({ targets: puerta.img, x: puerta.img.x + 1, duration: 40, yoyo: true, repeat: 3 }); }
         else if (armario) {
           // si un rojo te está viendo, te encuentra igual
           const visto = this.rojos.some((r) => r.persigue > 0 && Math.hypot(r.x - j.x, r.y - j.y) < 66);
-          this.escondido = armario; j.setVisible(false);
+          this.escondido = armario;
+          // se mete: camina al armario, se encoge y el armario se sacude al cerrarse
+          j.anim('grab_hold', 'up', true);
+          this.tweens.add({ targets: j.sprite, scaleY: 0.2, alpha: 0, duration: 180, onComplete: () => { j.setVisible(false); j.sprite.setScale(1).setAlpha(1); } });
+          this.tweens.add({ targets: armario.img, angle: { from: -3, to: 3 }, duration: 60, yoyo: true, repeat: 2, onComplete: () => armario.img.setAngle(0) });
           sfx(this, 'golpe', 0.3);
           if (visto) this.time.delayedCall(700, () => { if (this.escondido && !this.terminado) { this.escondido = null; j.setVisible(true); this.atrapado(); } });
         }

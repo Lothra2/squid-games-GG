@@ -42,7 +42,7 @@ export function barra(scene, inp, { vel = 1.2, ideal = 0.8, ancho = 0.16, texto:
  * Algo cae y hay que apretar A cuando pasa por la zona verde. veces: cuántos aciertos seguidos hacen falta.
  * Devuelve true si se lograron todos, false al primer fallo.
  */
-export function atrapar(scene, inp, { veces = 3, vel = 1, zona = 0.14, texto: txt = '¡ATRAPA!', color = 0xf2c230, y = 60, x = null } = {}) {
+export function atrapar(scene, inp, { veces = 3, vel = 1, zona = 0.14, texto: txt = '¡ATRAPA!', color = 0xf2c230, y = 60, x = null, alAcertar = null, alFallar = null } = {}) {
   return new Promise((res) => {
     const W = scene.scale.width, cx = x ?? W / 2, prof = 9000, alto = 130;
     const objs = [
@@ -67,19 +67,20 @@ export function atrapar(scene, inp, { veces = 3, vel = 1, zona = 0.14, texto: tx
         if (p >= 1 - zona && p <= 1.04) {
           n++; tono(880 + n * 120, 0.06, 'campana', 0.1);
           cuenta.setText(`${n} / ${veces}`);
+          if (alAcertar) alAcertar(n);
           if (n >= veces) { fin(true); return; }
           t = 0; espera = 0.25;
-        } else { tono(200, 0.1, 'cuadrada', 0.08); fin(false); }
-      } else if (p > 1.1) { tono(200, 0.1, 'cuadrada', 0.08); fin(false); }
+        } else { tono(200, 0.1, 'cuadrada', 0.08); if (alFallar) alFallar(); fin(false); }
+      } else if (p > 1.1) { tono(200, 0.1, 'cuadrada', 0.08); if (alFallar) alFallar(); fin(false); }
     };
     cadaCuadro(scene, f);
   });
 }
 
 /** Machacar A para llenar un medidor antes de que se acabe el tiempo. Devuelve true si se llenó. */
-export function machacar(scene, inp, { golpes = 14, segundos = 3, texto: txt = '¡MACHACA A!', y = 90 } = {}) {
+export function machacar(scene, inp, { golpes = 14, segundos = 3, texto: txt = '¡MACHACA A!', y = 90, x = null, alGolpe = null } = {}) {
   return new Promise((res) => {
-    const W = scene.scale.width, cx = W / 2, L = 220, prof = 9000;
+    const W = scene.scale.width, cx = x ?? W / 2, L = 220, prof = 9000;
     const objs = [
       panel(scene, cx - L / 2 - 20, y - 44, L + 40, 72, prof - 1),
       scene.add.rectangle(cx, y, L + 4, 16, 0x1a1622).setStrokeStyle(2, 0x5a5666).setDepth(prof).setScrollFactor(0),
@@ -92,7 +93,7 @@ export function machacar(scene, inp, { golpes = 14, segundos = 3, texto: txt = '
     scene.__mini = { tipo: 'machacar' };
     const f = (_, dt) => {
       t -= dt / 1000;
-      if (inp.tomarA()) { n++; tono(400 + n * 30, 0.03, 'cuadrada', 0.05); }
+      if (inp.tomarA()) { n++; tono(400 + n * 30, 0.03, 'cuadrada', 0.05); if (alGolpe) alGolpe(n / golpes); }
       lleno.width = L * Math.min(1, n / golpes);
       if (n >= golpes || t <= 0) {
         scene.events.off('update', f);

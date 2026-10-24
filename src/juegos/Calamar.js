@@ -149,7 +149,8 @@ export class Calamar extends Juego {
         fm.vx = (j.vx / k) * 213; fm.vy = (j.vy / k) * 213;
         fm.anim('dizzy', null, true);
         fxSobre(this, fm, 'estrellas_mareo', -66);
-        sfx(this, 'golpe_pesado', 0.7); sacudir(this, 150, 0.01);
+        sfx(this, 'golpe_pesado', 0.7); sacudir(this, 180, 0.014);
+        ['chispa_golpe_pesado', 'onomatopeya_pow'].forEach((id, k) => { if (!this.textures.exists('fx_' + id)) return; const s2 = this.add.sprite((j.x + fm.x) / 2, (j.y + fm.y) / 2 - 26 - k * 22, 'fx_' + id).setDepth(6000); s2.play('fx_' + id); s2.once('animationcomplete', () => s2.destroy()); });
         j.dash = 0;
       } else if (fm.dash > 0 && j.aturdido <= 0) {
         this.golpe();

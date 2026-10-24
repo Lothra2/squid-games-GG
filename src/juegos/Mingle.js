@@ -207,7 +207,7 @@ export class Mingle extends Juego {
         const libres = this.todos.filter((a) => a !== j && a.vivo && !a.salvo && !this.grupo.includes(a) && !a.grupoNPC);
         let mejor = null, md = 44;
         for (const a of libres) { const d = Math.hypot(a.x - j.x, a.y - j.y); if (d < md) { md = d; mejor = a; } }
-        if (mejor) { this.grupo.push(mejor); mejor.solo = false; tono(880, 0.06, 'campana', 0.1); fxSobre(this, mejor, 'exclamacion'); }
+        if (mejor) { this.grupo.push(mejor); mejor.solo = false; tono(880, 0.06, 'campana', 0.1); j.mirar(mejor.x - j.x, mejor.y - j.y); j.anim('grab_hold', null, true); mejor.mirar(j.x - mejor.x, j.y - mejor.y); fxSobre(this, mejor, 'agarre', -40); }
         else tono(220, 0.05, 'cuadrada', 0.05);
       }
       if (this.inp.tomarB() && this.grupo.length) { const a = this.grupo.pop(); if (this.familia.includes(a)) a.solo = true; tono(440, 0.05, 'cuadrada', 0.05); }
